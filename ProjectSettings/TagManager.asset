@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Coral
+  - Algae
+  - ReefPole
+  - LeftAlignNode
+  - RightAlignNode
+  - Field
+  - BlueRobot
+  - RedRobot
+  - Carpet
+  - BlueBargeZone
+  - RedBargeZone
+  - BlueStartLine
+  - RedStartLine
+  - GamePieceWorld
+  - Cage
+  - ReefFace
+  - RecordingCamera
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Field
+  - Water
+  - UI
+  - Robot
+  - Coral
+  - Algae
+  - LEDs
+  - Scoring
+  - Camera
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
