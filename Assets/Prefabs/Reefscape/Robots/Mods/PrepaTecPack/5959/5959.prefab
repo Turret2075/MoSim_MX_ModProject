@@ -12464,7 +12464,7 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 3724463272272050357, guid: c3845db903976bb4e8e801203af5495d, type: 3}
 --- !u!1 &531290678978976225
@@ -21729,7 +21729,7 @@ GameObject:
   - component: {fileID: 6760274269590971792}
   - component: {fileID: 2968586261760978280}
   - component: {fileID: 5822427657241522235}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Coral Intake
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -56136,7 +56136,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3787824558753922618}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -84022,7 +84022,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8069251754248041637}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CoralTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -134697,14 +134697,14 @@ MonoBehaviour:
     stateNum: 1
     stateMoveSpeed: 60
     stateTarget: {fileID: 8069251754248041637}
-    smoothHandoff: 1
+    smoothHandoff: 0
     angularSpeed: 0
   algaeStowState:
     name: Algae Stow State
     stateNum: 1
     stateMoveSpeed: 60
     stateTarget: {fileID: 6971460322138656581}
-    smoothHandoff: 1
+    smoothHandoff: 0
     angularSpeed: 0
 --- !u!114 &-2862273133057586026
 MonoBehaviour:
@@ -140035,7 +140035,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6971460322138656581}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: AlgaeTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -140290,7 +140290,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8403186143173294295}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CoralEndEffector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
