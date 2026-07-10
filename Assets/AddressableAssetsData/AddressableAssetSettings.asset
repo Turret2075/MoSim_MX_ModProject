@@ -62,9 +62,9 @@ MonoBehaviour:
   m_overridePlayerVersion: '[UnityEditor.PlayerSettings.bundleVersion]'
   m_GroupAssets:
   - {fileID: 11400000, guid: e02197fdf4254934fa6b0ab1762bb000, type: 2}
+  - {fileID: 11400000, guid: c590d3b857ce30b48bb266755d457f55, type: 2}
   - {fileID: 11400000, guid: 9cd31e1fc2fdeb84fbde0fabd689577f, type: 2}
   - {fileID: 11400000, guid: f5b71b85a798d6f40bb1c3812901e71f, type: 2}
-  - {fileID: 11400000, guid: 2e37f5523acb23b44bae96be01477a3d, type: 2}
   - {fileID: 11400000, guid: aac5dc43f207f464cbe5c74a47d73199, type: 2}
   m_BuildSettings:
     m_LogResourceManagerExceptions: 1
@@ -97,6 +97,10 @@ MonoBehaviour:
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/PrepaTecModpack'
       - m_Id: a2842c0f9ded8a54d9ba8ec693eb3bcc
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/Packed Assets'
+      - m_Id: a44532d1913522240835d41d3bdadf6d
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/PrepatecModpack'
+      - m_Id: b86ef2ac929a37d44ad5f1f2ef6d47d8
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/PrepatecModpack'
       - m_Id: c65595e78f4c7db44a4324f2e84106be
         m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/MechTechMod'
       - m_Id: dc362afee9112ee489246a2a832e6005
@@ -134,6 +138,12 @@ MonoBehaviour:
       m_InlineUsage: 0
     - m_Id: a2842c0f9ded8a54d9ba8ec693eb3bcc
       m_Name: Packed Assets_BuildPath
+      m_InlineUsage: 0
+    - m_Id: a44532d1913522240835d41d3bdadf6d
+      m_Name: PrepatecModpack_BuildPath
+      m_InlineUsage: 0
+    - m_Id: b86ef2ac929a37d44ad5f1f2ef6d47d8
+      m_Name: PrepatecModpack_LoadPath
       m_InlineUsage: 0
     - m_Id: c65595e78f4c7db44a4324f2e84106be
       m_Name: MechTechMod_LoadPath
