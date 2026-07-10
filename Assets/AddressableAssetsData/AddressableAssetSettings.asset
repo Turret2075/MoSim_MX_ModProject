@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 9162ef73a8b7ff14a81079bd59987bc0
   m_currentHash:
     serializedVersion: 2
-    Hash: 52a1a89adb02ff84ac4fc53f55c9a3e6
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
@@ -64,8 +64,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e02197fdf4254934fa6b0ab1762bb000, type: 2}
   - {fileID: 11400000, guid: 9cd31e1fc2fdeb84fbde0fabd689577f, type: 2}
   - {fileID: 11400000, guid: f5b71b85a798d6f40bb1c3812901e71f, type: 2}
+  - {fileID: 11400000, guid: 2e37f5523acb23b44bae96be01477a3d, type: 2}
   - {fileID: 11400000, guid: aac5dc43f207f464cbe5c74a47d73199, type: 2}
-  - {fileID: 11400000, guid: 77189d01c168a0743b22875054c9e276, type: 2}
   m_BuildSettings:
     m_LogResourceManagerExceptions: 1
     m_BundleBuildPath: Temp/com.unity.addressables/AssetBundles
@@ -79,6 +79,8 @@ MonoBehaviour:
         m_Value: 'http://[PrivateIpAddress]:[HostingServicePort]'
       - m_Id: 09b0b24e528b599428cd44c5db541c03
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: 11606e8584f238c40a8172ee0b27e927
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/PrepaTecPack'
       - m_Id: 37e529e86860a7741a1cf0fcf45e094b
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
       - m_Id: 3995af1f76783674a86b8f7323c5f71e
@@ -87,6 +89,12 @@ MonoBehaviour:
         m_Value: 'ServerData/[BuildTarget]'
       - m_Id: 6ae011911ed4dff4eb609933b6caac2a
         m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: 6baa3e245bf74ac47804229dfaac0279
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/PrepaTecModpack'
+      - m_Id: 7ffe83d9cfbf3b24a9bb07b2de9e8dc7
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/PrepaTecPack'
+      - m_Id: 8fe6bd5f7a053fa4d93e80c1cc7c44a5
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/PrepaTecModpack'
       - m_Id: a2842c0f9ded8a54d9ba8ec693eb3bcc
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/Packed Assets'
       - m_Id: c65595e78f4c7db44a4324f2e84106be
@@ -100,6 +108,9 @@ MonoBehaviour:
     - m_Id: 09b0b24e528b599428cd44c5db541c03
       m_Name: BuildTarget
       m_InlineUsage: 0
+    - m_Id: 11606e8584f238c40a8172ee0b27e927
+      m_Name: PrepaTecPack_BuildPath
+      m_InlineUsage: 0
     - m_Id: 37e529e86860a7741a1cf0fcf45e094b
       m_Name: Local.BuildPath
       m_InlineUsage: 0
@@ -111,6 +122,15 @@ MonoBehaviour:
       m_InlineUsage: 0
     - m_Id: 6ae011911ed4dff4eb609933b6caac2a
       m_Name: Local.LoadPath
+      m_InlineUsage: 0
+    - m_Id: 6baa3e245bf74ac47804229dfaac0279
+      m_Name: PrepaTecModpack_LoadPath
+      m_InlineUsage: 0
+    - m_Id: 7ffe83d9cfbf3b24a9bb07b2de9e8dc7
+      m_Name: PrepaTecPack_LoadPath
+      m_InlineUsage: 0
+    - m_Id: 8fe6bd5f7a053fa4d93e80c1cc7c44a5
+      m_Name: PrepaTecModpack_BuildPath
       m_InlineUsage: 0
     - m_Id: a2842c0f9ded8a54d9ba8ec693eb3bcc
       m_Name: Packed Assets_BuildPath
