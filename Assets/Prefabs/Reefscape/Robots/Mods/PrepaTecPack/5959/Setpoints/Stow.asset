@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a8a3e8844038204f84cd37db5c9770a, type: 3}
   m_Name: Stow
   m_EditorClassIdentifier: 
-  elevatorHeight: 0
+  elevatorHeight: 1.5
   algaeArmAngle: 25

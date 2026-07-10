@@ -25,6 +25,7 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
         [SerializeField] private TitaniumRamsSetpoint stow;
         [SerializeField] private TitaniumRamsSetpoint intake;        // coral intake pose
         [SerializeField] private TitaniumRamsSetpoint groundalgae;   // algae ground intake pose
+        [SerializeField] private TitaniumRamsSetpoint processor;    // processor pose
         [SerializeField] private TitaniumRamsSetpoint l1;
         [SerializeField] private TitaniumRamsSetpoint l2;
         [SerializeField] private TitaniumRamsSetpoint l3;
@@ -36,6 +37,14 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
         [Header("Game Piece States")]
         [SerializeField] private GamePieceState coralStowState;
         [SerializeField] private GamePieceState algaeStowState;
+    
+        [Header("Algae Stall Audio")]
+        [SerializeField] private AudioSource algaeStallSource;
+        [SerializeField] private AudioClip algaeStallAudio;
+        
+        [Header("Robot Audio")]
+        [SerializeField] private AudioSource rollerSource;
+        [SerializeField] private AudioClip intakeClip;
 
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
@@ -58,6 +67,14 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
 
             _coralController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Coral.ToString());
             _algaeController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Algae.ToString());
+
+            algaeStallSource.clip = algaeStallAudio;
+            algaeStallSource.loop = true;
+            algaeStallSource.Stop();
+            
+            rollerSource.clip = intakeClip;
+            rollerSource.loop = true;
+            rollerSource.Stop();
 
             // Setup controllers properly
             if (_coralController != null)
@@ -146,7 +163,7 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
                     break;
 
                 case ReefscapeSetpoints.Processor:
-                    SetSetpoint(stow);
+                    SetSetpoint(processor);
                     StopAllIntakes();
                     break;
 
@@ -157,6 +174,7 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
             }
 
             UpdateSetpoints();
+            UpdateAudio();
         }
 
         private void StopAllIntakes()
@@ -172,7 +190,7 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
         {
             if (_algaeController.HasPiece())
             {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 10, 1.5f));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 2, 3f));
             }
             else
             {
@@ -197,6 +215,43 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
             // FIX: actually use the setpoint angle instead of forcing 0
             if (algaeArm != null)
                 algaeArm.SetTargetAngle(_algaeTargetAngle).withAxis(JointAxis.X);
+        }
+        private void UpdateAudio()
+        {
+            if (BaseGameManager.Instance.RobotState == RobotState.Disabled)
+            {
+                if (rollerSource.isPlaying || algaeStallSource.isPlaying)
+                {
+                    rollerSource.Stop();
+                    algaeStallSource.Stop();
+                }
+
+                return;
+            }
+
+            if (((IntakeAction.IsPressed() && !_coralController.HasPiece() && !_coralController.HasPiece()) ||
+                 OuttakeAction.IsPressed()) &&
+                !rollerSource.isPlaying)
+            {
+                rollerSource.Play();
+            }
+            else if (!IntakeAction.IsPressed() && !OuttakeAction.IsPressed() && rollerSource.isPlaying)
+            {
+                rollerSource.Stop();
+            }
+            else if (IntakeAction.IsPressed() && (_coralController.HasPiece() || _algaeController.HasPiece()))
+            {
+                rollerSource.Stop();
+            }
+
+            if (_algaeController.HasPiece() && !algaeStallSource.isPlaying)
+            {
+                algaeStallSource.Play();
+            }
+            else if (!_algaeController.HasPiece() && algaeStallSource.isPlaying)
+            {
+                algaeStallSource.Stop();
+            }
         }
     }
 }
