@@ -14,12 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 7421
   teamName: Overture
-  robotPrefab: {fileID: 4108337974173178762, guid: 23d6ffb9927b7904ea49df0bfe293ecc,
-    type: 3}
+  robotPrefab: {fileID: 0}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
-  mainMenuPrefab: {fileID: 1988056642793775902, guid: bc46bdc5e3517e448bd0d792c409b41b,
-    type: 3}
+  mainMenuPrefab: {fileID: 0}
   hasAlternateRobot: 0
   alternateRobotPrefab: {fileID: 0}
   alternateMainMenuPrefab: {fileID: 0}
