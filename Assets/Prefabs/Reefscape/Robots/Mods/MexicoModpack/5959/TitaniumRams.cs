@@ -17,9 +17,11 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
         [Header("Components")]
         [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint algaeArm;
+        [SerializeField] private GenericJoint algaeDescorerArm;
 
         [Header("PID")]
         [SerializeField] private PidConstants algaeArmPid;
+        [SerializeField] private PidConstants algaeDescorerArmPid;
 
         [Header("Setpoints")]
         [SerializeField] private TitaniumRamsSetpoint stow;
@@ -29,6 +31,8 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
         [SerializeField] private TitaniumRamsSetpoint l1;
         [SerializeField] private TitaniumRamsSetpoint l2;
         [SerializeField] private TitaniumRamsSetpoint l3;
+        [SerializeField] private TitaniumRamsSetpoint descoreLowAlgae;
+        [SerializeField] private TitaniumRamsSetpoint descoreHighAlgae;
 
         [Header("Intakes")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -51,16 +55,18 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
 
         private float _elevatorTargetHeight;
         private float _algaeTargetAngle;
+        private float _algaeDescorerTargetAngle;
 
         protected override void Start()
         {
             base.Start();
 
             if (algaeArm != null) algaeArm.SetPid(algaeArmPid);
+            if (algaeDescorerArm != null) algaeDescorerArm.SetPid(algaeDescorerArmPid);
 
             _elevatorTargetHeight = 0f;
             _algaeTargetAngle = 0f;
-
+            _algaeDescorerTargetAngle = 0f;
             // Preload coral
             if (coralStowState != null)
                 RobotGamePieceController.SetPreload(coralStowState);
@@ -93,6 +99,7 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
         private void LateUpdate()
         {
             algaeArm.UpdatePid(algaeArmPid);
+            algaeDescorerArm.UpdatePid(algaeDescorerArmPid);
         }
 
         private void FixedUpdate()
@@ -167,6 +174,16 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
                     StopAllIntakes();
                     break;
 
+                case ReefscapeSetpoints.LowAlgae:
+                    SetSetpoint(descoreLowAlgae);
+                    StopAllIntakes();
+                    break;
+
+                case ReefscapeSetpoints.HighAlgae:
+                    SetSetpoint(descoreHighAlgae);
+                    StopAllIntakes();
+                    break;
+
                 case ReefscapeSetpoints.RobotSpecial:
                     SetState(ReefscapeSetpoints.Stow);
                     StopAllIntakes();
@@ -206,6 +223,7 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
             if (setpoint == null) return;
             _elevatorTargetHeight = setpoint.elevatorHeight;
             _algaeTargetAngle = setpoint.algaeArmAngle;
+            _algaeDescorerTargetAngle = setpoint.algaeDescorerArmAngle;
         }
 
         private void UpdateSetpoints()
@@ -215,6 +233,9 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
             // FIX: actually use the setpoint angle instead of forcing 0
             if (algaeArm != null)
                 algaeArm.SetTargetAngle(_algaeTargetAngle).withAxis(JointAxis.X);
+
+            if (algaeDescorerArm != null)
+                algaeDescorerArm.SetTargetAngle(_algaeDescorerTargetAngle).withAxis(JointAxis.X);
         }
         private void UpdateAudio()
         {
