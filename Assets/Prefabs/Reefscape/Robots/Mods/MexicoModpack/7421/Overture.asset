@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 7421
   teamName: Overture
-  robotPrefab: {fileID: 0}
+  robotPrefab: {fileID: 5625352596829322111, guid: b8e360dd2f4af104491c5dcd0f22e937,
+    type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
   mainMenuPrefab: {fileID: 0}
