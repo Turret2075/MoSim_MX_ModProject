@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a8a3e8844038204f84cd37db5c9770a, type: 3}
-  m_Name: Stow
+  m_Script: {fileID: 11500000, guid: b5e853e239f9c754b81221c366814a23, type: 3}
+  m_Name: L3 Place 1
   m_EditorClassIdentifier: 
-  elevatorHeight: 2
-  algaeArmAngle: 25
-  algaeDescorerArmAngle: 0
+  elevatorHeight: 20
+  armAngle: 80
+  endEffectorAngle: 0
+  climberAngle: 0
