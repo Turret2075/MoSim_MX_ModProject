@@ -136264,19 +136264,19 @@ MonoBehaviour:
   drivetrainParent: {fileID: 8680119579966731887}
   wheelDiameter: 4
   maxSpeed:
-    _obfuscationKey: 1988553011
-    _encryptedValue: 923461939
+    _obfuscationKey: 2053631629
+    _encryptedValue: 1006104205
   accelerationForce:
-    _obfuscationKey: 873344126
-    _encryptedValue: 1965960318
+    _obfuscationKey: 1019844956
+    _encryptedValue: 2112461148
   falloffPercent: 0.075
   falloffExponent: 10
-  steerMultiplier: 1
+  steerMultiplier: 1.5
   speedDebug: 0
   swerveAudioMixerGroup: {fileID: 4093094553572483033, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
     type: 2}
-  gearAudioResource: {fileID: 8300000, guid: affe685e481d252409ce6efa8d637caa, type: 3}
-  treadAudioResource: {fileID: 8300000, guid: a678915028b06f14a96455d7b29c3fab, type: 3}
+  gearAudioResource: {fileID: 0}
+  treadAudioResource: {fileID: 8300000, guid: 67a929a07ff0a164e85dbc9e58ec7671, type: 3}
   moveSpeedMultiplier: 0
   rotationSpeedMultiplier: 0
 --- !u!114 &8667772344345799315
@@ -136446,7 +136446,7 @@ MonoBehaviour:
   stageOverlap: 5
   carriageHeight: 8
   elevatorSound: {fileID: 7009394123312549813}
-  elevatorClip: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
+  elevatorClip: {fileID: 8300000, guid: de8a5a52ad0c83a47a04637bc20feb5f, type: 3}
   minSpeed: 1
   maxSpeed: 20
   soundPitchRange: {x: 0.8, y: 1.2}
@@ -136540,7 +136540,7 @@ MonoBehaviour:
   algaeStallSource: {fileID: 7674806816734535681}
   algaeStallAudio: {fileID: 8300000, guid: f34ac002dfb0a834a802271489ef029a, type: 3}
   rollerSource: {fileID: 8586043516971083231}
-  intakeClip: {fileID: 8300000, guid: 4eb18a7861cc9644fa42e1e3a54db8be, type: 3}
+  intakeClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4, type: 3}
 --- !u!114 &-2862273133057586026
 MonoBehaviour:
   m_ObjectHideFlags: 0
