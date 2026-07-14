@@ -54538,8 +54538,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.007365996, y: 0.00048277414, z: 0.0073659997}
-  m_Center: {x: -0.0000000017881393, y: -0.0001265122, z: -9.630542e-25}
+  m_Size: {x: 0.008739194, y: 0.00067409856, z: 0.008682106}
+  m_Center: {x: 0.000008577704, y: -0.000030849948, z: -0.00005807757}
 --- !u!1 &2415577845912309835
 GameObject:
   m_ObjectHideFlags: 0
@@ -84478,6 +84478,7 @@ GameObject:
   - component: {fileID: 5991173005160552071}
   - component: {fileID: 7898135092167020513}
   - component: {fileID: 6702146239404935713}
+  - component: {fileID: 2442449871109932616}
   m_Layer: 0
   m_Name: Zero Stage Top Horizontal Tube
   m_TagString: Untagged
@@ -84552,6 +84553,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &2442449871109932616
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3835609074833625536}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.000154229, y: 0.0047624987, z: 0.00018078809}
+  m_Center: {x: -0.000049885435, y: -0.0023812496, z: 0.00016360459}
 --- !u!1 &3839785254344059435
 GameObject:
   m_ObjectHideFlags: 0

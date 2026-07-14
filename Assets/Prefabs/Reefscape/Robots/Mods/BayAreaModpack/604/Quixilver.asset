@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aff2b59de2c4a0c96d6b848990b46af, type: 3}
+  m_Name: Quixilver
+  m_EditorClassIdentifier: 
+  teamNumber: 604
+  teamName: Quixilver
+  robotPrefab: {fileID: 2534371394911199621, guid: 1305fc97d7b6b402c93b87dee8993146,
+    type: 3}
+  robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
+    type: 3}
+  mainMenuPrefab: {fileID: 2534371394911199621, guid: 02157e77f3d6d46568ae6b96b61bf8e8,
+    type: 3}
+  hasAlternateRobot: 1
+  alternateRobotPrefab: {fileID: 2534371394911199621, guid: 86ad52386dfb14f1390831eee6d542ad,
+    type: 3}
+  alternateMainMenuPrefab: {fileID: 2534371394911199621, guid: 26e200ce7eef042be9e37b7032a5126c,
+    type: 3}
+  robotImage: {fileID: 21300000, guid: cc76449ce22394cec938fef41a989426, type: 3}
+  tutorialCards:
+  - {fileID: 6829736770845459078, guid: 421a52a7b9569468c925ecf1eef23073, type: 3}
+  - {fileID: 6829736770845459078, guid: aba3390211450424492d22ad49d181ae, type: 3}
+  - {fileID: 6829736770845459078, guid: 9d53b83caceb64bf8b09a14d7934522a, type: 3}
+  alternateTutorialCards:
+  - {fileID: 6829736770845459078, guid: 1b540bd74586f4a73b0ea73efa3239dd, type: 3}
+  - {fileID: 6829736770845459078, guid: 95687816496694cd2a1473e8a2e59fc5, type: 3}
+  - {fileID: 6829736770845459078, guid: f918d3a6fcd1841a7b01be159e7451dd, type: 3}
+  autoClimbs: 0
+  alternateAutoClimbs: 0
