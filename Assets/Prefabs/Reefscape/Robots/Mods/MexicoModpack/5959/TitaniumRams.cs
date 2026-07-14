@@ -10,7 +10,7 @@ using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
+namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
 {
     public class TitaniumRams : ReefscapeRobotBase
     {
@@ -68,8 +68,8 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
             _algaeTargetAngle = 0f;
             _algaeDescorerTargetAngle = 0f;
             // Preload coral
-            if (coralStowState != null)
-                RobotGamePieceController.SetPreload(coralStowState);
+            
+            RobotGamePieceController.SetPreload(coralStowState);
 
             _coralController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Coral.ToString());
             _algaeController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Algae.ToString());
@@ -112,31 +112,28 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
             // keep both pieces in their stow states
             if (algaeStowState != null) _algaeController.SetTargetState(algaeStowState);
             if (coralStowState != null) _coralController.SetTargetState(coralStowState);
-
             bool intakePressed = IntakeAction != null && IntakeAction.IsPressed();
+            
+
 
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
                     SetSetpoint(stow);
-                    StopAllIntakes();
                     break;
 
                 case ReefscapeSetpoints.Intake:
-                    // Choose which intake pose to use based on robot mode
-                    if (CurrentRobotMode == ReefscapeRobotMode.Algae)
-                    {
-                        SetSetpoint(groundalgae);
-                        _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae && !hasCoral);
-                        _coralController.RequestIntake(coralIntake, false);
-                    }
-                    else
-                    {
-                        SetSetpoint(intake);
-                        _coralController.RequestIntake(coralIntake, intakePressed && !hasCoral && !hasAlgae);
-                        _algaeController.RequestIntake(algaeIntake, false);
-                    }
-                    break;
+                if (CurrentRobotMode == ReefscapeRobotMode.Coral || hasAlgae)
+                {
+                    SetSetpoint(intake);
+                }
+                else
+                {
+                    SetSetpoint(groundalgae);
+                }
+                _coralController.RequestIntake(coralIntake, CurrentRobotMode == ReefscapeRobotMode.Coral && IntakeAction.IsPressed() && !hasAlgae);
+                _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && IntakeAction.IsPressed());
+                break;
                 
                 case ReefscapeSetpoints.Place:
                     if (OuttakeAction != null && OuttakeAction.triggered)
@@ -165,8 +162,6 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
                 case ReefscapeSetpoints.Stack:
                     // algae-only intake setpoint
                     SetSetpoint(groundalgae);
-                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae && !hasCoral);
-                    _coralController.RequestIntake(coralIntake, false);
                     break;
 
                 case ReefscapeSetpoints.Processor:
@@ -205,13 +200,13 @@ namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._5959
 
         private void PlacePiece()
         {
-            if (_algaeController.HasPiece())
+            if (_algaeController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Algae)
             {
                 _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 2, 3f));
             }
             else
             {
-                if (_coralController.HasPiece())
+                if (_coralController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Coral)
                 {
                     _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 6));
                 }

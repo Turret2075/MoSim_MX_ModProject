@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aff2b59de2c4a0c96d6b848990b46af, type: 3}
+  m_Name: Blazing Bulldogs
+  m_EditorClassIdentifier: 
+  teamNumber: 581
+  teamName: Blazing Bullsogs
+  robotPrefab: {fileID: 2534371394911199621, guid: 03b02e34292d34556b5cee286c5de38f,
+    type: 3}
+  robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
+    type: 3}
+  mainMenuPrefab: {fileID: 2534371394911199621, guid: c4dfef61ae4af4c13a933d9fca41670d,
+    type: 3}
+  hasAlternateRobot: 1
+  alternateRobotPrefab: {fileID: 2534371394911199621, guid: 8f2b37ba9c3b8471aa670bc3fd85c4e3,
+    type: 3}
+  alternateMainMenuPrefab: {fileID: 2534371394911199621, guid: f5730e7b85415429ba9a75c1ab9849a2,
+    type: 3}
+  robotImage: {fileID: 21300000, guid: 6885b75c7f3ba4c9caabb446fb0bb86a, type: 3}
+  tutorialCards:
+  - {fileID: 6829736770845459078, guid: b06a91341020d4a659408d4d2e035d97, type: 3}
+  - {fileID: 6829736770845459078, guid: 143fe9c8e2b304acfaee3de9f18280bc, type: 3}
+  - {fileID: 6829736770845459078, guid: 78143953df50242cebf48121c2c1b009, type: 3}
+  alternateTutorialCards:
+  - {fileID: 6829736770845459078, guid: b11a3e1fdd70848cbbccd3dc697b44d6, type: 3}
+  - {fileID: 6829736770845459078, guid: 5615b378c1f744ae9b03aa854cc2682d, type: 3}
+  - {fileID: 6829736770845459078, guid: 21fb7692942614d85a750bd5dca307d5, type: 3}
+  autoClimbs: 1
+  alternateAutoClimbs: 1

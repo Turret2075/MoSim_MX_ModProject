@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.Mods.PrepaTecPack._7421
+namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
 {
    [CreateAssetMenu(fileName = "Setpoint", menuName = "Robot/Overture Setpoint", order = 0)]
    public class OvertureSetpoint : ScriptableObject
