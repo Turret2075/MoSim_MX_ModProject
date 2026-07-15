@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: MexicoModpack
   m_EditorClassIdentifier: 
   modpackName: Mexico Modpack
-  modpackVersion: 1.0.0
-  authorName: Turret2075,Eback9005
+  modpackVersion: 2.0.0
+  authorName: Beemi,Turret2075,Eback9005
   description: ModPack of Mexican FRC teams, mainly from PrepaTec
   robots:
   - {fileID: 11400000, guid: 0693446717efb5d40950b61efc7d2bde, type: 2}
+  - {fileID: 11400000, guid: ecac719e76c45e24c900470646386c37, type: 2}

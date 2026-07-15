@@ -17,56 +17,57 @@ using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
 {
-    public class Overture : ReefscapeRobotBase
+    public class OvertureMonterrey : ReefscapeRobotBase
     {
         [Header("Components")]
         [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint arm;
         [SerializeField] private GenericJoint wrist;
         [SerializeField] private GenericJoint climber;
+        [SerializeField] private GenericJoint claw;
         [SerializeField] private Transform coralSlider;
         [SerializeField] private Transform algaeSlider;
         [Header("PIDS")]
-        [SerializeField] private PidConstants algaeArmPid;
         [SerializeField] private PidConstants armPid;
         [SerializeField] private PidConstants wristPid;
+        [SerializeField] private PidConstants clawPid;
         [SerializeField] private PidConstants climberPid;
 
         [Header("Setpoints")]
-        [SerializeField] private OvertureSetpoint stow;
-        [SerializeField] private OvertureSetpoint Algaestow;
-        [SerializeField] private OvertureSetpoint intake;
-        [SerializeField] private OvertureSetpoint intakeback;
-        [SerializeField] private OvertureSetpoint stack;
-        [SerializeField] private OvertureSetpoint l1;
-        [SerializeField] private OvertureSetpoint l1back;
-        [SerializeField] private OvertureSetpoint l2;
-        [SerializeField] private OvertureSetpoint l2Place;
-        [SerializeField] private OvertureSetpoint l2back;
-        [SerializeField] private OvertureSetpoint l2backPlace;
-        [SerializeField] private OvertureSetpoint l3;
-        [SerializeField] private OvertureSetpoint l3Place;
-        [SerializeField] private OvertureSetpoint l3Place2;
-        [SerializeField] private OvertureSetpoint l3back;
-        [SerializeField] private OvertureSetpoint l3backPlace;
-        [SerializeField] private OvertureSetpoint l3backPlace2;
-        [SerializeField] private OvertureSetpoint l4;
-        [SerializeField] private OvertureSetpoint l4Place;
-        [SerializeField] private OvertureSetpoint l4back;
-        [SerializeField] private OvertureSetpoint l4backPlace;
-        [SerializeField] private OvertureSetpoint l4ready;
-        [SerializeField] private OvertureSetpoint l4readyback;
-        [SerializeField] private OvertureSetpoint barge;
-        [SerializeField] private OvertureSetpoint groundAlgae;
-        [SerializeField] private OvertureSetpoint lowAlgae;
-        [SerializeField] private OvertureSetpoint highAlgae;
-        [SerializeField] private OvertureSetpoint lowbackAlgae;
-        [SerializeField] private OvertureSetpoint highbackAlgae;
-        [SerializeField] private OvertureSetpoint climb;
-        [SerializeField] private OvertureSetpoint climbed;
-        [SerializeField] private OvertureSetpoint processor;
-        [SerializeField] private OvertureSetpoint special;
-        [SerializeField] private OvertureSetpoint lollipop;
+        [SerializeField] private OvertureMonterreySetpoint stow;
+        [SerializeField] private OvertureMonterreySetpoint Algaestow;
+        [SerializeField] private OvertureMonterreySetpoint intake;
+        [SerializeField] private OvertureMonterreySetpoint intakeback;
+        [SerializeField] private OvertureMonterreySetpoint stack;
+        [SerializeField] private OvertureMonterreySetpoint l1;
+        [SerializeField] private OvertureMonterreySetpoint l1back;
+        [SerializeField] private OvertureMonterreySetpoint l2;
+        [SerializeField] private OvertureMonterreySetpoint l2Place;
+        [SerializeField] private OvertureMonterreySetpoint l2back;
+        [SerializeField] private OvertureMonterreySetpoint l2backPlace;
+        [SerializeField] private OvertureMonterreySetpoint l3;
+        [SerializeField] private OvertureMonterreySetpoint l3Place;
+        [SerializeField] private OvertureMonterreySetpoint l3Place2;
+        [SerializeField] private OvertureMonterreySetpoint l3back;
+        [SerializeField] private OvertureMonterreySetpoint l3backPlace;
+        [SerializeField] private OvertureMonterreySetpoint l3backPlace2;
+        [SerializeField] private OvertureMonterreySetpoint l4;
+        [SerializeField] private OvertureMonterreySetpoint l4Place;
+        [SerializeField] private OvertureMonterreySetpoint l4back;
+        [SerializeField] private OvertureMonterreySetpoint l4backPlace;
+        [SerializeField] private OvertureMonterreySetpoint l4ready;
+        [SerializeField] private OvertureMonterreySetpoint l4readyback;
+        [SerializeField] private OvertureMonterreySetpoint barge;
+        [SerializeField] private OvertureMonterreySetpoint groundAlgae;
+        [SerializeField] private OvertureMonterreySetpoint lowAlgae;
+        [SerializeField] private OvertureMonterreySetpoint highAlgae;
+        [SerializeField] private OvertureMonterreySetpoint lowbackAlgae;
+        [SerializeField] private OvertureMonterreySetpoint highbackAlgae;
+        [SerializeField] private OvertureMonterreySetpoint climb;
+        [SerializeField] private OvertureMonterreySetpoint climbed;
+        [SerializeField] private OvertureMonterreySetpoint processor;
+        [SerializeField] private OvertureMonterreySetpoint special;
+        [SerializeField] private OvertureMonterreySetpoint lollipop;
 
         [Header("Intake Componenets")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -104,6 +105,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
         private float _elevatorTargetHeight;
         private float _armTargetAngle;
         private float _wristTargetAngle;
+        private float _clawTargetAngle;
         private float _climbTargetAngle;
         private bool _isScoring;
         private bool _alreadyPlaced;
@@ -121,11 +123,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
             _climbScorer = gameObject.GetComponent<ClimbScorer>();
             climber.SetPid(climberPid);
             arm.SetPid(armPid);
+            claw.SetPid(clawPid);
             wrist.SetPid(wristPid);
 
             _elevatorTargetHeight = 0;
             _climbTargetAngle = 0;
             _armTargetAngle = 0;
+            _clawTargetAngle = 0;
             _wristTargetAngle = 0;
             RobotGamePieceController.SetPreload(coralStowState);
             _coralController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Coral.ToString());
@@ -165,10 +169,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
         {
             climber.UpdatePid(climberPid);
             arm.UpdatePid(armPid);
+            claw.UpdatePid(clawPid);
             wrist.UpdatePid(wristPid);
         }
 
-        private IEnumerator DelayedSetpoint(OvertureSetpoint firstSetpoint, OvertureSetpoint secondSetpoint, float delay = 2f)
+        private IEnumerator DelayedSetpoint(OvertureMonterreySetpoint firstSetpoint, OvertureMonterreySetpoint secondSetpoint, float delay = 2f)
         {
             isDelayedTransition = true;
 
@@ -484,12 +489,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
 
 
 
-        private void SetSetpoint(OvertureSetpoint setpoint)
+        private void SetSetpoint(OvertureMonterreySetpoint setpoint)
         {
             _elevatorTargetHeight = setpoint.elevatorHeight;
             _climbTargetAngle = setpoint.climberAngle;
             _armTargetAngle = setpoint.armAngle;
             _wristTargetAngle = setpoint.endEffectorAngle;
+            _clawTargetAngle = setpoint.clawAngle;
         }
 
         private void UpdateSetpoints()
@@ -498,6 +504,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
             climber.SetTargetAngle(_climbTargetAngle).withAxis(JointAxis.X);
             arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.Z).noWrap(180f);
             wrist.SetTargetAngle(_wristTargetAngle).withAxis(JointAxis.Y).noWrap(180f);
+            claw.SetTargetAngle(_clawTargetAngle).withAxis(JointAxis.X).noWrap(180f);
         }
 
         private void AutoAlignOffsets()
