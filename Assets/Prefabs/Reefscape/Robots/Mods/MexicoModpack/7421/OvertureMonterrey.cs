@@ -15,7 +15,7 @@ using Robots.Climbing;
 using DriveController = RobotFramework.Controllers.Drivetrain.DriveController;
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
+namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
 {
     public class OvertureMonterrey : ReefscapeRobotBase
     {
