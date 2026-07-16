@@ -16,4 +16,4 @@ MonoBehaviour:
   armAngle: 0
   endEffectorAngle: 0
   climberAngle: 0
-  clawAngle: 0
+  clawAngle: -165

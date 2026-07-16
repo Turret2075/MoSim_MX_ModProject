@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5e853e239f9c754b81221c366814a23, type: 3}
   m_Name: Intakeback
   m_EditorClassIdentifier: 
-  elevatorHeight: 0
+  elevatorHeight: 2
   armAngle: 98
   endEffectorAngle: -95
   climberAngle: 0
