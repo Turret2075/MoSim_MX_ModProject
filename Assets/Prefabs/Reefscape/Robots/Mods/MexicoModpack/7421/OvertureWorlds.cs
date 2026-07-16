@@ -15,7 +15,7 @@ using Robots.Climbing;
 using DriveController = RobotFramework.Controllers.Drivetrain.DriveController;
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
+namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
 {
     public class OvertureWorlds : ReefscapeRobotBase
     {
@@ -86,8 +86,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
 
         [Header("Animation Joints (Wheels)")]
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
+        [SerializeField] private GenericAnimationJoint[] intakeWheelsReverse;
         [SerializeField] private GenericAnimationJoint[] algaeintakeWheels;
+        [SerializeField] private GenericAnimationJoint[] algaeintakeWheelsReverse;
         [SerializeField] private float wheelIntakeSpeed = 1000f;
+        [SerializeField] private float wheelIntakeSpeedReverse = -1000f;
 
         [Header("Drivetrain")]
         [SerializeField] private DriveController driveController;
@@ -205,17 +208,25 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
                 {
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(wheelIntakeSpeed).useAxis(JointAxis.X);
+                    foreach (var wheel in intakeWheelsReverse)
+                        wheel.VelocityRoller(wheelIntakeSpeedReverse).useAxis(JointAxis.X);
                 }
                 else if (isIntaking && CurrentRobotMode == ReefscapeRobotMode.Algae)
                 {
                     foreach (var wheel in algaeintakeWheels)
                         wheel.VelocityRoller(wheelIntakeSpeed).useAxis(JointAxis.X);
+                    foreach (var wheel in algaeintakeWheelsReverse)
+                        wheel.VelocityRoller(wheelIntakeSpeedReverse).useAxis(JointAxis.X);
                 }
                 else
                 {
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(0).useAxis(JointAxis.X);
+                    foreach (var wheel in intakeWheelsReverse)
+                        wheel.VelocityRoller(0).useAxis(JointAxis.X);
                     foreach (var wheel in algaeintakeWheels)
+                        wheel.VelocityRoller(0).useAxis(JointAxis.X);
+                    foreach (var wheel in algaeintakeWheelsReverse)
                         wheel.VelocityRoller(0).useAxis(JointAxis.X);
                 }
             }
@@ -402,16 +413,19 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
             // Reversed logic: Scored speed is the opposite of whatever the current mode's intake direction is
             float currentIntakeDirection = (CurrentRobotMode == ReefscapeRobotMode.Algae) ? 1f : -1f;
             float scoreSpeed = -wheelIntakeSpeed * currentIntakeDirection;
+            float scoreSpeedReverse = -wheelIntakeSpeedReverse * currentIntakeDirection;
 
             float timer = 0;
             while (timer < 0.5f)
             {
                 foreach (var wheel in intakeWheels) wheel.VelocityRoller(scoreSpeed);
+                foreach (var wheel in intakeWheelsReverse) wheel.VelocityRoller(scoreSpeedReverse);
                 timer += Time.deltaTime;
-                yield return null;
+                yield return null;  
             }
 
             foreach (var wheel in intakeWheels) wheel.VelocityRoller(0);
+            foreach (var wheel in intakeWheelsReverse) wheel.VelocityRoller(0);
             _isScoring = false;
         }
 
@@ -508,14 +522,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421
             }
             float xOffset1 = 12f;
             float xOffset2 = -12f;
-            float zOffset1 = 4f;
-            float zOffset2 = 4f;
+            float zOffset1 = 5f;
+            float zOffset2 = 5f;
             if (!preAligned && (AutoAlignLeftAction.IsPressed() || AutoAlignRightAction.IsPressed()))
             {
                 xOffset1 = 12f;
                 xOffset2 = -12f;
-                zOffset1 = 4f;
-                zOffset2 = 4f;
+                zOffset1 = 5f;
+                zOffset2 = 5f;
                 if (align.getDistance() < 0.0254f * 6f && !AutoAlignLeftAction.triggered && !AutoAlignRightAction.triggered)
                 {
                     preAligned = true;

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 119c456f67f1d9942b9178f2628ef564, type: 3}
-  m_Name: L4 Back Place
+  m_Name: L4 Back place
   m_EditorClassIdentifier: 
   elevatorHeight: 48
-  armAngle: 80
+  armAngle: -80
   endEffectorAngle: 0
   climberAngle: 0
-  ClawAngle: 0
+  clawAngle: -140

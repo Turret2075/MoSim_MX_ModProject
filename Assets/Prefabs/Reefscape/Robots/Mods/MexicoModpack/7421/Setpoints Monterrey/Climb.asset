@@ -15,5 +15,5 @@ MonoBehaviour:
   elevatorHeight: 0
   armAngle: 0
   endEffectorAngle: 0
-  climberAngle: -122
-  ClawAngle: 0
+  climberAngle: -100
+  clawAngle: -180

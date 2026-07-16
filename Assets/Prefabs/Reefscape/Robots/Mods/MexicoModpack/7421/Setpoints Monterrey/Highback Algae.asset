@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 119c456f67f1d9942b9178f2628ef564, type: 3}
   m_Name: Highback Algae
   m_EditorClassIdentifier: 
-  elevatorHeight: 28
+  elevatorHeight: 30
   armAngle: -80
   endEffectorAngle: -90
   climberAngle: 0
-  ClawAngle: 0
+  clawAngle: -120

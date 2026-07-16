@@ -58,7 +58,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         [SerializeField] private OvertureMonterreySetpoint l4ready;
         [SerializeField] private OvertureMonterreySetpoint l4readyback;
         [SerializeField] private OvertureMonterreySetpoint barge;
-        [SerializeField] private OvertureMonterreySetpoint groundAlgae;
+
         [SerializeField] private OvertureMonterreySetpoint lowAlgae;
         [SerializeField] private OvertureMonterreySetpoint highAlgae;
         [SerializeField] private OvertureMonterreySetpoint lowbackAlgae;
@@ -66,8 +66,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         [SerializeField] private OvertureMonterreySetpoint climb;
         [SerializeField] private OvertureMonterreySetpoint climbed;
         [SerializeField] private OvertureMonterreySetpoint processor;
-        [SerializeField] private OvertureMonterreySetpoint special;
-        [SerializeField] private OvertureMonterreySetpoint lollipop;
 
         [Header("Intake Componenets")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -87,8 +85,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
 
         [Header("Animation Joints (Wheels)")]
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
+        [SerializeField] private GenericAnimationJoint[] intakeWheelsReverse;
         [SerializeField] private GenericAnimationJoint[] algaeintakeWheels;
+        [SerializeField] private GenericAnimationJoint[] algaeintakeWheelsReverse;
         [SerializeField] private float wheelIntakeSpeed = 1000f;
+        [SerializeField] private float wheelIntakeSpeedReverse = -1000f;
 
         [Header("Drivetrain")]
         [SerializeField] private DriveController driveController;
@@ -110,10 +111,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         private bool _isScoring;
         private bool _alreadyPlaced;
         private bool preAligned = false;
-        private bool _robotSpecialPressed;
         private bool _stationMode;
-        private bool lollipopmode;
-        private bool lollipoppressed;
+
         private bool isDelayedTransition = false;
 
         protected override void Start()
@@ -156,11 +155,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             preAligned = false;
 
             _alreadyPlaced = false;
-            _robotSpecialPressed = false;
             _stationMode = false;
 
-            lollipopmode = false;
-            lollipoppressed = false;
             
 
         }
@@ -204,23 +200,31 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
 
             if (!_isScoring)
             {
-                bool isIntaking = (CurrentSetpoint == ReefscapeSetpoints.Intake || CurrentSetpoint == ReefscapeSetpoints.RobotSpecial || CurrentSetpoint == ReefscapeSetpoints.Stack) && IntakeAction.IsPressed();
+                bool isIntaking = (CurrentSetpoint == ReefscapeSetpoints.Intake || CurrentSetpoint == ReefscapeSetpoints.Stack) && IntakeAction.IsPressed();
 
                 if (isIntaking && CurrentRobotMode == ReefscapeRobotMode.Coral || CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae)
                 {
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(wheelIntakeSpeed).useAxis(JointAxis.X);
+                    foreach (var wheel in intakeWheelsReverse)
+                        wheel.VelocityRoller(wheelIntakeSpeedReverse).useAxis(JointAxis.X);
                 }
                 else if (isIntaking && CurrentRobotMode == ReefscapeRobotMode.Algae)
                 {
                     foreach (var wheel in algaeintakeWheels)
                         wheel.VelocityRoller(wheelIntakeSpeed).useAxis(JointAxis.X);
+                    foreach (var wheel in algaeintakeWheelsReverse)
+                        wheel.VelocityRoller(wheelIntakeSpeedReverse).useAxis(JointAxis.X);
                 }
                 else
                 {
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(0).useAxis(JointAxis.X);
+                    foreach (var wheel in intakeWheelsReverse)
+                        wheel.VelocityRoller(0).useAxis(JointAxis.X);
                     foreach (var wheel in algaeintakeWheels)
+                        wheel.VelocityRoller(0).useAxis(JointAxis.X);
+                    foreach (var wheel in algaeintakeWheelsReverse)
                         wheel.VelocityRoller(0).useAxis(JointAxis.X);
                 }
             }
@@ -229,18 +233,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                 SetState(ReefscapeSetpoints.Climbed);
 
             AutoAlignOffsets();
-            CheckStationMode();
-            CheckLollipopMode();
+
 
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
                     isDelayedTransition = false;
-                    if (lollipopmode)
-                    {
-                        SetSetpoint(lollipop);
-                    }
-                    else if (hasAlgae)
+                    
+                    if (hasAlgae)
                     {
                         SetSetpoint(Algaestow);
                     }
@@ -251,22 +251,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                 case ReefscapeSetpoints.Intake:
                     _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
                     _coralController.RequestIntake(coralIntake, !hasCoral && !hasAlgae);
-                    if (CurrentRobotMode == ReefscapeRobotMode.Algae)
-                    {
-                        SetSetpoint(groundAlgae);
-                        _algaeController.RequestIntake(algaeIntake, true);
-                    }
-                    else if (lollipopmode)
-                    {
-                        _coralController.RequestIntake(coralIntake, true);
-                        SetSetpoint(lollipop);
-                    }
-                    else if (_stationMode)
-                    {
-                        _coralController.RequestIntake(coralIntake, true);
-                        SetSetpoint(special);
-                    }
-                    else if (LastSetpoint == ReefscapeSetpoints.L2 || LastSetpoint == ReefscapeSetpoints.L3 || LastSetpoint == ReefscapeSetpoints.L4 && !isDelayedTransition)
+                    
+                    if (LastSetpoint == ReefscapeSetpoints.L2 || LastSetpoint == ReefscapeSetpoints.L3 || LastSetpoint == ReefscapeSetpoints.L4 && !isDelayedTransition)
                     {
                         _coralController.RequestIntake(coralIntake, true);
                         StartCoroutine(DelayedSetpoint(stow, intake, 2f));
@@ -389,10 +375,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                 armPid.Max = 4f;
             }
 
-            if (!hasCoral && L1Action.triggered)
-            {
-                SetSetpoint(lollipop);
-            }
 
             UpdateSetpoints();
             UpdateAudio();
@@ -407,44 +389,22 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             // Reversed logic: Scored speed is the opposite of whatever the current mode's intake direction is
             float currentIntakeDirection = (CurrentRobotMode == ReefscapeRobotMode.Algae) ? 1f : -1f;
             float scoreSpeed = -wheelIntakeSpeed * currentIntakeDirection;
+            float scoreSpeedReverse = -wheelIntakeSpeedReverse * currentIntakeDirection;
 
             float timer = 0;
             while (timer < 0.5f)
             {
                 foreach (var wheel in intakeWheels) wheel.VelocityRoller(scoreSpeed);
+                foreach (var wheel in intakeWheelsReverse) wheel.VelocityRoller(scoreSpeedReverse);
                 timer += Time.deltaTime;
-                yield return null;
+                yield return null;  
             }
 
             foreach (var wheel in intakeWheels) wheel.VelocityRoller(0);
+            foreach (var wheel in intakeWheelsReverse) wheel.VelocityRoller(0);
             _isScoring = false;
         }
 
-        private void CheckStationMode()
-        {
-            if (RobotSpecialAction.IsPressed() && !_robotSpecialPressed && BaseGameManager.Instance.RobotState == RobotState.Enabled)
-                _stationMode = !_stationMode;
-
-            CurrentCoralStationMode.DropType = _stationMode ? DropType.Station : DropType.Ground;
-            CurrentCoralStationMode.RotationVariance = _stationMode ? 0f : 0f;
-            CurrentCoralStationMode.DropStrength = _stationMode ? 5f : 1.5f;
-            CurrentCoralStationMode.DropDistance = _stationMode ? 1.5f : 5f;
-            _robotSpecialPressed = RobotSpecialAction.IsPressed();
-        }
-
-        private void CheckLollipopMode()
-        {
-            if (L1Action.triggered && !lollipoppressed && BaseGameManager.Instance.RobotState == RobotState.Enabled && !_coralController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Coral && !_algaeController.HasPiece())
-            {
-                lollipopmode = !lollipopmode;
-            }
-            lollipoppressed = L1Action.triggered;
-
-            if (_coralController.HasPiece())
-            {
-                lollipopmode = false;
-            }
-        }
 
         private IEnumerator PlacePiece()
         {
@@ -482,7 +442,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             }
             else if (_algaeController.HasPiece())
             {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(3f, 3f, 0));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(7.5f, 7.5f, 0));
             }
         }
 
@@ -504,7 +464,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             climber.SetTargetAngle(_climbTargetAngle).withAxis(JointAxis.X);
             arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.Z).noWrap(180f);
             wrist.SetTargetAngle(_wristTargetAngle).withAxis(JointAxis.Y).noWrap(180f);
-            claw.SetTargetAngle(_clawTargetAngle).withAxis(JointAxis.X).noWrap(180f);
+            claw.SetTargetAngle(_clawTargetAngle).withAxis(JointAxis.X);
         }
 
         private void AutoAlignOffsets()
