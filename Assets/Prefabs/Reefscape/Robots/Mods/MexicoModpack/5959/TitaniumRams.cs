@@ -49,6 +49,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
         [Header("Robot Audio")]
         [SerializeField] private AudioSource rollerSource;
         [SerializeField] private AudioClip intakeClip;
+        
+        [Header("Animation Joints (Wheels)")]
+        [SerializeField] private GenericAnimationJoint[] intakeWheels;
+        [SerializeField] private GenericAnimationJoint[] intakeWheelsReverse;
+        [SerializeField] private GenericAnimationJoint[] algaeintakeWheels;
+        [SerializeField] private GenericAnimationJoint[] algaeintakeWheelsReverse;
+        [SerializeField] private float wheelIntakeSpeed = 1000f;
+        [SerializeField] private float wheelIntakeSpeedReverse = -1000f;
 
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;

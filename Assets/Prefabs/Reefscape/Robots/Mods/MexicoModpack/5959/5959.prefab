@@ -137873,8 +137873,8 @@ MonoBehaviour:
   drivetrainParent: {fileID: 8680119579966731887}
   wheelDiameter: 4
   maxSpeed:
-    _obfuscationKey: 2053631629
-    _encryptedValue: 1006104205
+    _obfuscationKey: 948766836
+    _encryptedValue: 2030897268
   accelerationForce:
     _obfuscationKey: 1019844956
     _encryptedValue: 2112461148
@@ -138150,6 +138150,12 @@ MonoBehaviour:
   algaeStallAudio: {fileID: 8300000, guid: f34ac002dfb0a834a802271489ef029a, type: 3}
   rollerSource: {fileID: 8586043516971083231}
   intakeClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4, type: 3}
+  intakeWheels: []
+  intakeWheelsReverse: []
+  algaeintakeWheels: []
+  algaeintakeWheelsReverse: []
+  wheelIntakeSpeed: 1000
+  wheelIntakeSpeedReverse: -1000
 --- !u!114 &-2862273133057586026
 MonoBehaviour:
   m_ObjectHideFlags: 0
