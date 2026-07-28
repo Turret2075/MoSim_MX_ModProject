@@ -5398,6 +5398,7 @@ GameObject:
   - component: {fileID: 6818203585664733527}
   - component: {fileID: 2981958779646302230}
   - component: {fileID: 2599754574690164542}
+  - component: {fileID: 9197110102668992830}
   m_Layer: 6
   m_Name: Algae Arm
   m_TagString: Untagged
@@ -5594,6 +5595,104 @@ MonoBehaviour:
   velocityAxis: 0
   noWrap: 0
   noWrapAngle: 0
+--- !u!82 &9197110102668992830
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217590729101906471}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 0.75
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &218268329578372031
 GameObject:
   m_ObjectHideFlags: 0
@@ -13133,6 +13232,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8515496395966900453}
+  - component: {fileID: 3746685804229253481}
   m_Layer: 0
   m_Name: Rollers RF
   m_TagString: Untagged
@@ -13158,6 +13258,28 @@ Transform:
   - {fileID: 5237914231082248345}
   m_Father: {fileID: 8403186143173294295}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3746685804229253481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 571571694515225167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &572794913489123901
 GameObject:
   m_ObjectHideFlags: 0
@@ -21780,8 +21902,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.13151668, y: 0.10512293, z: 0.75406396}
-  m_Center: {x: -0.00355196, y: 0.051307622, z: 0.19411305}
+  m_Size: {x: 0.13151668, y: 0.10512294, z: 0.74099076}
+  m_Center: {x: -0.00355196, y: 0.051307265, z: 0.20064938}
 --- !u!1 &935932497937131044
 GameObject:
   m_ObjectHideFlags: 0
@@ -22910,6 +23032,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7041960173057681247}
+  - component: {fileID: 342230690421701405}
   m_Layer: 6
   m_Name: HighRollers Algae
   m_TagString: Untagged
@@ -22943,6 +23066,28 @@ Transform:
   - {fileID: 3120304696100963972}
   m_Father: {fileID: 8995549602976135927}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -180}
+--- !u!114 &342230690421701405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993464865128230041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &994020943571258266
 GameObject:
   m_ObjectHideFlags: 0
@@ -25792,6 +25937,7 @@ GameObject:
   - component: {fileID: 5453849323567074468}
   - component: {fileID: 3348506842493153911}
   - component: {fileID: 6802580895784842572}
+  - component: {fileID: 8530998179258838492}
   m_Layer: 6
   m_Name: AlgaeDescorer
   m_TagString: Untagged
@@ -25981,6 +26127,104 @@ MonoBehaviour:
   velocityAxis: 0
   noWrap: 0
   noWrapAngle: 0
+--- !u!82 &8530998179258838492
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1102944743595690970}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 0.75
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1104455923919410577
 GameObject:
   m_ObjectHideFlags: 0
@@ -35960,6 +36204,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8123672933092242767}
+  - component: {fileID: 6583251136797711054}
   m_Layer: 0
   m_Name: Rollers LB
   m_TagString: Untagged
@@ -35986,6 +36231,28 @@ Transform:
   - {fileID: 8299004215173966868}
   m_Father: {fileID: 8403186143173294295}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6583251136797711054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562424398801538486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &1567422844862371136
 GameObject:
   m_ObjectHideFlags: 0
@@ -44664,7 +44931,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.1
+  m_Volume: 0.7
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -86524,7 +86791,7 @@ Transform:
   m_GameObject: {fileID: 3858767415541899749}
   serializedVersion: 2
   m_LocalRotation: {x: 0.08715578, y: 0, z: 0, w: 0.9961947}
-  m_LocalPosition: {x: 0, y: -0.002, z: 0.008}
+  m_LocalPosition: {x: 0, y: -0.004, z: 0.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -95554,6 +95821,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 961232443612231288}
+  - component: {fileID: 4651863630183426618}
   m_Layer: 0
   m_Name: Rolers RB
   m_TagString: Untagged
@@ -95580,6 +95848,28 @@ Transform:
   - {fileID: 3665917421663254292}
   m_Father: {fileID: 8403186143173294295}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4651863630183426618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4279314219328344827}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &4280565659625179095
 GameObject:
   m_ObjectHideFlags: 0
@@ -98875,6 +99165,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 675266841616700823}
+  - component: {fileID: 8430217720649920843}
   m_Layer: 0
   m_Name: Rollers LF
   m_TagString: Untagged
@@ -98900,6 +99191,28 @@ Transform:
   - {fileID: 4505996391483998696}
   m_Father: {fileID: 8403186143173294295}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8430217720649920843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4385547808388680253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &4385654039085079479
 GameObject:
   m_ObjectHideFlags: 0
@@ -138122,6 +138435,7 @@ MonoBehaviour:
     Max: 3
     Isaturation: 0
   stow: {fileID: 11400000, guid: 4eeadec93a94d5441831145c9d1c31e4, type: 2}
+  AlgaeStow: {fileID: 11400000, guid: 6b53f342a82cfbe47ba9f6d824b1fe1d, type: 2}
   intake: {fileID: 11400000, guid: 0dc9a8eb14994f84ca641327a2efb517, type: 2}
   groundalgae: {fileID: 11400000, guid: 4a64c64578ae8204092bec370ee47176, type: 2}
   processor: {fileID: 11400000, guid: 7773ce187858e2245b11a7e05264db62, type: 2}
@@ -138149,11 +138463,24 @@ MonoBehaviour:
   algaeStallSource: {fileID: 7674806816734535681}
   algaeStallAudio: {fileID: 8300000, guid: f34ac002dfb0a834a802271489ef029a, type: 3}
   rollerSource: {fileID: 8586043516971083231}
-  intakeClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4, type: 3}
-  intakeWheels: []
-  intakeWheelsReverse: []
-  algaeintakeWheels: []
-  algaeintakeWheelsReverse: []
+  intakeClip: {fileID: 8300000, guid: 4eb18a7861cc9644fa42e1e3a54db8be, type: 3}
+  algaeArmAudioSource: {fileID: 9197110102668992830}
+  algaeArmMoveClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4, type: 3}
+  algaeDescorerAudioSource: {fileID: 8530998179258838492}
+  algaeDescorerMoveClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4,
+    type: 3}
+  armAngleTolerance: 8
+  intakeWheels:
+  - {fileID: 3746685804229253481}
+  - {fileID: 4651863630183426618}
+  intakeWheelsReverse:
+  - {fileID: 8430217720649920843}
+  - {fileID: 6583251136797711054}
+  algaeintakeWheels:
+  - {fileID: 2443248480362769430}
+  algaeintakeWheelsReverse:
+  - {fileID: 979123222274146138}
+  - {fileID: 342230690421701405}
   wheelIntakeSpeed: 1000
   wheelIntakeSpeedReverse: -1000
 --- !u!114 &-2862273133057586026
@@ -157298,7 +157625,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.4
+  m_Volume: 0.8
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -177921,6 +178248,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4704295593705108290}
+  - component: {fileID: 979123222274146138}
   m_Layer: 6
   m_Name: GearRoller Algae (TREAT DIRECTION AS HIGH)
   m_TagString: Untagged
@@ -177946,6 +178274,28 @@ Transform:
   - {fileID: 7015105103086498195}
   m_Father: {fileID: 8995549602976135927}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -180}
+--- !u!114 &979123222274146138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7780606822243210540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &7781381323681476922
 GameObject:
   m_ObjectHideFlags: 0
@@ -192117,6 +192467,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 770867037000249822}
+  - component: {fileID: 2443248480362769430}
   m_Layer: 6
   m_Name: LowRollers Algae
   m_TagString: Untagged
@@ -192151,6 +192502,28 @@ Transform:
   - {fileID: 8298829305106113257}
   m_Father: {fileID: 8995549602976135927}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -180}
+--- !u!114 &2443248480362769430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8368707222898097155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0bb6f90f2fd6c469d0c5a9b3bfa055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentVelocityF: 0
+  CurrentAppliedForce: 0
+  moveAwayCollider: {fileID: 0}
+  useMomentum: 0
+  momentumAcceleration: 0
+  rollerAxis: 0
+  springAxis: 0
+  allowedDirection: 0
+  allowedVelocity: 0
+  hardStopPoint: 0
 --- !u!1 &8370627604657493636
 GameObject:
   m_ObjectHideFlags: 0

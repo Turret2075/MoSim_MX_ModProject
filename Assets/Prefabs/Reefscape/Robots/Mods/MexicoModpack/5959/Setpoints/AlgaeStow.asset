@@ -9,11 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 119c456f67f1d9942b9178f2628ef564, type: 3}
-  m_Name: IntakeBack
+  m_Script: {fileID: 11500000, guid: 8a8a3e8844038204f84cd37db5c9770a, type: 3}
+  m_Name: AlgaeStow
   m_EditorClassIdentifier: 
-  elevatorHeight: 12
-  armAngle: 45
-  endEffectorAngle: -90
-  climberAngle: 0
-  clawAngle: -165
+  elevatorHeight: 2.85
+  algaeArmAngle: -10
+  algaeDescorerArmAngle: 0
