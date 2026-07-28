@@ -37,7 +37,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         [SerializeField] private OvertureMonterreySetpoint stow;
         [SerializeField] private OvertureMonterreySetpoint Algaestow;
         [SerializeField] private OvertureMonterreySetpoint intake;
-        [SerializeField] private OvertureMonterreySetpoint intakeback;
+        [SerializeField] private OvertureMonterreySetpoint TwistArmMidIntake;
         [SerializeField] private OvertureMonterreySetpoint stack;
         [SerializeField] private OvertureMonterreySetpoint l1;
         [SerializeField] private OvertureMonterreySetpoint l1back;
@@ -245,7 +245,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                         SetSetpoint(Algaestow);
                     }
                     else
+                        if (LastSetpoint == ReefscapeSetpoints.Intake)
+                        {
+                            StartCoroutine(DelayedSetpoint(TwistArmMidIntake, stow, 1.5f));
+                        }
+                        else
+                        {
                         SetSetpoint(stow);
+                        }
                     armPid.Max = 4f;
                     break;
                 case ReefscapeSetpoints.Intake:
@@ -255,13 +262,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     if (LastSetpoint == ReefscapeSetpoints.L2 || LastSetpoint == ReefscapeSetpoints.L3 || LastSetpoint == ReefscapeSetpoints.L4 && !isDelayedTransition)
                     {
                         _coralController.RequestIntake(coralIntake, true);
-                        StartCoroutine(DelayedSetpoint(stow, intake, 2f));
+                        StartCoroutine(DelayedSetpoint(stow, intake, 4.2f));
                         armPid.Max = 6f;
                     }
                     else
                     {
                         _coralController.RequestIntake(coralIntake, true);
-                        SetSetpoint(FacingReef ? intake : intakeback);
+                        SetSetpoint(intake);
                         armPid.Max = 6f;
                     }
                     break;
@@ -334,11 +341,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     {
                         if (FacingReef)
                         {
-                            StartCoroutine(DelayedSetpoint(l4, l4ready, 0.5f));
+                            StartCoroutine(DelayedSetpoint(l4, l4ready, 0.8f));
                         }
                         else
                         {
-                            StartCoroutine(DelayedSetpoint(l4back, l4readyback, 0.5f));
+                            StartCoroutine(DelayedSetpoint(l4back, l4readyback, 0.8f));
                         }
                     }
                     break;
@@ -411,7 +418,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             if ((_coralController.HasPiece() && _algaeController.HasPiece()) || _coralController.HasPiece())
             {
                 if (CurrentRobotMode == ReefscapeRobotMode.Algae)
-                    _algaeController.ReleaseGamePieceWithForce(new Vector3(3f, 3f, 0));
+                    _algaeController.ReleaseGamePieceWithForce(new Vector3(8f, 8f, 0));
                 else if (CurrentRobotMode == ReefscapeRobotMode.Coral)
                 {
                     if (LastSetpoint == ReefscapeSetpoints.L4)
@@ -442,7 +449,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             }
             else if (_algaeController.HasPiece())
             {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(7.5f, 7.5f, 0));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(8f, 8f, 0));
             }
         }
 

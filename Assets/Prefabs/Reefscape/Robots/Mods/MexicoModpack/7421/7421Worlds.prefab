@@ -29423,6 +29423,7 @@ MonoBehaviour:
   climbed: {fileID: 0}
   processor: {fileID: 0}
   special: {fileID: 0}
+  specialback: {fileID: 0}
   lollipop: {fileID: 0}
   coralIntake: {fileID: 0}
   algaeIntake: {fileID: 0}
@@ -151743,6 +151744,7 @@ MonoBehaviour:
   climbed: {fileID: 11400000, guid: c8919b2731dee34418c301b732d6dbb0, type: 2}
   processor: {fileID: 11400000, guid: 2d7eba63c16095c439c3fd770bdc813e, type: 2}
   special: {fileID: 11400000, guid: e3abbeb2f3e182043b5f77d9237bc0f5, type: 2}
+  specialback: {fileID: 11400000, guid: 0275e43d97ea73c4b98009287a9cb9a0, type: 2}
   lollipop: {fileID: 11400000, guid: 4dff239e1c679824f9a855f7cfcd4c71, type: 2}
   coralIntake: {fileID: 2330650457755920985}
   algaeIntake: {fileID: 6124045663224631902}

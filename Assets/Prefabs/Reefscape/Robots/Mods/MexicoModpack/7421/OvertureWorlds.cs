@@ -66,6 +66,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
         [SerializeField] private OvertureWorldsSetpoint climbed;
         [SerializeField] private OvertureWorldsSetpoint processor;
         [SerializeField] private OvertureWorldsSetpoint special;
+        [SerializeField] private OvertureWorldsSetpoint specialback;
         [SerializeField] private OvertureWorldsSetpoint lollipop;
 
         [Header("Intake Componenets")]
@@ -270,7 +271,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
                     else if (_stationMode)
                     {
                         _coralController.RequestIntake(coralIntake, true);
-                        SetSetpoint(special);
+                        SetSetpoint(FacingReef ? special : specialback);
                     }
                     else if (LastSetpoint == ReefscapeSetpoints.L2 || LastSetpoint == ReefscapeSetpoints.L3 || LastSetpoint == ReefscapeSetpoints.L4 && !isDelayedTransition)
                     {
