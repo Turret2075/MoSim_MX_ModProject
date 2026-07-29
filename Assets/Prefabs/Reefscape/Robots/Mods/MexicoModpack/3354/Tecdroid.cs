@@ -13,7 +13,6 @@ using RobotFramework.Controllers.GamePieceSystem;
 using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
-using Robots.Climbing;
 using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
@@ -30,14 +29,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private Transform leftIntakeSensor;
         [SerializeField] private Transform rightIntakeSensor;
         [SerializeField] private Transform algaeSlider;
-        [SerializeField] private TecdroidClimber climber;
+
         
         [Header("Animation Joints (Wheels)")]
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
         [SerializeField] private float wheelIntakeSpeed = 500f;
 
-        [SerializeField] private ClimbScorer scorer;
-
+        private ClimbScorer _climbScorer;
         private bool _isScoring = false; // Prevents FixedUpdate from overriding scoring animation
 
         [SerializeField] private Collider l1POSCollider;
@@ -63,6 +61,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private TecdroidSetpoint bargeFrontPlaceSetpoint;
         [SerializeField] private TecdroidSetpoint bargeBackSetpoint;
         [SerializeField] private TecdroidSetpoint bargeBackPlaceSetpoint;
+
         [SerializeField] private TecdroidSetpoint l3Setpoint;
         [SerializeField] private TecdroidSetpoint l3BackSetpoint;
         [SerializeField] private TecdroidSetpoint highAlgaeSetpoint;
@@ -77,6 +76,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private TecdroidSetpoint processorSetpoint;
         [SerializeField] private TecdroidSetpoint climbSetpoint;
         [SerializeField] private TecdroidSetpoint climbedSetpoint;
+
         private ReefscapeSetpoints _previousSetpoint = ReefscapeSetpoints.Stow;
 
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
@@ -105,23 +105,24 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private AudioClip algaeStallClip;
 
         [Header("Target Setpoints")] [SerializeField]
-        private float targetArmAngle;
+        private float _targetArmAngle;
 
-        [SerializeField] private float targetWristAngle;
-        [SerializeField] private float targetArmDistance;
+        [SerializeField] private float _targetWristAngle;
+        [SerializeField] private float _targetArmDistance;
         private bool _robotSpectialPressed;
         private bool _stationMode;
 
         protected override void Start()
         {
             base.Start();
+            _climbScorer = gameObject.GetComponent<ClimbScorer>();
             armJoint.SetPid(armPidConstants);
             wristJoint.SetPid(wristPidConstants);
             _originalPivotMax = armPidConstants.Max;
 
-            targetArmAngle = stowSetpoint.armAngle;
-            targetWristAngle = stowSetpoint.wristAngle;
-            targetArmDistance = stowSetpoint.armDistance;
+            _targetArmAngle = stowSetpoint.armAngle;
+            _targetWristAngle = stowSetpoint.wristAngle;
+            _targetArmDistance = stowSetpoint.armDistance;
 
             RobotGamePieceController.SetPreload(coralStowState);
 
@@ -154,9 +155,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
 
         private void FixedUpdate()
         {
-            armJoint.SetTargetAngle(targetArmAngle).withAxis(JointAxis.X).flipDirection();
-            wristJoint.SetTargetAngle(targetWristAngle).withAxis(JointAxis.X).flipDirection().noWrap(-30);
-            elevator.SetTarget(targetArmDistance);
+            armJoint.SetTargetAngle(_targetArmAngle).withAxis(JointAxis.X).flipDirection();
+            wristJoint.SetTargetAngle(_targetWristAngle).withAxis(JointAxis.X).flipDirection().noWrap(-30);
+            elevator.SetTarget(_targetArmDistance);
 
             var canIntakeCoral = _coralController.currentStateNum == 0 && IntakeAction.IsPressed() && _algaeController.currentStateNum == 0;
             var canIntakeAlgae = _algaeController.currentStateNum == 0 && IntakeAction.IsPressed() && _coralController.currentStateNum == 0;
@@ -168,7 +169,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                 algaeSlider.localPosition = new Vector3(-localSliderSpace, algaeSlider.localPosition.y, algaeSlider.localPosition.z);
             }
 
-            if (Utils.WithinAngularRange(armJoint.GetSingleAxisAngle(JointAxis.X), targetArmAngle, 15f))
+            if (Utils.WithinAngularRange(armJoint.GetSingleAxisAngle(JointAxis.X), _targetArmAngle, 15f))
                 armPidConstants.Max = Mathf.Max(armPidConstants.Max - (realStep * Time.fixedDeltaTime), realStep);
             else
                 armPidConstants.Max = Mathf.Min(armPidConstants.Max + (realStep * Time.fixedDeltaTime), _originalPivotMax);
@@ -216,6 +217,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                         wheel.VelocityRoller(0).useAxis(JointAxis.X);
                 }
             }
+
+
+
+            if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.5f);
+            else if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.8f);
+            else DriveController.SetDriveMp(1);
 
             switch (CurrentSetpoint)
             {
@@ -278,21 +285,17 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                     _coralController.RequestIntake(coralIntake, canIntakeCoral);
                     break;
                 case ReefscapeSetpoints.Climb:
-                    climber.Climb();
                     SetSetpoint(climbSetpoint);
-                    if (scorer.AutoClimbTriggered)
-                    {
-                        SetState(ReefscapeSetpoints.Climbed);
-                    }
                     break;
                 case ReefscapeSetpoints.Climbed:
-                    SetSetpoint(climbedSetpoint);
-                    climber.NotClimbing();
+                    StartCoroutine(RotateArmFirst(climbedSetpoint));
+                    _coralController.SetTargetState(coralStowState);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
+            // Raycast logic remains the same...
             if (CurrentIntakeMode == ReefscapeIntakeMode.L1)
             {
                 _coralController.MoveIntake(coralIntake, coralL1TargetState.stateTarget);
@@ -344,9 +347,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
 
             if (lastSetpoint is ReefscapeSetpoints.Barge)
             {
-                targetArmAngle = FacingBarge() ? bargeFrontPlaceSetpoint.armAngle : bargeBackPlaceSetpoint.armAngle;
-                targetWristAngle = FacingBarge() ? bargeFrontPlaceSetpoint.wristAngle : bargeBackPlaceSetpoint.wristAngle;
-                targetArmDistance = FacingBarge() ? bargeFrontPlaceSetpoint.armDistance : bargeBackPlaceSetpoint.armDistance;
+                _targetArmAngle = FacingBarge() ? bargeFrontPlaceSetpoint.armAngle : bargeBackPlaceSetpoint.armAngle;
+                _targetWristAngle = FacingBarge() ? bargeFrontPlaceSetpoint.wristAngle : bargeBackPlaceSetpoint.wristAngle;
+                _targetArmDistance = FacingBarge() ? bargeFrontPlaceSetpoint.armDistance : bargeBackPlaceSetpoint.armDistance;
                 yield return new WaitForSeconds(0.075f);
             }
             else if ((lastSetpoint == ReefscapeSetpoints.L1 && CurrentIntakeMode != ReefscapeIntakeMode.L1))
@@ -377,9 +380,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             if (lastSetpoint is ReefscapeSetpoints.L4 && !FacingReef)
             {
                 yield return new WaitForSeconds(0.05f);
-                targetArmAngle = l4BackPlaceSetpoint.armAngle;
-                targetWristAngle = l4BackPlaceSetpoint.wristAngle;
-                targetArmDistance = l4BackPlaceSetpoint.armDistance;
+                _targetArmAngle = l4BackPlaceSetpoint.armAngle;
+                _targetWristAngle = l4BackPlaceSetpoint.wristAngle;
+                _targetArmDistance = l4BackPlaceSetpoint.armDistance;
             }
 
             // Wait until game pieces are released (state becomes 0) or timeout after 0.5s
@@ -395,6 +398,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                 wheel.VelocityRoller(0).useAxis(JointAxis.X);
                 
             _isScoring = false; // Release lock
+        }
+
+        private bool FacingBarge()
+        {
+        return (transform.position.x > 0 && transform.rotation.eulerAngles.y > 180) || (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
         }
 
         private void CheckStationMode()
@@ -439,33 +447,21 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                 algaeStallSource.Stop();
             }
         }
-
-        private bool FacingBarge()
-    {
-        return (transform.position.x > 0 && transform.rotation.eulerAngles.y > 180) || (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
-    }
         
+    
         private IEnumerator RotateArmFirst(TecdroidSetpoint setpoint)
         {
-            targetArmAngle = setpoint.armAngle;
-            targetWristAngle = setpoint.wristAngle;
+            _targetArmAngle = setpoint.armAngle;
+            _targetWristAngle = setpoint.wristAngle;
             yield return new WaitForSeconds(0.65f);
-            targetArmDistance = setpoint.armDistance;
+            _targetArmDistance = setpoint.armDistance;
         }
 
         private void SetSetpoint(TecdroidSetpoint setpoint)
         {
-            targetArmAngle = setpoint.armAngle;
-            targetWristAngle = setpoint.wristAngle;
-            targetArmDistance = setpoint.armDistance;
+            _targetArmAngle = setpoint.armAngle;
+            _targetWristAngle = setpoint.wristAngle;
+            _targetArmDistance = setpoint.armDistance;
         }
-    }
-
-    [Serializable]
-    public struct TecdroidSetpoint
-    {
-        [Tooltip("Deg")] public float armAngle;
-        [Tooltip("Deg")] public float wristAngle;
-        [Tooltip("Inch")] public float armDistance;
     }
 }
