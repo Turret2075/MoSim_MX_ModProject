@@ -36,7 +36,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
         [SerializeField] private float wheelIntakeSpeed = 500f;
 
-        private ClimbScorer _climbScorer;
+        [SerializeField] private ClimbScorer scorer;
+
         private bool _isScoring = false; // Prevents FixedUpdate from overriding scoring animation
 
         [SerializeField] private Collider l1POSCollider;
@@ -114,7 +115,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         protected override void Start()
         {
             base.Start();
-            _climbScorer = gameObject.GetComponent<ClimbScorer>();
             armJoint.SetPid(armPidConstants);
             wristJoint.SetPid(wristPidConstants);
             _originalPivotMax = armPidConstants.Max;
@@ -278,13 +278,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                     _coralController.RequestIntake(coralIntake, canIntakeCoral);
                     break;
                 case ReefscapeSetpoints.Climb:
-                    SetSetpoint(climbSetpoint);
                     climber.Climb();
+                    SetSetpoint(climbSetpoint);
+                    if (scorer.AutoClimbTriggered)
+                    {
+                        SetState(ReefscapeSetpoints.Climbed);
+                    }
                     break;
                 case ReefscapeSetpoints.Climbed:
-                    StartCoroutine(RotateArmFirst(climbedSetpoint));
+                    SetSetpoint(climbedSetpoint);
                     climber.NotClimbing();
-                    _coralController.SetTargetState(coralStowState);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

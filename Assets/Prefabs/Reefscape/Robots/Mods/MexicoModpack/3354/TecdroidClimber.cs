@@ -4,13 +4,14 @@ using RobotFramework.Components;
 using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Robots.Climbing
 {
     public class TecdroidClimber : MonoBehaviour
     {
         private ClimbScorer _climbScorer;
-
+        
         [Header("Clicker Joints")]
         [SerializeField] private GenericAnimationJoint clickerL;
         [SerializeField] private GenericAnimationJoint clickerR;
@@ -25,27 +26,28 @@ namespace Robots.Climbing
 
         [SerializeField] private GenericJoint intakeWheelL;
         [SerializeField] private GenericJoint intakeWheelR;
-
-        [SerializeField] private PidConstants climbPid;
-        [SerializeField] private PidConstants pidConstants;
-
+    
+        
+        [FormerlySerializedAs("pidmi")] [SerializeField] private PidConstants climbPid;
+        [FormerlySerializedAs("pidmi")] [SerializeField] private PidConstants pidConstants;
+        
         [Header("Climber Wheels")]
         [SerializeField] private GameObject intakeWheelGameObjectL;
         [SerializeField] private GameObject intakeWheelGameObjectR;
         [SerializeField] private float targetIntakeWheelSpeed = 100f;
         private float _intakeWheelSpeed;
-
+    
         [SerializeField] private float climbingAngularVelocity = 40f;
         private float _angularVelocity;
 
-        [SerializeField] private float clickerSpeed = 720f;
+        [SerializeField] private float ClickerSpeed = 720f;
 
         private float _pivotTarget;
-
+        
         private float _climbingTarget;
 
-        private bool _deployed;
-
+        private bool deployed;
+        
         private void Start()
         {
             _climbScorer = GetComponentInParent<ClimbScorer>();
@@ -53,8 +55,8 @@ namespace Robots.Climbing
             {
                 Debug.LogError("TecdroidClimber: ClimbScorer component not found in parent.");
             }
-
-            deployPivot.SetPid(pidConstants);
+            
+            deployPivot.SetPid(pidConstants); 
             climbPivot.SetPid(climbPid);
             intakeWheelL.SetPid(pidConstants);
             intakeWheelR.SetPid(pidConstants);
@@ -62,7 +64,7 @@ namespace Robots.Climbing
             _angularVelocity = 0;
             _climbingTarget = 70;
 
-            _deployed = false;
+            deployed = false;
         }
 
         private void LateUpdate()
@@ -71,16 +73,18 @@ namespace Robots.Climbing
             climbPivot.UpdatePid(climbPid);
         }
 
+        // Update is called once per frame
         private void Update()
         {
-            clickerL.SpringLoaded().AllowedDirection(1).RotationSpeed(clickerSpeed);
-            clickerR.SpringLoaded().AllowedDirection(1).RotationSpeed(clickerSpeed);
-
-            clickerL1.SpringLoaded().AllowedDirection(1).RotationSpeed(clickerSpeed);
-            clickerR1.SpringLoaded().AllowedDirection(1).RotationSpeed(clickerSpeed);
-
-            clickerL2.SpringLoaded().AllowedDirection(1).RotationSpeed(clickerSpeed);
-            clickerR2.SpringLoaded().AllowedDirection(1).RotationSpeed(clickerSpeed);
+            clickerL.SpringLoaded().AllowedDirection(1).RotationSpeed(ClickerSpeed);
+            clickerR.SpringLoaded().AllowedDirection(1).RotationSpeed(ClickerSpeed);
+        
+            clickerL1.SpringLoaded().AllowedDirection(1).RotationSpeed(ClickerSpeed);
+            clickerR1.SpringLoaded().AllowedDirection(1).RotationSpeed(ClickerSpeed);
+            
+            clickerL2.SpringLoaded().AllowedDirection(1).RotationSpeed(ClickerSpeed);
+            clickerR2.SpringLoaded().AllowedDirection(1).RotationSpeed(ClickerSpeed);
+        
         }
 
         private void FixedUpdate()
@@ -91,8 +95,8 @@ namespace Robots.Climbing
             intakeWheelR.SetAngularVelocity(-_angularVelocity).WithAxis(JointAxis.Y);
             intakeWheelGameObjectL.transform.Rotate(Vector3.up, -_intakeWheelSpeed * Time.fixedDeltaTime);
             intakeWheelGameObjectR.transform.Rotate(Vector3.up, _intakeWheelSpeed * Time.fixedDeltaTime);
-
-            if (_deployed && Utils.InAngularRange(deployPivot.GetSingleAxisAngle(JointAxis.X), 0, 1))
+            
+            if (deployed && Utils.InAngularRange(deployPivot.GetSingleAxisAngle(JointAxis.X), 0, 1))
             {
                 deployPivot.lockAllAxis();
             }
@@ -105,13 +109,13 @@ namespace Robots.Climbing
             _climbingTarget = 70;
             _angularVelocity = climbingAngularVelocity;
             _intakeWheelSpeed = targetIntakeWheelSpeed;
-
-            _deployed = true;
+            
+            deployed = true;
         }
 
         public void NotClimbing()
         {
-            if (!_deployed)
+            if (!deployed)
             {
                 _pivotTarget = -160;
                 _climbingTarget = 70;
@@ -120,12 +124,12 @@ namespace Robots.Climbing
             {
                 _climbingTarget = 0;
             }
-
-            if (_deployed && Utils.InAngularRange(climbPivot.GetSingleAxisAngle(JointAxis.X), 0, 1))
+            
+            if (deployed && Utils.InAngularRange(climbPivot.GetSingleAxisAngle(JointAxis.X), 0, 1))
             {
                 climbPivot.lockAllAxis();
             }
-
+            
             _angularVelocity = 0;
             _intakeWheelSpeed = 0;
         }
