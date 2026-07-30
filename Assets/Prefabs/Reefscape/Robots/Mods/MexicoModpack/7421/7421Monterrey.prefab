@@ -153261,7 +153261,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   alliance: 0
-  bumperMeshes: []
+  bumperMeshes:
+  - {fileID: 7756347954538611098}
   blueBumperMaterial: {fileID: 2100000, guid: 339858c0f551322428e19e88715e1fb1, type: 2}
   redBumperMaterial: {fileID: 2100000, guid: 8891c8be8334c264dbe596d910db7283, type: 2}
   <CurrentSetpoint>k__BackingField: 0
