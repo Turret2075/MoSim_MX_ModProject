@@ -7,8 +7,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
    public class TecdroidSetpoint : ScriptableObject
    {
       [Tooltip("Deg")] public float armAngle;
-        [Tooltip("Deg")] public float wristAngle;
-        [Tooltip("Inch")] public float armDistance;
+      [Tooltip("Deg")] public float wristAngle;
+      [Tooltip("Inch")] public float armDistance;
       [Tooltip("Deg")] public float climbAngle;
    }
 }
