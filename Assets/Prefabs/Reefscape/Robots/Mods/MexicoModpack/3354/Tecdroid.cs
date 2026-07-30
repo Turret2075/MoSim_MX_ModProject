@@ -29,6 +29,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private Transform leftIntakeSensor;
         [SerializeField] private Transform rightIntakeSensor;
         [SerializeField] private TecdroidClimb climber;
+        [SerializeField] private ClimbScorer climbScorer;
         [SerializeField] private Transform algaeSlider;
  
          
@@ -110,16 +111,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private AudioClip intakeClip;
         [SerializeField] private AudioSource algaeStallSource;
         [SerializeField] private AudioClip algaeStallClip;
- 
-        [Header("Climb Audio")]
-        [SerializeField] private AudioSource climbRollerSource;
-        [SerializeField] private AudioClip climbRollerClip;
-        [SerializeField] private AudioSource climbClickSource;
-        [SerializeField] private AudioClip climbClickClip;
- 
+        
         [Header("Target Setpoints")] [SerializeField]
         private float _targetArmAngle;
-        private float _climberTargetAngle;
  
         [SerializeField] private float _targetWristAngle;
         [SerializeField] private float _targetArmDistance;
@@ -136,7 +130,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             _targetArmAngle = stowSetpoint.armAngle;
             _targetWristAngle = stowSetpoint.wristAngle;
             _targetArmDistance = stowSetpoint.armDistance;
-            _climberTargetAngle = 0;
  
             RobotGamePieceController.SetPreload(coralStowState);
  
@@ -159,14 +152,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             algaeStallSource.clip = algaeStallClip;
             algaeStallSource.loop = true;
             algaeStallSource.playOnAwake = false;
- 
-            climbRollerSource.clip = climbRollerClip;
-            climbRollerSource.loop = true;
-            climbRollerSource.playOnAwake = false;
- 
-            climbClickSource.clip = climbClickClip;
-            climbClickSource.loop = false;
-            climbClickSource.playOnAwake = false;
         }
  
         private void LateUpdate()
@@ -181,8 +166,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             wristJoint.SetTargetAngle(_targetWristAngle).withAxis(JointAxis.X).flipDirection().noWrap(-30);
             elevator.SetTarget(_targetArmDistance);
             
- 
-            climbCollider.enabled = _cageDetector.OverlapBox().Length > 3;
  
             var canIntakeCoral = _coralController.currentStateNum == 0 && IntakeAction.IsPressed() && _algaeController.currentStateNum == 0;
             var canIntakeAlgae = _algaeController.currentStateNum == 0 && IntakeAction.IsPressed() && _coralController.currentStateNum == 0;
@@ -241,14 +224,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(0).useAxis(JointAxis.X);
                 }
-            }
- 
- 
- 
-            if (CurrentSetpoint == ReefscapeSetpoints.Climb)
-            {
-                foreach (var roller in climbRollers)
-                    roller.ChangeAngularVelocity(1000f);
             }
  
             if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.5f);
@@ -318,20 +293,19 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                     _coralController.RequestIntake(coralIntake, canIntakeCoral);
                     break;
                 case ReefscapeSetpoints.Climb: 
-                    SetSetpoint(climbPrep);
+                    SetSetpoint(climbSetpoint);
                     climber.Climb();
                     if (climber != null) climber.Climb(); 
                     break;
                 
                 case ReefscapeSetpoints.Climbed: 
-                    SetSetpoint(climbClimb);
+                    SetSetpoint(climbedSetpoint);
                     climber.NotClimbing();
                     if (climber != null) climber.RetractArm();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            AnimateWheels();
  
             // Raycast logic remains the same...
             if (CurrentIntakeMode == ReefscapeIntakeMode.L1)
@@ -371,13 +345,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             
 
             // Climber and Drive modifiers remain the same...
-            if (scorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climb && climber.WingsOpen())
+            if (climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climb && climber.WingsOpen())
             {
                 climber.PlayClick();
                 SetState(ReefscapeSetpoints.Climbed);
             }
-            else if (!scorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climbed)
+            else if (!climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climbed)
                 SetState(ReefscapeSetpoints.Climb);
+            
+            if (CurrentSetpoint != ReefscapeSetpoints.Climb) climber.NotClimbing();
  
             _previousSetpoint = CurrentSetpoint;
         }
@@ -452,18 +428,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         {
         return (transform.position.x > 0 && transform.rotation.eulerAngles.y > 180) || (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
         }
-
-        private void AnimateWheels()
-        {
-            if (CurrentSetpoint == ReefscapeSetpoints.Climb)
-            {
-                RunRollers(climberWheels, climberWheelSpeeds);
-            }
-            else
-            {
-                RunRollers(climberWheels, 0f);
-            }
-        }
  
         private void CheckStationMode()
         {
@@ -506,21 +470,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             {
                 algaeStallSource.Stop();
             }
- 
-            float climbRollerSpeed = Mathf.Max(new float[]
-            {
-                Mathf.Abs(climbRollers[0].gameObject.GetComponent<Rigidbody>().angularVelocity.x),
-                Mathf.Abs(climbRollers[0].gameObject.GetComponent<Rigidbody>().angularVelocity.y),
-                Mathf.Abs(climbRollers[0].gameObject.GetComponent<Rigidbody>().angularVelocity.z)
-            });
-            if (climbRollerSpeed > 5 && !climbRollerSource.isPlaying)
-            {
-                climbRollerSource.Play();
-            }
-            else if (climbRollerSpeed <= 5 && climbRollerSource.isPlaying)
-            {
-                climbRollerSource.Stop();
-            }
         }
         
     
@@ -528,7 +477,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         {
             _targetArmAngle = setpoint.armAngle;
             _targetWristAngle = setpoint.wristAngle;
-            _climberTargetAngle = setpoint.climbAngle;
             yield return new WaitForSeconds(0.65f);
             _targetArmDistance = setpoint.armDistance;
         }
