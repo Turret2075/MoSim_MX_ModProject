@@ -38,9 +38,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
         [SerializeField] private float wheelIntakeSpeed = 500f;
 
-        [SerializeField] private GenericAnimationJoint[] climberWheels;
-        [SerializeField] private float climberWheelSpeeds;
-
         private bool _isScoring = false; // Prevents FixedUpdate from overriding scoring animation
  
         [SerializeField] private Collider l1POSCollider;
@@ -301,7 +298,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
                 case ReefscapeSetpoints.Climbed: 
                     SetSetpoint(climbedSetpoint);
                     climber.NotClimbing();
-                    if (climber != null) climber.RetractArm();
+                    climber.RetractArm();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -352,8 +349,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             }
             else if (!climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climbed)
                 SetState(ReefscapeSetpoints.Climb);
-            
-            if (CurrentSetpoint != ReefscapeSetpoints.Climb) climber.NotClimbing();
  
             _previousSetpoint = CurrentSetpoint;
         }
@@ -486,7 +481,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             _targetArmAngle = setpoint.armAngle;
             _targetWristAngle = setpoint.wristAngle;
             _targetArmDistance = setpoint.armDistance;
-
         }
     }
 }
