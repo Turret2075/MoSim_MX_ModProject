@@ -6,7 +6,7 @@ using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.MexicoModpack._3354
+namespace Prefabs.Reefscape.Robots.Mods.Lanternfly._9999
 {
     public class LanternClimb : MonoBehaviour
     {
