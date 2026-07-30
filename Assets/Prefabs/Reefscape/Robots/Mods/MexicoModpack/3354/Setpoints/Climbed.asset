@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Climbed
   m_EditorClassIdentifier: 
   armAngle: 0
-  wristAngle: 124
-  armDistance: 2
-  climbAngle: 0
+  wristAngle: 0
+  armDistance: 5
+  climberAngle: 110

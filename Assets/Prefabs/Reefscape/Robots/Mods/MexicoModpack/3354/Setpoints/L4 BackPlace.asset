@@ -15,4 +15,4 @@ MonoBehaviour:
   armAngle: 100
   wristAngle: -20
   armDistance: 45
-  climbAngle: 0
+  climberAngle: 90
