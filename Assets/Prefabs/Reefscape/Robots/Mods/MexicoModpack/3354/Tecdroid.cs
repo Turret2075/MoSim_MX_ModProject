@@ -468,12 +468,30 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         }
         
     
-        private IEnumerator RotateArmFirst(TecdroidSetpoint setpoint)
+        private IEnumerator WristPivotArm(TecdroidSetpoint setpoint)
+        {
+            _targetWristAngle = setpoint.wristAngle;
+            yield return new WaitForSeconds(0.25f);
+            _targetArmAngle = setpoint.armAngle;
+            yield return new WaitForSeconds(0.25f);
+            _targetArmDistance = setpoint.armDistance;
+        }
+
+        private IEnumerator ArmPivotWrist (TecdroidSetpoint setpoint)
+        {
+            _targetArmDistance = setpoint.armDistance;
+            yield return new WaitForSeconds(0.25f);
+            _targetArmAngle = setpoint.armAngle;
+            yield return new WaitForSeconds(0.25f);
+            _targetWristAngle = setpoint.wristAngle;
+        }
+
+        private IEnumerator RotatePivotFirst (TecdroidSetpoint setpoint)
         {
             _targetArmAngle = setpoint.armAngle;
-            _targetWristAngle = setpoint.wristAngle;
             yield return new WaitForSeconds(0.65f);
             _targetArmDistance = setpoint.armDistance;
+            _targetWristAngle = setpoint.wristAngle;
         }
  
         private void SetSetpoint(TecdroidSetpoint setpoint)

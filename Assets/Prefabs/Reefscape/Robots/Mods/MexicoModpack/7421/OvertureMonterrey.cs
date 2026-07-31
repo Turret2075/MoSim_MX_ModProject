@@ -418,7 +418,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             if ((_coralController.HasPiece() && _algaeController.HasPiece()) || _coralController.HasPiece())
             {
                 if (CurrentRobotMode == ReefscapeRobotMode.Algae)
-                    _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 8f, 0));
+                    _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4.25f, 0));
                 else if (CurrentRobotMode == ReefscapeRobotMode.Coral)
                 {
                     if (LastSetpoint == ReefscapeSetpoints.L4)
@@ -449,7 +449,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             }
             else if (_algaeController.HasPiece())
             {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 8f, 0));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4.25f, 0));
             }
         }
 

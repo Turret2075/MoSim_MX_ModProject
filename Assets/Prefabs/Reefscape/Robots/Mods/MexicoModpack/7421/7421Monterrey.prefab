@@ -94006,8 +94006,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.7409233, y: 0.42446887, z: 0.70691496}
-  m_Center: {x: 0.41818196, y: 0.3217476, z: 1.0821121}
+  m_Size: {x: 1.7409233, y: 0.7330576, z: 0.70691377}
+  m_Center: {x: 0.4181807, y: 0.4760411, z: 1.0821016}
 --- !u!1 &3596400581578008182
 GameObject:
   m_ObjectHideFlags: 0
@@ -112405,7 +112405,6 @@ GameObject:
   - component: {fileID: 1070285122693010375}
   - component: {fileID: 6667054295437992762}
   - component: {fileID: 3942813528415721652}
-  - component: {fileID: 6195447825963670869}
   m_Layer: 0
   m_Name: 4 Inch Thrifty Squish Wheel (TTB-0057).003
   m_TagString: Untagged
@@ -112480,27 +112479,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &6195447825963670869
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4200011489471178029}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.00063667074, y: 0.00069706724, z: 0.00025400033}
-  m_Center: {x: 0.0004806148, y: 0.0002179605, z: -0.00006796625}
 --- !u!1 &4200188685237352375
 GameObject:
   m_ObjectHideFlags: 0
@@ -117791,7 +117769,6 @@ GameObject:
   - component: {fileID: 4621131366954025798}
   - component: {fileID: 7173835598441892513}
   - component: {fileID: 1362467250879455353}
-  - component: {fileID: 5508717997112059002}
   m_Layer: 0
   m_Name: 4 Inch Thrifty Squish Wheel (TTB-0057).004
   m_TagString: Untagged
@@ -117866,27 +117843,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5508717997112059002
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4395830266572933689}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.00066473876, y: 0.0007113026, z: 0.0002540002}
-  m_Center: {x: 0.0005086312, y: 0.00020317672, z: -0.00006796039}
 --- !u!1 &4396147617852368105
 GameObject:
   m_ObjectHideFlags: 0
@@ -146174,7 +146130,6 @@ GameObject:
   - component: {fileID: 6105028218957223628}
   - component: {fileID: 2268965516890855872}
   - component: {fileID: 3901751571413514975}
-  - component: {fileID: 4954666774931918788}
   m_Layer: 0
   m_Name: 4 Inch Thrifty Squish Wheel (TTB-0057)
   m_TagString: Untagged
@@ -146249,27 +146204,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &4954666774931918788
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5398970495882286918}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.000659317, y: 0.00066611025, z: 0.00025400042}
-  m_Center: {x: 0.0005004492, y: 0.00021730867, z: -0.00006796711}
 --- !u!1 &5401925684720955614
 GameObject:
   m_ObjectHideFlags: 0
@@ -153377,11 +153311,11 @@ MonoBehaviour:
   - {fileID: 7203724889829483865}
   - {fileID: 4748529411816806473}
   - {fileID: 4094030934860033632}
-  - {fileID: 4954666774931918788}
-  - {fileID: 5508717997112059002}
-  - {fileID: 1838516267539356353}
-  - {fileID: 5629540552522021331}
-  - {fileID: 5629540552522021331}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!54 &4128771412636001796
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -209825,8 +209759,6 @@ GameObject:
   - component: {fileID: 6484604100923936674}
   - component: {fileID: 7258294430501139304}
   - component: {fileID: 5813619927877448044}
-  - component: {fileID: 2615019401467110205}
-  - component: {fileID: 1838516267539356353}
   m_Layer: 0
   m_Name: 4 Inch Thrifty Squish Wheel (TTB-0057).001
   m_TagString: Untagged
@@ -209901,50 +209833,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &2615019401467110205
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7692720457383884413}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.0005080001
-  m_Height: 0.0017493882
-  m_Direction: 2
-  m_Center: {x: 0.0005088478, y: 0.00021359911, z: 0.000089375935}
---- !u!65 &1838516267539356353
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7692720457383884413}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.0006618542, y: 0.0006967726, z: 0.00025400028}
-  m_Center: {x: 0.0004902108, y: 0.000238929, z: -0.000067959445}
 --- !u!1 &7693034436077549731
 GameObject:
   m_ObjectHideFlags: 0
@@ -211167,8 +211055,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.4939302, y: 0.5735639, z: 0.9022655}
-  m_Center: {x: 0.3506975, y: -0.3599548, z: -0.43023536}
+  m_Size: {x: 1.4939302, y: 1.1032064, z: 0.9022655}
+  m_Center: {x: 0.3506975, y: -0.09513441, z: -0.4302354}
 --- !u!1 &7734408943112511095
 GameObject:
   m_ObjectHideFlags: 0
@@ -227729,7 +227617,6 @@ GameObject:
   - component: {fileID: 9043711784529363909}
   - component: {fileID: 5707744097319132144}
   - component: {fileID: 8505884693963360867}
-  - component: {fileID: 5629540552522021331}
   m_Layer: 0
   m_Name: 4 Inch Thrifty Squish Wheel (TTB-0057).002
   m_TagString: Untagged
@@ -227804,27 +227691,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5629540552522021331
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8305341114474941913}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.00070099905, y: 0.0006243896, z: 0.0002540002}
-  m_Center: {x: 0.00047640322, y: 0.00021761724, z: -0.0000679593}
 --- !u!1 &8307309985565667154
 GameObject:
   m_ObjectHideFlags: 0
@@ -242575,7 +242441,6 @@ GameObject:
   - component: {fileID: 7398930033155398708}
   - component: {fileID: 3861353429007667990}
   - component: {fileID: 5074186990071948660}
-  - component: {fileID: 7440869066707685019}
   m_Layer: 0
   m_Name: 0413-placa contrapunto
   m_TagString: Untagged
@@ -242651,27 +242516,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7440869066707685019
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8811260838378422220}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.0012875301, y: 0.0012865551, z: 0.00006000033}
-  m_Center: {x: -0.0003134111, y: -0.00052892853, z: 0.000029999863}
 --- !u!1 &8813466314677189431
 GameObject:
   m_ObjectHideFlags: 0
