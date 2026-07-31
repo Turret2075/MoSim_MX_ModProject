@@ -14,6 +14,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [SerializeField] private GenericJoint climberArm; 
         [SerializeField] private GenericJoint intakeWheelL;
         [SerializeField] private GenericJoint intakeWheelR;
+
+        [Header("Climber Wheel rollers")]
+        [SerializeField] private GenericJoint animatedRollerL;
+        [SerializeField] private GenericJoint animatedRollerR;
         
         [Header("Clicker Joints")]
         [SerializeField] private GenericAnimationJoint clickerL;
@@ -33,7 +37,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
         [Tooltip("Angle when the arm reaches up to grab the cage.")]
         [SerializeField] private float deployAngle = -90f;
         [Tooltip("Angle when the arm pulls the robot up.")]
-        [SerializeField] private float retractAngle = 0f;
+        [SerializeField] private float retractAngle = 15f;
 
         [Header("Settings")]
         [SerializeField] private float targetIntakeWheelSpeed = 125f;
@@ -71,6 +75,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             if (intakeWheelL != null) intakeWheelL.SetPid(wheelPid);
             if (intakeWheelR != null) intakeWheelR.SetPid(wheelPid);
 
+            if (animatedRollerL != null) animatedRollerL.SetPid(wheelPid);
+            if (animatedRollerR != null) animatedRollerR.SetPid(wheelPid);
+
             if (rollerAudioSource != null && rollerClip != null) 
             { 
                 rollerAudioSource.clip = rollerClip; 
@@ -86,6 +93,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             if (climberArm != null) climberArm.UpdatePid(armPid);
             if (intakeWheelL != null) intakeWheelL.UpdatePid(wheelPid);
             if (intakeWheelR != null) intakeWheelR.UpdatePid(wheelPid);
+
+            if (animatedRollerL != null) animatedRollerL.UpdatePid(wheelPid);
+            if (animatedRollerR != null) animatedRollerR.UpdatePid(wheelPid);
         }
 
         private void Update()
@@ -125,6 +135,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._3354
             
             if (intakeWheelL != null) intakeWheelL.SetAngularVelocity(-_angularVelocity).WithAxis(wheelAxis);
             if (intakeWheelR != null) intakeWheelR.SetAngularVelocity(_angularVelocity).WithAxis(wheelAxis);
+            if (animatedRollerL != null) animatedRollerL.SetAngularVelocity(_armTarget == deployAngle ? -_angularVelocity : 0).WithAxis(wheelAxis);
+            if (animatedRollerR != null) animatedRollerR.SetAngularVelocity(_armTarget == deployAngle ? _angularVelocity : 0).WithAxis(wheelAxis);
             
             UpdateAudio();
         }
