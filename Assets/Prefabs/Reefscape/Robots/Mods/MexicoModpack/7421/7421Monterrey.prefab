@@ -153126,13 +153126,13 @@ MonoBehaviour:
     kP: 10
     kI: 0
     kD: 5
-    Max: 1.75
+    Max: 0.925
     Isaturation: 0
   stagesPidConstants:
     kP: 20
     kI: 0
     kD: 10
-    Max: 3.5
+    Max: 3.2
     Isaturation: 0
   elevatorAxis: 1
   flipped: 0
@@ -153240,7 +153240,7 @@ MonoBehaviour:
     kP: 5
     kI: 0
     kD: 1
-    Max: 3
+    Max: 1.2
     Isaturation: 0
   stow: {fileID: 11400000, guid: 330cf8efe1db6c94db0f43ad77e2e5ed, type: 2}
   Algaestow: {fileID: 11400000, guid: 94e5d0ea5ab8b0c41891f04dfa44df28, type: 2}
@@ -153311,11 +153311,6 @@ MonoBehaviour:
   - {fileID: 7203724889829483865}
   - {fileID: 4748529411816806473}
   - {fileID: 4094030934860033632}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!54 &4128771412636001796
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4c7cfeec582b7349a4d6797aec17da3, type: 3}
   m_Name: StationCoralIntake
   m_EditorClassIdentifier: 
-  armAngle: 68
-  wristAngle: 155
-  armDistance: 9
-  climberAngle: 90
+  armAngle: 65
+  wristAngle: 150
+  armDistance: 10
+  climbAngle: 0

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: High Algae
   m_EditorClassIdentifier: 
   armAngle: 62.5
-  wristAngle: 180
-  armDistance: 28
-  climberAngle: 90
+  wristAngle: 200
+  armDistance: 32
+  climbAngle: 0

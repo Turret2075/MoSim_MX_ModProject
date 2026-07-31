@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4c7cfeec582b7349a4d6797aec17da3, type: 3}
   m_Name: L3 Back
   m_EditorClassIdentifier: 
-  armAngle: 98
-  wristAngle: 10
-  armDistance: 16
-  climberAngle: 90
+  armAngle: 107.5
+  wristAngle: 18
+  armDistance: 13.375
+  climbAngle: 0

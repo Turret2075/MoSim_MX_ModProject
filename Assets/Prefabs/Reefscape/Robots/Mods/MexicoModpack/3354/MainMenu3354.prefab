@@ -18810,6 +18810,7 @@ GameObject:
   - component: {fileID: 2246228938550927925}
   - component: {fileID: 696870946165784750}
   - component: {fileID: 4109389122949794649}
+  - component: {fileID: 2411382323281401368}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-PL-2.001
   m_TagString: Untagged
@@ -18884,6 +18885,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &2411382323281401368
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 960524148352040620}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0008476546, y: 0.0017424604, z: 0.000031750278}
+  m_Center: {x: -0.0018619921, y: -0.0034747312, z: 0.001898001}
 --- !u!1 &960869316764179543
 GameObject:
   m_ObjectHideFlags: 0
@@ -42014,6 +42036,7 @@ GameObject:
   - component: {fileID: 6693716947954413332}
   - component: {fileID: 7234204124599650801}
   - component: {fileID: 4467082762191004917}
+  - component: {fileID: 6551370046187633689}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-PL-2
   m_TagString: Untagged
@@ -42088,6 +42111,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &6551370046187633689
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2086787914324699462}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0008476546, y: 0.0017424604, z: 0.000031750278}
+  m_Center: {x: -0.0018619911, y: -0.0034747312, z: -0.001898}
 --- !u!1 &2093556105416887967
 GameObject:
   m_ObjectHideFlags: 0
@@ -52283,7 +52327,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2625509864527898740}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.01745245, y: 0, z: 0, w: 0.99984777}
   m_LocalPosition: {x: 0, y: 0.2666, z: -0.1969}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
@@ -52291,7 +52335,7 @@ Transform:
   - {fileID: 1420773157303074989}
   - {fileID: 3918533157360755279}
   m_Father: {fileID: 5683194396176178810}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -2, y: 0, z: 0}
 --- !u!82 &7769991407056804942
 AudioSource:
   m_ObjectHideFlags: 0
@@ -56930,6 +56974,7 @@ GameObject:
   - component: {fileID: 3392998217672571083}
   - component: {fileID: 6748335172668499055}
   - component: {fileID: 2990126122479534864}
+  - component: {fileID: 1199993137260113620}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-3DP-3
   m_TagString: Untagged
@@ -57004,6 +57049,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1199993137260113620
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2863399426766059733}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0007674475, y: 0.0011342788, z: 0.00031750012}
+  m_Center: {x: -0.0019020956, y: -0.0031706404, z: 0.0020726258}
 --- !u!1 &2865764752591518616
 GameObject:
   m_ObjectHideFlags: 0
@@ -83023,6 +83089,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5683194396176178810}
+  - component: {fileID: 7414828186954446337}
   m_Layer: 6
   m_Name: MainMenu3354
   m_TagString: BlueRobot
@@ -83052,6 +83119,28 @@ Transform:
   - {fileID: 7423749740333238345}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &7414828186954446337
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4108337974173178762}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 1
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4109765249256859816
 GameObject:
   m_ObjectHideFlags: 0
@@ -85776,6 +85865,7 @@ GameObject:
   - component: {fileID: 4634907810229466555}
   - component: {fileID: 3684416457913478682}
   - component: {fileID: 6214922847320808123}
+  - component: {fileID: 1637862702751545982}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-3DP-5
   m_TagString: Untagged
@@ -85850,6 +85940,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1637862702751545982
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4242211913464039690}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0007245586, y: 0.0011996969, z: 0.0008470005}
+  m_Center: {x: -0.0018002337, y: -0.0048188157, z: -0.002079625}
 --- !u!1 &4245184327065779830
 GameObject:
   m_ObjectHideFlags: 0
@@ -105193,6 +105304,7 @@ GameObject:
   - component: {fileID: 615600905914864078}
   - component: {fileID: 1517004820465753852}
   - component: {fileID: 5293987101213640358}
+  - component: {fileID: 1387991921170129622}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-PL-1.001
   m_TagString: Untagged
@@ -105267,6 +105379,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1387991921170129622
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5150765015635375776}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0008476546, y: 0.0017424604, z: 0.000031750395}
+  m_Center: {x: -0.001861991, y: -0.0034747312, z: -0.00224725}
 --- !u!1 &5152683867661811716
 GameObject:
   m_ObjectHideFlags: 0
@@ -108974,6 +109107,7 @@ GameObject:
   - component: {fileID: 128446563149929405}
   - component: {fileID: 7856913826844004278}
   - component: {fileID: 5018161434514787494}
+  - component: {fileID: 1258187279815961840}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-PL-1
   m_TagString: Untagged
@@ -109048,6 +109182,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1258187279815961840
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5364699819543813714}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0008476546, y: 0.0017424604, z: 0.000031750395}
+  m_Center: {x: -0.0018619922, y: -0.0034747312, z: 0.0022472509}
 --- !u!1 &5374422164005840258
 GameObject:
   m_ObjectHideFlags: 0
@@ -177414,6 +177569,7 @@ GameObject:
   - component: {fileID: 6237174091085927814}
   - component: {fileID: 7128015332023639710}
   - component: {fileID: 1226721511945099737}
+  - component: {fileID: 7117847357813668835}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-3DP-4
   m_TagString: Untagged
@@ -177488,6 +177644,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7117847357813668835
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8890912258042538528}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0007674475, y: 0.0011342788, z: 0.00031750012}
+  m_Center: {x: -0.0019020947, y: -0.0031706404, z: -0.0020726249}
 --- !u!1 &8893520771251095721
 GameObject:
   m_ObjectHideFlags: 0
@@ -180233,6 +180410,7 @@ GameObject:
   - component: {fileID: 1842938572472751750}
   - component: {fileID: 3465364013132211670}
   - component: {fileID: 5089473997648088211}
+  - component: {fileID: 1415910962767381168}
   m_Layer: 0
   m_Name: 3354-2025CS-LimeLight-3DP-6
   m_TagString: Untagged
@@ -180307,6 +180485,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1415910962767381168
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8989658888552630538}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0007245583, y: 0.001261076, z: 0.0008470005}
+  m_Center: {x: -0.0018002349, y: -0.0048495084, z: 0.0021113763}
 --- !u!1 &8990277742797868326
 GameObject:
   m_ObjectHideFlags: 0
@@ -184260,6 +184459,8 @@ MonoBehaviour:
   climberArm: {fileID: 0}
   intakeWheelL: {fileID: 0}
   intakeWheelR: {fileID: 0}
+  animatedRollerL: {fileID: 0}
+  animatedRollerR: {fileID: 0}
   clickerL: {fileID: 3381928283667942756}
   clickerR: {fileID: 7334811943399230830}
   clickerL1: {fileID: 7791455937581667548}

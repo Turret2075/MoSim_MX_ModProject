@@ -346,7 +346,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
         {
             if (_algaeController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Algae)
             {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 2, 3f));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 0, -1.2f));
             }
             else
             {
