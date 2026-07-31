@@ -151541,13 +151541,13 @@ MonoBehaviour:
     kP: 10
     kI: 0
     kD: 5
-    Max: 1.75
+    Max: 1.25
     Isaturation: 0
   stagesPidConstants:
     kP: 20
     kI: 0
     kD: 10
-    Max: 3.5
+    Max: 3.75
     Isaturation: 0
   elevatorAxis: 1
   flipped: 0
@@ -151702,7 +151702,7 @@ MonoBehaviour:
   wristPid:
     kP: 5
     kI: 0
-    kD: 2
+    kD: 2.5
     Max: 7
     Isaturation: 0
   climberPid:
@@ -151714,7 +151714,7 @@ MonoBehaviour:
   stow: {fileID: 11400000, guid: 8aff5e593fe28e642bc7cc4691dd0f06, type: 2}
   Algaestow: {fileID: 11400000, guid: 343e129437f6fcb499d97fb4ddc07c69, type: 2}
   intake: {fileID: 11400000, guid: 0c8da5cbbbd059e42a03c9658c35d530, type: 2}
-  intakeback: {fileID: 11400000, guid: 2e10c4e6ceda98a42927df3e5acad3dc, type: 2}
+  intakeback: {fileID: 11400000, guid: c10a773b6c2e55241a4eb939598868de, type: 2}
   stack: {fileID: 11400000, guid: c8840c14604378349a2ab6dc05f5b51e, type: 2}
   l1: {fileID: 11400000, guid: 3b252946f0372a6408b50664df408f5a, type: 2}
   l1back: {fileID: 11400000, guid: a88882a79ab9ead43a9b0c5aa0a155d7, type: 2}

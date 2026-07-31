@@ -253,7 +253,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                         {
                         SetSetpoint(stow);
                         }
-                    armPid.Max = 4f;
+                    
                     break;
                 case ReefscapeSetpoints.Intake:
                     _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
@@ -263,13 +263,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     {
                         _coralController.RequestIntake(coralIntake, true);
                         StartCoroutine(DelayedSetpoint(stow, intake, 4.2f));
-                        armPid.Max = 6f;
+
                     }
                     else
                     {
                         _coralController.RequestIntake(coralIntake, true);
                         SetSetpoint(intake);
-                        armPid.Max = 6f;
+
                     }
                     break;
                 case ReefscapeSetpoints.Place:

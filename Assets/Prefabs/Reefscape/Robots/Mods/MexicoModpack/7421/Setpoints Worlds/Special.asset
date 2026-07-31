@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Special
   m_EditorClassIdentifier: 
   elevatorHeight: 2
-  armAngle: 45
+  armAngle: -20
   endEffectorAngle: 90
   climberAngle: 0

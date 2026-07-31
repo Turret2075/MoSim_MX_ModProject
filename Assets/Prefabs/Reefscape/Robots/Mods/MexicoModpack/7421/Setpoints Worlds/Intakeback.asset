@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5e853e239f9c754b81221c366814a23, type: 3}
-  m_Name: Intakeback
+  m_Name: IntakeBack
   m_EditorClassIdentifier: 
   elevatorHeight: 2
   armAngle: 98

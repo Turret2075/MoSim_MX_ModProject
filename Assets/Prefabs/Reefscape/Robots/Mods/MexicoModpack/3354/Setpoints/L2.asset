@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: L2
   m_EditorClassIdentifier: 
   armAngle: 38
-  wristAngle: 11.48
-  armDistance: 10
-  climberAngle: 90
+  wristAngle: 11.75
+  armDistance: 9
+  climbAngle: 0
