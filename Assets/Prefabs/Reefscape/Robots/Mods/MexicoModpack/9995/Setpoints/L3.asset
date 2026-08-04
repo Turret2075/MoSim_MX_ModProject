@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 292ffccd8a1bfd84e88a08798ac09bf1, type: 3}
   m_Name: L3
   m_EditorClassIdentifier: 
-  armPivotAngle: 57
-  endEffectorPivotAngle: 40
-  endEffectorTwistAngle: 50
+  armPivotAngle: 95
+  endEffectorPivotAngle: -10
+  endEffectorTwistAngle: -20
