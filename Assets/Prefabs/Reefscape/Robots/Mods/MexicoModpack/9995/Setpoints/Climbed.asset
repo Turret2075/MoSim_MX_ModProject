@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 292ffccd8a1bfd84e88a08798ac09bf1, type: 3}
   m_Name: Climbed
   m_EditorClassIdentifier: 
-  armPivotAngle: 0
-  endEffectorPivotAngle: 0
-  endEffectorTwistAngle: 50
+  armPivotAngle: 5
+  endEffectorPivotAngle: 40
+  endEffectorTwistAngle: -20

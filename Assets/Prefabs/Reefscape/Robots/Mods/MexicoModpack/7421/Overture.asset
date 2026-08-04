@@ -25,7 +25,7 @@ MonoBehaviour:
     type: 3}
   alternateMainMenuPrefab: {fileID: 5625352596829322111, guid: 6d22ad13f569b2347a79c93f9c56126f,
     type: 3}
-  robotImage: {fileID: 21300000, guid: 2cdb8dc0ae43116488ce5255085b8388, type: 3}
+  robotImage: {fileID: 21300000, guid: b4ebbd056ff058142965bd6f9143ed49, type: 3}
   tutorialCards:
   - {fileID: 6829736770845459078, guid: 25aaa8d83f3f9dc47bc55c7329d98c4f, type: 3}
   - {fileID: 6829736770845459078, guid: d4c80147e8ed6e2418dec57598354d22, type: 3}

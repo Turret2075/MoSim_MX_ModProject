@@ -55,6 +55,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         [SerializeField] private BotbustersGreenSetpoint groundCoralIntakeSetpoint;
         [SerializeField] private BotbustersGreenSetpoint algaeLowSetpoint;
         [SerializeField] private BotbustersGreenSetpoint l3Setpoint;
+        [SerializeField] private BotbustersGreenSetpoint l3PlaceSetpoint;
+        [SerializeField] private BotbustersGreenSetpoint l2Setpoint;
+        [SerializeField] private BotbustersGreenSetpoint l2PlaceSetpoint;
         [SerializeField] private BotbustersGreenSetpoint l1Setpoint;
         [SerializeField] private BotbustersGreenSetpoint climbSetpoint;
         [SerializeField] private BotbustersGreenSetpoint climbedSetpoint;
@@ -64,6 +67,17 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
 
         private ReefscapeAutoAlign align;
+
+        [Header("Auto Align")]
+        // Cuánto se acerca al reef cuando el robot anota de espaldas (L2/L3),
+        // para compensar que el brazo alcanza menos hacia atrás. Negativo =
+        // más pegado al reef. Ajustar en el Inspector.
+        [SerializeField] private float backReefOffset = -7f;
+        // Offset lateral (eje X) del efector respecto al centro del robot.
+        // Sin esto, align.offset.x siempre es 0 y el autoalign termina en el
+        // mismo punto sin importar si se pidió el branch izquierdo o derecho.
+        // Ajustar en el Inspector según cuánto esté descentrado el efector.
+        [SerializeField] private float lateralReefOffset = 0f;
 
         [Header("Game Piece Intakes")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -76,6 +90,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         [Header("Intake Audio")]
         [SerializeField] private AudioSource intakeAudioSource;
         [SerializeField] private AudioClip intakeClip;
+
 
         [Header("Clicker Joints")]
         // Igual que en 5449 (Prototype): no tiene nada que ver con el pivot
@@ -90,7 +105,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         [SerializeField] private float _targetEndEffectorTwistAngle;
 
         private bool _isScoring;
-        private bool preAligned = false;
         private ClimbScorer climbScorer;
 
         protected override void Start()
@@ -120,7 +134,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             intakeAudioSource.playOnAwake = false;
 
             align = gameObject.GetComponent<ReefscapeAutoAlign>();
-            preAligned = false;
         }
 
         private new void Update()
@@ -163,6 +176,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
 
             UpdateIntakeAudio();
 
+
             if (BaseGameManager.Instance.RobotState == RobotState.Disabled) return;
 
             if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.5f);
@@ -173,19 +187,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             if (!_isScoring)
             {
                 bool isIntaking = CurrentSetpoint == ReefscapeSetpoints.Intake && IntakeAction.IsPressed();
-                bool isDescoring = CurrentSetpoint == ReefscapeSetpoints.LowAlgae && IntakeAction.IsPressed();
+
 
                 if (isIntaking)
                 {
+                    // Rodillos opuestos: uno jala, el otro empuja, para meter el coral (igual que en el bloque de raycast de abajo).
                     foreach (var roller in frontIntakeRollers) roller.ChangeAngularVelocity(wheelIntakeSpeed);
-                    foreach (var roller in backIntakeRollers) roller.ChangeAngularVelocity(wheelIntakeSpeed);
-                }
-                else if (isDescoring)
-                {
-                    // Gira los rollers para tumbar el alga del reef.
-                    foreach (var roller in frontIntakeRollers) roller.ChangeAngularVelocity(-wheelIntakeSpeed);
                     foreach (var roller in backIntakeRollers) roller.ChangeAngularVelocity(-wheelIntakeSpeed);
                 }
+                
                 else
                 {
                     foreach (var roller in frontIntakeRollers) roller.ChangeAngularVelocity(0);
@@ -236,6 +246,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
                     _coralController.SetTargetState(coralStowState);
                     break;
 
+                case ReefscapeSetpoints.L2:
+                    // L2 igual que L3: mirando hacia atrás.
+                    SetSetpoint(l2Setpoint);
+                    _coralController.SetTargetState(coralStowState);
+                    break;
+
                 case ReefscapeSetpoints.LowAlgae:
                     // Descore de algas LOW, siempre mirando hacia atrás.
                     SetSetpoint(algaeLowSetpoint);
@@ -257,7 +273,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
                 // presionado no rompa nada, en lugar de tirar la excepción.)
                 case ReefscapeSetpoints.Processor:
                 case ReefscapeSetpoints.Stack:
-                case ReefscapeSetpoints.L2:
                 case ReefscapeSetpoints.HighAlgae:
                 case ReefscapeSetpoints.L4:
                 case ReefscapeSetpoints.Barge:
@@ -278,26 +293,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             var coralRight = Physics.Raycast(rightIntakeSensor.position, rayDirection, distance, coralMask);
             var coralLeft = Physics.Raycast(leftIntakeSensor.position, rayDirection, distance, coralMask);
 
-            if (IntakeAction.IsPressed() && CurrentSetpoint != ReefscapeSetpoints.LowAlgae)
-            {
-                if (coralRight && coralLeft)
-                {
-                    foreach (var roller in frontIntakeRollers) roller.ChangeAngularVelocity(wheelIntakeSpeed);
-                    foreach (var roller in backIntakeRollers) roller.ChangeAngularVelocity(wheelIntakeSpeed);
-                }
-            }
-
-            // Auto-transición del climb. Al no haber un joint/script de climber
-            // aparte (va montado en armPivot), la condición de "enganchado" es
-            // simplemente el trigger del ClimbScorer, sin WingsOpen().
-            if (climbScorer != null && climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climb)
-            {
-                SetState(ReefscapeSetpoints.Climbed);
-            }
-            else if (climbScorer != null && !climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climbed)
-            {
-                SetState(ReefscapeSetpoints.Climb);
-            }
 
             _previousSetpoint = CurrentSetpoint;
         }
@@ -306,20 +301,37 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         {
             _isScoring = true; // Bloquea la lógica de rodillos de FixedUpdate
 
-            bool isL1 = lastSetpoint == ReefscapeSetpoints.L1;
+            bool isL3 = lastSetpoint is ReefscapeSetpoints.L3;
+            bool isL2 = lastSetpoint is ReefscapeSetpoints.L2;
 
-            // L1 (frente) -> rodillos hacia adelante (+)
-            // L3 (atrás)  -> rodillos hacia atrás (-)
-            float speed = isL1 ? wheelIntakeSpeed : -wheelIntakeSpeed;
 
-            foreach (var roller in frontIntakeRollers) roller.ChangeAngularVelocity(speed);
-            foreach (var roller in backIntakeRollers) roller.ChangeAngularVelocity(speed);
+            // Front y back opuestos entre sí (como al intakear) para que realmente
+            // empujen la pieza hacia afuera en vez de pelearse entre ellos.
+            foreach (var roller in frontIntakeRollers) roller.ChangeAngularVelocity(-wheelIntakeSpeed);
+            foreach (var roller in backIntakeRollers) roller.ChangeAngularVelocity(wheelIntakeSpeed);
+
 
             // Ajusta estos vectores de fuerza según la orientación real del
-            // efector al soltar en L1 (frente) vs L3 (atrás).
-            Vector3 force = isL1 ? new Vector3(1, 0, 0) : new Vector3(0, 0, -5);
+            // efector al soltar en L1/L2 (frente) vs L3 (atrás)
+            Vector3 force = isL3 ? new Vector3(0, 0, -5) : isL2 ? new Vector3(0, 0, 5) : new Vector3(1, 0, 0);
 
             _coralController.ReleaseGamePieceWithForce(force);
+
+            if (isL3)
+            {
+                yield return new WaitForSeconds(0.05f);
+            _targetArmPivotAngle = l3PlaceSetpoint.armPivotAngle;
+            _targetEndEffectorPivotAngle = l3PlaceSetpoint.endEffectorPivotAngle;
+            _targetEndEffectorTwistAngle = l3PlaceSetpoint.endEffectorTwistAngle;
+            }
+
+            else if (isL2)
+            {
+                yield return new WaitForSeconds(0.05f);
+            _targetArmPivotAngle = l2PlaceSetpoint.armPivotAngle;
+            _targetEndEffectorPivotAngle = l2PlaceSetpoint.endEffectorPivotAngle;
+            _targetEndEffectorTwistAngle = l2PlaceSetpoint.endEffectorTwistAngle;
+            }
 
             // Espera hasta que la pieza se suelte (estado vuelve a 0) o timeout 0.5s
             float timer = 0f;
@@ -335,30 +347,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             _isScoring = false;
         }
 
+
         private void AutoAlignOffsets()
         {
-            if (!AutoAlignLeftAction.IsPressed() && !AutoAlignRightAction.IsPressed())
-            {
-                preAligned = false;
-            }
-            float xOffset1 = 0f;
-            float xOffset2 = -0f;
-            float zOffset1 = 0f;
-            float zOffset2 = 0f;
-            if (!preAligned && (AutoAlignLeftAction.IsPressed() || AutoAlignRightAction.IsPressed()))
-            {
-                xOffset1 = 0f;
-                xOffset2 = -0f;
-                zOffset1 = 0f;
-                zOffset2 = 0f;
-                if (align.getDistance() < 0.0254f * 6f && !AutoAlignLeftAction.triggered && !AutoAlignRightAction.triggered)
-                {
-                    preAligned = true;
-                }
-            }
-            float xOffset = !FacingReef ? xOffset1 : xOffset2;
-            float zOffset = !FacingReef ? zOffset1 : zOffset2;
-            align.offset = new Vector3(xOffset, 0, zOffset);
+            float zOffset = !FacingReef ? backReefOffset : 0f;
+
+            align.offset = new Vector3(0f, 0f, zOffset);
         }
 
 
@@ -374,17 +368,18 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
                 return;
             }
 
-            if ((IntakeAction.IsPressed() || OuttakeAction.IsPressed() || CurrentSetpoint is ReefscapeSetpoints.Climb) &&
+            if ((IntakeAction.IsPressed() || OuttakeAction.IsPressed()) &&
                 !intakeAudioSource.isPlaying)
             {
                 intakeAudioSource.Play();
             }
-            else if (!IntakeAction.IsPressed() && !OuttakeAction.IsPressed() && CurrentSetpoint is not ReefscapeSetpoints.Climb &&
+            else if (!IntakeAction.IsPressed() && !OuttakeAction.IsPressed() &&
                      intakeAudioSource.isPlaying)
             {
                 intakeAudioSource.Stop();
             }
         }
+
 
         private void SetSetpoint(BotbustersGreenSetpoint setpoint)
         {

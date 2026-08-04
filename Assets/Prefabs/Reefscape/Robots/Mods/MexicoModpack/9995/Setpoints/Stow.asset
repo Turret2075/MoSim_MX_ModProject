@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Stow
   m_EditorClassIdentifier: 
   armPivotAngle: 57
-  endEffectorPivotAngle: 0
+  endEffectorPivotAngle: 20
   endEffectorTwistAngle: 50

@@ -12,21 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1aff2b59de2c4a0c96d6b848990b46af, type: 3}
   m_Name: BotbustersGreen
   m_EditorClassIdentifier: 
-  teamNumber: 3354
-  teamName: Tecdroid
+  teamNumber: 9995
+  teamName: BotbustersGreen
   robotPrefab: {fileID: 4108337974173178762, guid: f346d64fee6f4d64fb492ff94f5472d7,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
-  mainMenuPrefab: {fileID: 0}
+  mainMenuPrefab: {fileID: 4108337974173178762, guid: 216e4057f70c13d44b5a12eecc007c42,
+    type: 3}
   hasAlternateRobot: 0
   alternateRobotPrefab: {fileID: 0}
   alternateMainMenuPrefab: {fileID: 0}
-  robotImage: {fileID: 0}
+  robotImage: {fileID: 21300000, guid: a5f4fe60278310349bd0eafc711d456d, type: 3}
   tutorialCards:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 6829736770845459078, guid: b3bb268339073934ea724ffec0d85533, type: 3}
-  alternateTutorialCards: []
-  autoClimbs: 1
+  alternateTutorialCards:
+  - {fileID: 6829736770845459078, guid: eaf3a8aa8389058489f4cdb7e18ddff8, type: 3}
+  - {fileID: 6829736770845459078, guid: d75aa7d5f04c64741b61b4a9949acf6c, type: 3}
+  - {fileID: 6829736770845459078, guid: 574ed760c3d793c41a23bb2d11df4ee3, type: 3}
+  autoClimbs: 0
   alternateAutoClimbs: 0
