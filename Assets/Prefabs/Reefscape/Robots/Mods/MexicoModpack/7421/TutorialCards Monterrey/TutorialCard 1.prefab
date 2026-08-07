@@ -21,7 +21,7 @@ PrefabInstance:
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_text
-      value: It is possible to intake lollipop algae, but not ground algae
+      value: It is possible to intake lollipop algae, and also ground algae
       objectReference: {fileID: 0}
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}

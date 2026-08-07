@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 119c456f67f1d9942b9178f2628ef564, type: 3}
-  m_Name: L1 back
+  m_Name: GroundAlgae
   m_EditorClassIdentifier: 
   elevatorHeight: 0
-  armAngle: -50
-  endEffectorAngle: 90
+  armAngle: 90
+  endEffectorAngle: 0
   climberAngle: 0
-  clawAngle: -170
+  clawAngle: -120
