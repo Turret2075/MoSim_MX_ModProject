@@ -232,8 +232,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
                 }
             }
 
-            if (_climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climb)
-                SetState(ReefscapeSetpoints.Climbed);
+            if (BaseGameManager.Instance.RobotState == RobotState.Disabled) return;
+
+            if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.875f);
+            else DriveController.SetDriveMp(1);
 
             AutoAlignOffsets();
             CheckStationMode();
