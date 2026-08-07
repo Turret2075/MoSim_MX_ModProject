@@ -6,13 +6,13 @@ using Games.Reefscape.Robots;
 using Games.Reefscape.Scoring.Scorers;
 using MoSimCore.BaseClasses.GameManagement;
 using MoSimCore.Enums;
+using MoSimLib;
 using RobotFramework.Components;
+using RobotFramework.Controllers.Drivetrain;
 using RobotFramework.Controllers.GamePieceSystem;
 using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
-using Robots.Climbing;
-using DriveController = RobotFramework.Controllers.Drivetrain.DriveController;
 using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
@@ -95,14 +95,32 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
 
         [Header("Drivetrain")]
         [SerializeField] private DriveController driveController;
+        [SerializeField] private BoxCollider intakeVision;
+        [SerializeField] private BoxCollider intakeVisionRear;
+        [SerializeField] private BoxCollider lollipopIntakeVision;
+
+        [Header("Intake Vision Pivots")]
+        [Tooltip("Transform hijo del chasis ubicado en el centro real del intake frontal. Arrastralo en la escena hasta que coincida con la boca del intake.")]
+        [SerializeField] private Transform intakePivotFront;
+        [Tooltip("Transform hijo del chasis ubicado en el centro real del intake trasero.")]
+        [SerializeField] private Transform intakePivotRear;
+        [Tooltip("Transform hijo del chasis ubicado en el centro real del intake en modo lollipop (para ese setpoint el intake queda en diagonal).")]
+        [SerializeField] private Transform intakePivotLollipop;
 
         [Header("Colliders")]
         [SerializeField] private BoxCollider[] algaeDisableColliders;
+        
 
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
 
         private ReefscapeAutoAlign align;
+
+        private Collider[] _colliders;
+        private OverlapBoxBounds _visionDetect;
+        private OverlapBoxBounds _visionDetectRear;
+        private OverlapBoxBounds _visionDetectLollipop;
+        private LayerMask _mask;
 
         private ClimbScorer _climbScorer;
         private float _elevatorTargetHeight;
@@ -134,6 +152,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
             RobotGamePieceController.SetPreload(coralStowState);
             _coralController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Coral.ToString());
             _algaeController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Algae.ToString());
+
+            _colliders = new Collider[6];
+            _visionDetect = new OverlapBoxBounds(intakeVision);
+            _visionDetectRear = new OverlapBoxBounds(intakeVisionRear);
+            _visionDetectLollipop = new OverlapBoxBounds(lollipopIntakeVision);
+            _mask = LayerMask.GetMask("Coral");
 
             _coralController.gamePieceStates = new[]
             {
@@ -403,6 +427,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
 
             UpdateSetpoints();
             UpdateAudio();
+            RunIntakeVision();
         }
         private IEnumerator PlaceCoroutine()
         {
@@ -428,6 +453,59 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
             foreach (var wheel in intakeWheels) wheel.VelocityRoller(0);
             foreach (var wheel in intakeWheelsReverse) wheel.VelocityRoller(0);
             _isScoring = false;
+        }
+
+        private void RunIntakeVision()
+        {
+            // Solo coral, solo cuando se agarra del piso (Intake normal o lollipop, sin station)
+            if (!IntakeAction.IsPressed() || _coralController.HasPiece() || _algaeController.HasPiece() || CurrentRobotMode == ReefscapeRobotMode.Algae ||
+                CurrentSetpoint == ReefscapeSetpoints.HighAlgae || CurrentSetpoint == ReefscapeSetpoints.LowAlgae ||
+                CurrentSetpoint != ReefscapeSetpoints.Intake || _stationMode) return;
+
+            for (int i = 0; i < _colliders.Length; i++)
+            {
+                _colliders[i] = null;
+            }
+
+            // Elige el collider de vision: lollipop tiene prioridad, si no, frontal/trasero segun FacingReef
+            var activeVisionDetect = lollipopmode ? _visionDetectLollipop : (FacingReef ? _visionDetect : _visionDetectRear);
+            var size = activeVisionDetect.OverlapBoxNonAlloc(ref _colliders, _mask);
+            
+            if (_colliders != null)
+            {
+                if (!_colliders[0]) return;
+                GameObject close = _colliders[0].gameObject;
+                for (int i = 1; i < size; i++) {
+                    if (Vector3.Distance(_colliders[i].transform.position, transform.position) <
+                        Vector3.Distance(close.transform.position, transform.position))
+                    {
+                        close = _colliders[i].gameObject;
+                    }
+                }
+                
+                // Elige el transform del pivote real del intake segun el modo activo (frontal, trasero o lollipop).
+                // Al ser un Transform hijo del chasis, ya trae su propia posicion Y rotacion (util para lollipop,
+                // donde el intake queda en diagonal: basta con rotar el Transform en la escena para que quede
+                // orientado igual que el intake real, sin necesidad de un offset angular manual aparte).
+                Transform activePivot = lollipopmode ? intakePivotLollipop : (FacingReef ? intakePivotFront : intakePivotRear);
+                if (activePivot == null) activePivot = transform; // Fallback de seguridad si no se asigno en el Inspector
+
+                Transform offsetTransform = new GameObject().transform;
+                offsetTransform.position = activePivot.position;
+                offsetTransform.rotation = Quaternion.Euler(activePivot.rotation.eulerAngles.x, activePivot.rotation.eulerAngles.y + 180f, activePivot.rotation.eulerAngles.z);
+                var angle = Quaternion.LookRotation(offsetTransform.position - close.transform.position, offsetTransform.up).eulerAngles.y;
+                if (lollipopmode)
+                {
+                    // En lollipop tambien jalamos al robot hacia adelante, no solo lo giramos
+                    DriveController.overideInput(new Vector2(-0.5f, 0f), Mathf.Clamp(-angle + offsetTransform.eulerAngles.y, 0.18f, -0.18f), DriveController.DriveMode.RobotRelative);
+                }
+                else
+                {
+                    DriveController.SoftSteer(Mathf.Clamp(-angle + offsetTransform.eulerAngles.y, 0.18f, -0.18f));
+                }
+
+                Destroy(offsetTransform.gameObject);
+            }
         }
 
         private void CheckStationMode()

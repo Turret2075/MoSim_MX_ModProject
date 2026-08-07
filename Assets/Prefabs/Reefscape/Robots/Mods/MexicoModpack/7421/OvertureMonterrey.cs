@@ -37,7 +37,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         [SerializeField] private OvertureMonterreySetpoint stow;
         [SerializeField] private OvertureMonterreySetpoint Algaestow;
         [SerializeField] private OvertureMonterreySetpoint intake;
-        [SerializeField] private OvertureMonterreySetpoint TwistArmMidIntake;
+
         [SerializeField] private OvertureMonterreySetpoint stack;
         [SerializeField] private OvertureMonterreySetpoint l1;
         [SerializeField] private OvertureMonterreySetpoint l1back;
@@ -59,6 +59,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         [SerializeField] private OvertureMonterreySetpoint l4readyback;
         [SerializeField] private OvertureMonterreySetpoint barge;
 
+        [SerializeField] private OvertureMonterreySetpoint groundAlgae;
         [SerializeField] private OvertureMonterreySetpoint lowAlgae;
         [SerializeField] private OvertureMonterreySetpoint highAlgae;
         [SerializeField] private OvertureMonterreySetpoint lowbackAlgae;
@@ -169,7 +170,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             wrist.UpdatePid(wristPid);
         }
 
-        private IEnumerator DelayedSetpoint(OvertureMonterreySetpoint firstSetpoint, OvertureMonterreySetpoint secondSetpoint, float delay = 2f)
+        private IEnumerator DelayedSetpoint(OvertureMonterreySetpoint firstSetpoint, OvertureMonterreySetpoint secondSetpoint, float delay)
         {
             isDelayedTransition = true;
 
@@ -245,21 +246,21 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                         SetSetpoint(Algaestow);
                     }
                     else
-                        if (LastSetpoint == ReefscapeSetpoints.Intake)
-                        {
-                            StartCoroutine(DelayedSetpoint(TwistArmMidIntake, stow, 1.5f));
-                        }
-                        else
-                        {
-                        SetSetpoint(stow);
-                        }
+                    {
+                    SetSetpoint(stow);
+                    }
                     
                     break;
                 case ReefscapeSetpoints.Intake:
                     _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
                     _coralController.RequestIntake(coralIntake, !hasCoral && !hasAlgae);
-                    
-                    if (LastSetpoint == ReefscapeSetpoints.L2 || LastSetpoint == ReefscapeSetpoints.L3 || LastSetpoint == ReefscapeSetpoints.L4 && !isDelayedTransition)
+
+                    if (CurrentRobotMode == ReefscapeRobotMode.Algae)
+                    {
+                        SetSetpoint(groundAlgae);
+                        _algaeController.RequestIntake(algaeIntake, true);
+                    }
+                    else if (LastSetpoint == ReefscapeSetpoints.L2 || LastSetpoint == ReefscapeSetpoints.L3 || LastSetpoint == ReefscapeSetpoints.L4 && !isDelayedTransition)
                     {
                         _coralController.RequestIntake(coralIntake, true);
                         StartCoroutine(DelayedSetpoint(stow, intake, 4.2f));
@@ -306,7 +307,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     }
                     else
                     {
-                        SetSetpoint(FacingReef ? l1 : l1back);
+                        SetSetpoint(l1);
                     }
                     break;
                 case ReefscapeSetpoints.Stack:
@@ -377,10 +378,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                 _algaeController.RequestIntake(algaeIntake, false);
             }
 
-            if (!IntakeAction.IsPressed() && CurrentSetpoint != ReefscapeSetpoints.Stow)
-            {
-                armPid.Max = 4f;
-            }
+        
 
 
             UpdateSetpoints();
@@ -482,14 +480,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             }
             float xOffset1 = 12f;
             float xOffset2 = -12f;
-            float zOffset1 = 4f;
-            float zOffset2 = 4f;
+            float zOffset1 = 8f;
+            float zOffset2 = 8f;
             if (!preAligned && (AutoAlignLeftAction.IsPressed() || AutoAlignRightAction.IsPressed()))
             {
                 xOffset1 = 12f;
                 xOffset2 = -12f;
-                zOffset1 = 4f;
-                zOffset2 = 4f;
+                zOffset1 = 8f;
+                zOffset2 = 8f;
                 if (align.getDistance() < 0.0254f * 6f && !AutoAlignLeftAction.triggered && !AutoAlignRightAction.triggered)
                 {
                     preAligned = true;

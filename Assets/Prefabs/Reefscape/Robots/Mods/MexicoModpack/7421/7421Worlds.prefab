@@ -29452,6 +29452,12 @@ MonoBehaviour:
   wheelIntakeSpeed: 1000
   wheelIntakeSpeedReverse: -1000
   driveController: {fileID: 0}
+  intakeVision: {fileID: 0}
+  intakeVisionRear: {fileID: 0}
+  lollipopIntakeVision: {fileID: 0}
+  intakePivotFront: {fileID: 0}
+  intakePivotRear: {fileID: 0}
+  intakePivotLollipop: {fileID: 0}
   algaeDisableColliders: []
 --- !u!1 &1086988136989508770
 GameObject:
@@ -68222,6 +68228,10 @@ Transform:
   m_Children:
   - {fileID: 2063369282618907756}
   - {fileID: 1338075411137270641}
+  - {fileID: 7951668814421753856}
+  - {fileID: 6841531454022865258}
+  - {fileID: 6245586796141039642}
+  - {fileID: 2285641281648764052}
   m_Father: {fileID: 1966105591941200741}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2594161148566220573
@@ -94781,6 +94791,59 @@ Transform:
   - {fileID: 5410862340156319626}
   m_Father: {fileID: 223281525315012658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3640821696988482735
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2285641281648764052}
+  - component: {fileID: 4631616451907473356}
+  m_Layer: 6
+  m_Name: IntakeVisionColliderRear
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2285641281648764052
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3640821696988482735}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -1, w: 0}
+  m_LocalPosition: {x: -0.00177, y: -0.00041, z: 0.00715}
+  m_LocalScale: {x: 0.01, y: 0.009999998, z: 0.009999998}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4018473138931648433}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4631616451907473356
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3640821696988482735}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.6, y: 0.1, z: 0.4}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3640952988417805779
 GameObject:
   m_ObjectHideFlags: 0
@@ -151650,8 +151713,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cageScoringTrigger: {fileID: 4171058793914079779}
-  autoClimbTriggers:
-  - {fileID: 8861682055397300938, guid: 85a8a40a1e9d1ec40b04d588a70b4be0, type: 3}
+  autoClimbTriggers: []
 --- !u!114 &3755075928892553883
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151781,6 +151843,12 @@ MonoBehaviour:
   wheelIntakeSpeed: 1000
   wheelIntakeSpeedReverse: -1000
   driveController: {fileID: 8492845085617385182}
+  intakeVision: {fileID: 3041736438320750575}
+  intakeVisionRear: {fileID: 4631616451907473356}
+  lollipopIntakeVision: {fileID: 4393929718143038079}
+  intakePivotFront: {fileID: 7951668814421753856}
+  intakePivotRear: {fileID: 6245586796141039642}
+  intakePivotLollipop: {fileID: 0}
   algaeDisableColliders:
   - {fileID: 7884392936997557510}
   - {fileID: 2043783307366185104}
@@ -164934,6 +165002,59 @@ Transform:
   - {fileID: 7887069344647115450}
   m_Father: {fileID: 7262716204373098208}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6115208578903684995
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6841531454022865258}
+  - component: {fileID: 4393929718143038079}
+  m_Layer: 6
+  m_Name: IntakeVisionColliderVert
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6841531454022865258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6115208578903684995}
+  serializedVersion: 2
+  m_LocalRotation: {x: 1, y: 0, z: 0, w: 0}
+  m_LocalPosition: {x: -0.00177, y: -0.00178, z: -0.00715}
+  m_LocalScale: {x: 0.01, y: 0.009999998, z: 0.009999998}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4018473138931648433}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 180}
+--- !u!65 &4393929718143038079
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6115208578903684995}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.6131732, y: 0.100001976, z: 0.69711834}
+  m_Center: {x: -0.1270206, y: 0, z: 0.14855918}
 --- !u!1 &6115232188978085346
 GameObject:
   m_ObjectHideFlags: 0
@@ -241395,6 +241516,59 @@ Transform:
   - {fileID: 7043768474771744568}
   m_Father: {fileID: 5794454462261210419}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8790917333626259218
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7951668814421753856}
+  - component: {fileID: 3041736438320750575}
+  m_Layer: 6
+  m_Name: IntakeVisionCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7951668814421753856
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8790917333626259218}
+  serializedVersion: 2
+  m_LocalRotation: {x: 1, y: 0, z: 0, w: 0}
+  m_LocalPosition: {x: -0.00177, y: -0.00041, z: -0.00715}
+  m_LocalScale: {x: 0.01, y: 0.009999998, z: 0.009999998}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4018473138931648433}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 180}
+--- !u!65 &3041736438320750575
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8790917333626259218}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.6, y: 0.1, z: 0.4}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8793699162758163337
 GameObject:
   m_ObjectHideFlags: 0
@@ -241608,6 +241782,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8810208403358804144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6245586796141039642}
+  m_Layer: 6
+  m_Name: LollipopTransf
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6245586796141039642
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8810208403358804144}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.05343666, y: 0.7641784, z: -0.6412218, w: -0.044838693}
+  m_LocalPosition: {x: -0.0029040014, y: -0.0016418799, z: -0.0064704823}
+  m_LocalScale: {x: 0.01, y: 0.009999999, z: 0.009999998}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4018473138931648433}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &8813466314677189431
 GameObject:
   m_ObjectHideFlags: 0
