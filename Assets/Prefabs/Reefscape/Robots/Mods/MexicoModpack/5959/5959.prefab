@@ -5571,7 +5571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brakeModeMultiplyer: 1
   ignoreDisabledMode: 0
-  movementAudioClip: {fileID: 0}
+  movementAudioClip: {fileID: 8300000, guid: 3438207a3ba053e4ba66b82d6f9108d2, type: 3}
   audioErrorThreshold: 3
   audioErrorDeltaThreshold: 25
   movementAudioPitchRange: {x: 0.95, y: 1.1}
@@ -26103,7 +26103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brakeModeMultiplyer: 1
   ignoreDisabledMode: 0
-  movementAudioClip: {fileID: 0}
+  movementAudioClip: {fileID: 8300000, guid: 3438207a3ba053e4ba66b82d6f9108d2, type: 3}
   audioErrorThreshold: 3
   audioErrorDeltaThreshold: 25
   movementAudioPitchRange: {x: 0.95, y: 1.1}
@@ -138494,12 +138494,6 @@ MonoBehaviour:
   algaeStallAudio: {fileID: 8300000, guid: f34ac002dfb0a834a802271489ef029a, type: 3}
   rollerSource: {fileID: 8586043516971083231}
   intakeClip: {fileID: 8300000, guid: 9378423fe1c50f0419b9380e03b4ef96, type: 3}
-  algaeArmAudioSource: {fileID: 9197110102668992830}
-  algaeArmMoveClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4, type: 3}
-  algaeDescorerAudioSource: {fileID: 8530998179258838492}
-  algaeDescorerMoveClip: {fileID: 8300000, guid: 9b4f6e7093d9c8543b928562a795a8d4,
-    type: 3}
-  armAngleTolerance: 8
   intakeWheels:
   - {fileID: 8430217720649920843}
   - {fileID: 6583251136797711054}
@@ -211176,7 +211170,7 @@ PrefabInstance:
     - target: {fileID: 6218513309474816779, guid: 5077157e84093d140b39d0235e02802d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.111912176
+      value: -0.1159
       objectReference: {fileID: 0}
     - target: {fileID: 6218513309474816779, guid: 5077157e84093d140b39d0235e02802d,
         type: 3}
