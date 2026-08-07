@@ -80,12 +80,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
         [SerializeField] private AudioSource rollerSource;
         [SerializeField] private AudioClip intakeClip;
  
-        [Header("Arm Movement Audio")]
-        [SerializeField] private AudioSource algaeArmAudioSource;
-        [SerializeField] private AudioClip algaeArmMoveClip;
-        [SerializeField] private AudioSource algaeDescorerAudioSource;
-        [SerializeField] private AudioClip algaeDescorerMoveClip;
-        [SerializeField] private float armAngleTolerance = 3f;
+ 
         
         [Header("Animation Joints (Wheels)")]
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
@@ -102,6 +97,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
         private float _algaeTargetAngle;
         private float _algaeDescorerTargetAngle;
         private bool _isScoring;
+        private bool _rollersActive;
+        private bool _outtakeWasPressed;
  
         protected override void Start()
         {
@@ -127,14 +124,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
             rollerSource.clip = intakeClip;
             rollerSource.loop = true;
             rollerSource.Stop();
- 
-            algaeArmAudioSource.clip = algaeArmMoveClip;
-            algaeArmAudioSource.loop = true;
-            algaeArmAudioSource.Stop();
- 
-            algaeDescorerAudioSource.clip = algaeDescorerMoveClip;
-            algaeDescorerAudioSource.loop = true;
-            algaeDescorerAudioSource.Stop();
  
             // Setup controllers properly
             if (_coralController != null)
@@ -167,8 +156,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
             if (algaeStowState != null) _algaeController.SetTargetState(algaeStowState);
             if (coralStowState != null) _coralController.SetTargetState(coralStowState);
             bool intakePressed = IntakeAction != null && IntakeAction.IsPressed();
-
-            _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && IntakeAction.IsPressed());  
+ 
+            // Deteccion manual de flanco de subida para el outtake: no usamos
+            // OuttakeAction.triggered directamente porque FixedUpdate puede correr
+            // mas de una vez en el mismo frame (varios ticks fisicos por frame de
+            // render), y .triggered puede seguir en true en el segundo tick, causando
+            // que se suelte alga y coral "al mismo tiempo" en vez de con dos pulsaciones.
+            bool outtakeHeld = OuttakeAction != null && OuttakeAction.IsPressed();
+            bool outtakeJustPressed = outtakeHeld && !_outtakeWasPressed;
+ 
+            _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && IntakeAction.IsPressed() && !hasAlgae);  
             
  
  
@@ -198,10 +195,28 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
                 break;
                 
                 case ReefscapeSetpoints.Place:
-                    if (OuttakeAction != null && OuttakeAction.triggered)
+                    if (outtakeJustPressed)
                     {
+                        bool hadBoth = hasCoral && hasAlgae;
+ 
                         PlacePiece();
                         StartCoroutine(ScoreCoroutine());
+ 
+                        if (hadBoth)
+                        {
+                            // Superciclo: si tenias coral Y alga y acabas de anotar la
+                            // pieza correspondiente al modo actual, cambia automaticamente
+                            // al otro modo para poder moverte directo a su setpoint y soltarla.
+                            switch (CurrentRobotMode)
+                            {
+                                case ReefscapeRobotMode.Algae:
+                                    SetRobotMode(ReefscapeRobotMode.Coral);
+                                    break;
+                                case ReefscapeRobotMode.Coral:
+                                    SetRobotMode(ReefscapeRobotMode.Algae);
+                                    break;
+                            }
+                        }
                     }
  
                     StopAllIntakes();
@@ -253,20 +268,25 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
  
             UpdateSetpoints();
             UpdateAudio();
-            UpdateArmAudio();
+ 
+            _outtakeWasPressed = outtakeHeld;
         }
  
         private void UpdateRollers(bool hasCoral, bool hasAlgae, bool intakePressed)
         {
             // Mientras se está anotando (ver ScoreCoroutine), esta lógica no debe pisar
             // la velocidad que está aplicando la corrutina.
-            if (_isScoring) return;
+            if (_isScoring)
+            {
+                _rollersActive = true;
+                return;
+            }
  
             // Rollers del efector de coral: giran solo en modo Coral, en el setpoint de
             // Intake, con el botón presionado y sin coral ya agarrado.
             bool wantCoralIntake = CurrentRobotMode == ReefscapeRobotMode.Coral
                                    && CurrentSetpoint == ReefscapeSetpoints.Intake
-                                   && intakePressed && !hasCoral;
+                                   && intakePressed && !hasCoral && !hasAlgae;
  
             if (wantCoralIntake)
             {
@@ -295,6 +315,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
                 foreach (var wheel in algaeintakeWheels) wheel.VelocityRoller(0).useAxis(JointAxis.X);
                 foreach (var wheel in algaeintakeWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.X);
             }
+ 
+            _rollersActive = wantCoralIntake || wantAlgaeIntake;
         }
  
         private IEnumerator ScoreCoroutine()
@@ -302,13 +324,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
             _isScoring = true;
  
             // Igual que en Overture: al anotar, se invierte la dirección de los rollers
-            // del mecanismo correspondiente durante medio segundo para expulsar la pieza.
+            // del mecanismo correspondiente para expulsar la pieza.
             bool scoringAlgae = CurrentRobotMode == ReefscapeRobotMode.Algae;
             float speed = scoringAlgae ? -wheelIntakeSpeed : wheelIntakeSpeed;
             float speedReverse = scoringAlgae ? -wheelIntakeSpeedReverse : wheelIntakeSpeedReverse;
  
-            float timer = 0f;
-            while (timer < 0.5f)
+            // Outtake infinito: mientras el botón siga presionado, los rollers (y el
+            // audio, que sigue a _rollersActive) se mantienen invertidos sin límite de
+            // tiempo. Esto permite despejar un jam sosteniendo el botón en vez de que
+            // el sistema se corte a los 0.5s originales. Se suelta al soltar el botón.
+            while (OuttakeAction != null && OuttakeAction.IsPressed())
             {
                 if (scoringAlgae)
                 {
@@ -321,7 +346,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
                     foreach (var wheel in intakeWheelsReverse) wheel.VelocityRoller(speedReverse);
                 }
  
-                timer += Time.deltaTime;
                 yield return null;
             }
  
@@ -376,46 +400,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
             if (algaeDescorerArm != null)
                 algaeDescorerArm.SetTargetAngle(_algaeDescorerTargetAngle).withAxis(JointAxis.X);
         }
-        private void UpdateArmAudio()
-        {
-            if (BaseGameManager.Instance.RobotState == RobotState.Disabled)
-            {
-                if (algaeArmAudioSource != null && algaeArmAudioSource.isPlaying) algaeArmAudioSource.Stop();
-                if (algaeDescorerAudioSource != null && algaeDescorerAudioSource.isPlaying) algaeDescorerAudioSource.Stop();
-                return;
-            }
  
-            // Pivot del algaeArm: suena mientras el angulo actual no coincide con el
-            // setpoint objetivo (_algaeTargetAngle), independiente del descorer.
-            if (algaeArm != null && algaeArmAudioSource != null)
-            {
-                bool algaeArmAtTarget = Utils.InAngularRange(algaeArm.GetSingleAxisAngle(JointAxis.X), _algaeTargetAngle, armAngleTolerance);
- 
-                if (!algaeArmAtTarget && !algaeArmAudioSource.isPlaying)
-                {
-                    algaeArmAudioSource.Play();
-                }
-                else if (algaeArmAtTarget && algaeArmAudioSource.isPlaying)
-                {
-                    algaeArmAudioSource.Stop();
-                }
-            }
- 
-            // Pivot del algaeDescorerArm: mecanismo aparte, su propia fuente y setpoint.
-            if (algaeDescorerArm != null && algaeDescorerAudioSource != null)
-            {
-                bool descorerAtTarget = Utils.InAngularRange(algaeDescorerArm.GetSingleAxisAngle(JointAxis.X), _algaeDescorerTargetAngle, armAngleTolerance);
- 
-                if (!descorerAtTarget && !algaeDescorerAudioSource.isPlaying)
-                {
-                    algaeDescorerAudioSource.Play();
-                }
-                else if (descorerAtTarget && algaeDescorerAudioSource.isPlaying)
-                {
-                    algaeDescorerAudioSource.Stop();
-                }
-            }
-        }
  
         private void UpdateAudio()
         {
@@ -430,17 +415,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
                 return;
             }
  
-            if (((IntakeAction.IsPressed() && !_coralController.HasPiece() && !_coralController.HasPiece()) ||
-                 OuttakeAction.IsPressed()) &&
-                !rollerSource.isPlaying)
+            if (_rollersActive && !rollerSource.isPlaying)
             {
                 rollerSource.Play();
             }
-            else if (!IntakeAction.IsPressed() && !OuttakeAction.IsPressed() && rollerSource.isPlaying)
-            {
-                rollerSource.Stop();
-            }
-            else if (IntakeAction.IsPressed() && (_coralController.HasPiece() || _algaeController.HasPiece()))
+            else if (!_rollersActive && rollerSource.isPlaying)
             {
                 rollerSource.Stop();
             }
