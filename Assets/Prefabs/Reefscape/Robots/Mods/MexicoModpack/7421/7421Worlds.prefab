@@ -151495,9 +151495,9 @@ GameObject:
   - component: {fileID: 1966105591941200741}
   - component: {fileID: 8492845085617385182}
   - component: {fileID: 4106507740893707657}
-  - component: {fileID: 5742074334727572946}
   - component: {fileID: 3291246062731545298}
   - component: {fileID: 4128771412636001796}
+  - component: {fileID: 4498232666270879467}
   - component: {fileID: 5423898295959326627}
   - component: {fileID: 5160361554074938297}
   - component: {fileID: 3755075928892553883}
@@ -151595,52 +151595,6 @@ MonoBehaviour:
   m_DefaultActionMap: Robot
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!114 &5742074334727572946
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5625352596829322111}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8488c7b71ddc4874287a72b7d14374b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stages:
-  - {fileID: 7599348922314953304}
-  - {fileID: 4115168428049093294}
-  elevatorType: 1
-  pidConstants:
-    kP: 20
-    kI: 0
-    kD: 10
-    Max: 15
-    Isaturation: 0
-  stagesPidConstants:
-    kP: 20
-    kI: 0
-    kD: 10
-    Max: 15
-    Isaturation: 0
-  elevatorAxis: 1
-  flipped: 0
-  setStageOverrides: []
-  stageHeight: 10
-  stageOverlap: 8
-  carriageHeight: 8
-  elevatorSound: {fileID: 8058421565148886480}
-  elevatorClip: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
-  minSpeed: 1
-  maxSpeed: 60
-  soundPitchRange: {x: 0.8, y: 1.2}
-  soundVolumeRange: {x: 0.3, y: 1}
-  stageClickClip: {fileID: 8300000, guid: ef656f2139a211149a76a3e6548337f7, type: 3}
-  clickVolume: 0.1
-  clickSoundCooldown: 0.2
-  topClickOffset: 0.5
-  bottomClickOffset: 0.5
-  referenceTransform: {fileID: 0}
 --- !u!114 &3291246062731545298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151697,6 +151651,53 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &4498232666270879467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5625352596829322111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20cb3794f26a4d04dab8b954d1f65ffa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stages:
+  - {fileID: 7599348922314953304}
+  - {fileID: 4115168428049093294}
+  elevatorType: 1
+  pidConstants:
+    kP: 10
+    kI: 0
+    kD: 5
+    Max: 0.925
+    Isaturation: 0
+  stagesPidConstants:
+    kP: 10
+    kI: 0
+    kD: 5
+    Max: 10
+    Isaturation: 0
+  elevatorAxis: 1
+  flipped: 0
+  setStageOverrides: []
+  stageHeight: 15
+  stageOverlap: 4
+  carriageHeight: 8
+  elevatorSound: {fileID: 8058421565148886480}
+  elevatorClip: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
+  minSpeed: 1
+  maxSpeed: 60
+  soundPitchRange: {x: 0.8, y: 1.2}
+  soundVolumeRange: {x: 0.3, y: 1}
+  stageClickClip: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
+  clickVolume: 0.1
+  clickSoundCooldown: 0.2
+  topClickOffset: 0.5
+  bottomClickOffset: 0.5
+  referenceTransform: {fileID: 4393511975778189639, guid: 85a8a40a1e9d1ec40b04d588a70b4be0,
+    type: 3}
 --- !u!114 &5423898295959326627
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151754,7 +151755,7 @@ MonoBehaviour:
     <TargetTransform>k__BackingField: {fileID: 3134289852310517415}
     <DrawDebugLines>k__BackingField: 0
   superCycler: 0
-  elevator: {fileID: 5742074334727572946}
+  elevator: {fileID: 4498232666270879467}
   arm: {fileID: 7684470787662595813}
   wrist: {fileID: 2312077896021641307}
   climber: {fileID: 2950307210903891910}

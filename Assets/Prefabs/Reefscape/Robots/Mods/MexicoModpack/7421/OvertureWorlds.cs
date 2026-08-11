@@ -20,7 +20,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
     public class OvertureWorlds : ReefscapeRobotBase
     {
         [Header("Components")]
-        [SerializeField] private ContinuousRealisticElevator elevator;
+        [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint arm;
         [SerializeField] private GenericJoint wrist;
         [SerializeField] private GenericJoint climber;
