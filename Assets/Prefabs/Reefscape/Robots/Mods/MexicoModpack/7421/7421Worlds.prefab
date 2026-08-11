@@ -6718,7 +6718,8 @@ AudioSource:
   m_GameObject: {fileID: 245382668421029613}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -29407,7 +29408,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brakeModeMultiplyer: 1
   ignoreDisabledMode: 0
-  movementAudioClip: {fileID: 8300000, guid: 9378423fe1c50f0419b9380e03b4ef96, type: 3}
+  movementAudioClip: {fileID: 8300000, guid: bad13d7e08522374d8b53b84d9873a54, type: 3}
   audioErrorThreshold: 3
   audioErrorDeltaThreshold: 25
   movementAudioPitchRange: {x: 0.95, y: 1.1}
@@ -29439,7 +29440,8 @@ AudioSource:
   m_GameObject: {fileID: 1084643081520340077}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -41384,8 +41386,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 192
+  m_LayerOverridePriority: 5
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -65641,6 +65643,7 @@ GameObject:
   - component: {fileID: 6185561823873282032}
   - component: {fileID: 1395163705907250627}
   - component: {fileID: 6843703252250780413}
+  - component: {fileID: 2397127767228757836}
   m_Layer: 0
   m_Name: 0211 - Placa Union Elevador
   m_TagString: Untagged
@@ -65715,6 +65718,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &2397127767228757836
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2471034717012837017}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0035594678, y: 0.000063499996, z: 0.00026151887}
+  m_Center: {x: -0.000008177978, y: -9.313225e-10, z: -0.00059314055}
 --- !u!1 &2471356447763281828
 GameObject:
   m_ObjectHideFlags: 0
@@ -106132,14 +106156,14 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 192
+  m_LayerOverridePriority: 5
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00043055054, y: 0.00025400126, z: 0.008890002}
-  m_Center: {x: -0.000038725208, y: -5.775003e-10, z: -5.960463e-10}
+  m_Size: {x: 0.00028805144, y: 0.00028333208, z: 0.008890002}
+  m_Center: {x: -0.00010997473, y: -0.000014665993, z: -5.890533e-10}
 --- !u!1 &4053484090512525356
 GameObject:
   m_ObjectHideFlags: 0
@@ -116955,7 +116979,6 @@ GameObject:
   - component: {fileID: 4910901101885844193}
   - component: {fileID: 4801726598097124761}
   - component: {fileID: 466471666989110813}
-  - component: {fileID: 280335484461922732}
   m_Layer: 0
   m_Name: 0219 - TOP Bracket.001
   m_TagString: Untagged
@@ -117030,27 +117053,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &280335484461922732
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4398481232499326053}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.0002540002, y: 0.00003175016, z: 0.0009525008}
-  m_Center: {x: 0.000031750045, y: -0.000015874813, z: -0.00033019978}
 --- !u!1 &4400099299332807345
 GameObject:
   m_ObjectHideFlags: 0
@@ -124133,8 +124135,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 192
+  m_LayerOverridePriority: 5
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -142522,7 +142524,6 @@ GameObject:
   - component: {fileID: 6339653004061481868}
   - component: {fileID: 1390578119027529789}
   - component: {fileID: 8285583432753157324}
-  - component: {fileID: 8905508908297917882}
   m_Layer: 0
   m_Name: 0219 - TOP Bracket
   m_TagString: Untagged
@@ -142597,27 +142598,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &8905508908297917882
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5323212072340037304}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.000254, y: 0.000031750013, z: 0.0009525005}
-  m_Center: {x: 0.00003175, y: -0.000015875472, z: -0.00033019957}
 --- !u!1 &5325433130514127561
 GameObject:
   m_ObjectHideFlags: 0
@@ -151671,20 +151651,23 @@ MonoBehaviour:
     kP: 10
     kI: 0
     kD: 5
-    Max: 0.925
+    Max: 2.25
     Isaturation: 0
   stagesPidConstants:
     kP: 10
     kI: 0
     kD: 5
-    Max: 10
+    Max: 11.25
     Isaturation: 0
   elevatorAxis: 1
   flipped: 0
-  setStageOverrides: []
-  stageHeight: 15
+  setStageOverrides:
+  - stageNum: 1
+    overrideAxis: 1
+    useStartingOffset: 1
+  stageHeight: 25
   stageOverlap: 4
-  carriageHeight: 8
+  carriageHeight: 1
   elevatorSound: {fileID: 8058421565148886480}
   elevatorClip: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
   minSpeed: 1
@@ -151696,8 +151679,7 @@ MonoBehaviour:
   clickSoundCooldown: 0.2
   topClickOffset: 0.5
   bottomClickOffset: 0.5
-  referenceTransform: {fileID: 4393511975778189639, guid: 85a8a40a1e9d1ec40b04d588a70b4be0,
-    type: 3}
+  referenceTransform: {fileID: 0}
 --- !u!114 &5423898295959326627
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151724,8 +151706,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cageScoringTrigger: {fileID: 4171058793914079779}
-  autoClimbTriggers:
-  - {fileID: 8861682055397300938, guid: 85a8a40a1e9d1ec40b04d588a70b4be0, type: 3}
+  autoClimbTriggers: []
 --- !u!114 &3755075928892553883
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169825,7 +169806,8 @@ AudioSource:
   m_GameObject: {fileID: 6341786797482843393}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -228413,14 +228395,14 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 192
+  m_LayerOverridePriority: 5
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00031351406, y: 0.00025400126, z: 0.008890002}
-  m_Center: {x: -0.00009724344, y: -9.081378e-10, z: 4.4408918e-16}
+  m_Size: {x: 0.00029003297, y: 0.00025400126, z: 0.008890002}
+  m_Center: {x: -0.00010898391, y: -9.053387e-10, z: 4.4408918e-16}
 --- !u!1 &8360652193354208307
 GameObject:
   m_ObjectHideFlags: 0
@@ -245243,14 +245225,14 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 192
+  m_LayerOverridePriority: 6
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00028785106, y: 0.00025399998, z: 0.0034290026}
-  m_Center: {x: 0.00011007438, y: 0, z: 2.624377e-11}
+  m_Size: {x: 0.00029573, y: 0.00025399998, z: 0.0034290026}
+  m_Center: {x: 0.00010613464, y: 0, z: 2.5304462e-11}
 --- !u!1 &8942875694667513546
 GameObject:
   m_ObjectHideFlags: 0
