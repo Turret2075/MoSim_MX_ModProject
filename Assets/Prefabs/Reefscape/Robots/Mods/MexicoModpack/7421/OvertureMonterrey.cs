@@ -201,8 +201,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             if (!_isScoring)
             {
                 bool isIntaking = (CurrentSetpoint == ReefscapeSetpoints.Intake || CurrentSetpoint == ReefscapeSetpoints.Stack) && IntakeAction.IsPressed();
+                bool isAlgaeRemoval = (CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae) && IntakeAction.IsPressed();
 
-                if (isIntaking && CurrentRobotMode == ReefscapeRobotMode.Coral || CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae)
+                if ((isIntaking && CurrentRobotMode == ReefscapeRobotMode.Coral) || isAlgaeRemoval)
                 {
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(wheelIntakeSpeed).useAxis(JointAxis.X);
@@ -252,7 +253,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     break;
                 case ReefscapeSetpoints.Intake:
                     _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
-                    _coralController.RequestIntake(coralIntake, !hasCoral && !hasAlgae);
+                    _coralController.RequestIntake(coralIntake, CurrentRobotMode == ReefscapeRobotMode.Coral && !hasCoral && !hasAlgae);
 
                     if (CurrentRobotMode == ReefscapeRobotMode.Algae)
                     {
@@ -468,7 +469,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             climber.SetTargetAngle(_climbTargetAngle).withAxis(JointAxis.X);
             arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.Z).noWrap(180f);
             wrist.SetTargetAngle(_wristTargetAngle).withAxis(JointAxis.Y).noWrap(180f);
-            claw.SetTargetAngle(_clawTargetAngle).withAxis(JointAxis.X);
+            claw.SetTargetAngle(_clawTargetAngle).withAxis(JointAxis.X).noWrap(180f);
         }
 
         private void AutoAlignOffsets()
@@ -524,7 +525,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
             }
 
             if (((IntakeAction.IsPressed() && !_coralController.HasPiece() && !_coralController.HasPiece()) ||
-                 OuttakeAction.IsPressed() || CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae) &&
+                 OuttakeAction.IsPressed() ||
+                 ((CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae) && IntakeAction.IsPressed())) &&
                 !rollerSource.isPlaying)
             {
                 rollerSource.Play();

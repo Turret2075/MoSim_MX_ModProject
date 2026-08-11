@@ -204,8 +204,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
             if (!_isScoring)
             {
                 bool isIntaking = (CurrentSetpoint == ReefscapeSetpoints.Intake || CurrentSetpoint == ReefscapeSetpoints.RobotSpecial || CurrentSetpoint == ReefscapeSetpoints.Stack) && IntakeAction.IsPressed();
+                bool isAlgaeRemoval = (CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae) && IntakeAction.IsPressed();
 
-                if (isIntaking && CurrentRobotMode == ReefscapeRobotMode.Coral || CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae)
+                if ((isIntaking && CurrentRobotMode == ReefscapeRobotMode.Coral) || isAlgaeRemoval)
                 {
                     foreach (var wheel in intakeWheels)
                         wheel.VelocityRoller(wheelIntakeSpeed).useAxis(JointAxis.X);
@@ -570,7 +571,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
             }
 
             if (((IntakeAction.IsPressed() && !_coralController.HasPiece() && !_coralController.HasPiece()) ||
-                 OuttakeAction.IsPressed() || CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae) &&
+                 OuttakeAction.IsPressed() ||
+                 ((CurrentSetpoint == ReefscapeSetpoints.LowAlgae || CurrentSetpoint == ReefscapeSetpoints.HighAlgae) && IntakeAction.IsPressed())) &&
                 !rollerSource.isPlaying)
             {
                 rollerSource.Play();
