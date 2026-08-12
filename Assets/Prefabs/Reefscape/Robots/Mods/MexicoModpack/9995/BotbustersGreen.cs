@@ -33,6 +33,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         // directamente armJoint (junto con wrist/twist) como cualquier
         // otro setpoint.
 
+        [Header("Intake Vision")]
+        [SerializeField] private BoxCollider intakeVision;
+        private OverlapBoxBounds _visionDetect;
+        private Collider[] _colliders;
+        private LayerMask _mask;
+
         [Header("Wheels")]
         // Intake de piso, dos pares de GenericRoller (no animation):
         // par delantero (agarra el coral) + par trasero (lo termina de meter).
@@ -132,6 +138,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             intakeAudioSource.clip = intakeClip;
             intakeAudioSource.loop = true;
             intakeAudioSource.playOnAwake = false;
+
+            _colliders = new Collider[6];
+            _visionDetect = new OverlapBoxBounds(intakeVision);
+            _mask = LayerMask.GetMask("Coral");
 
             align = gameObject.GetComponent<ReefscapeAutoAlign>();
         }
@@ -295,6 +305,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
 
 
             _previousSetpoint = CurrentSetpoint;
+
+            RunIntakeVision();
         }
 
         private IEnumerator PlaceGamePiece(ReefscapeSetpoints lastSetpoint)
@@ -353,6 +365,36 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             float zOffset = !FacingReef ? backReefOffset : 0f;
 
             align.offset = new Vector3(0f, 0f, zOffset);
+        }
+
+
+        private void RunIntakeVision()
+        {
+            if (!IntakeAction.IsPressed() || _coralController.HasPiece() || CurrentSetpoint == ReefscapeSetpoints.LowAlgae) return;
+            for (int i = 0; i < _colliders.Length; i++)
+            {
+                _colliders[i] = null;
+            }
+            var size = _visionDetect.OverlapBoxNonAlloc(ref _colliders, _mask);
+
+            if (_colliders != null)
+            {
+                if (!_colliders[0]) return;
+                GameObject close = _colliders[0].gameObject;
+                for (int i = 1; i < size; i++) {
+                    if (Vector3.Distance(_colliders[i].transform.position, transform.position) <
+                        Vector3.Distance(close.transform.position, transform.position))
+                    {
+                        close = _colliders[i].gameObject;
+                    }
+                }
+
+                Transform offsetTransform = new GameObject().transform;
+                offsetTransform.position = transform.position;
+                offsetTransform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y+180, transform.rotation.eulerAngles.z);
+                var angle = Quaternion.LookRotation(offsetTransform.position - close.transform.position, offsetTransform.up).eulerAngles.y;
+                DriveController.SoftSteer(Mathf.Clamp(-angle + offsetTransform.eulerAngles.y, 0.18f, -0.18f));
+            }
         }
 
 

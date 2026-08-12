@@ -236,6 +236,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
             if (BaseGameManager.Instance.RobotState == RobotState.Disabled) return;
 
             if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.875f);
+            if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.6f);
             else DriveController.SetDriveMp(1);
 
             AutoAlignOffsets();
@@ -513,7 +514,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Worlds
         private void UpdateSetpoints()
         {
             elevator.SetTarget(_elevatorTargetHeight);
-            climber.SetTargetAngle(_climbTargetAngle).withAxis(JointAxis.X);
+            climber.SetTargetAngle(_climbTargetAngle).withAxis(JointAxis.X).noWrap(180f);
             arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.Z).noWrap(180f);
             wrist.SetTargetAngle(_wristTargetAngle).withAxis(JointAxis.Y).noWrap(180f);
         }

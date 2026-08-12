@@ -230,8 +230,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                 }
             }
 
-            if (_climbScorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climb)
-                SetState(ReefscapeSetpoints.Climbed);
+            if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.6f);
+            else DriveController.SetDriveMp(1);
+
 
             AutoAlignOffsets();
 
