@@ -24,7 +24,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [Header("Rollers - End Effector (como TitaniumRams)")]
         [SerializeField] private GenericRoller endEffectorRollerLeft;
         [SerializeField] private GenericRoller endEffectorRollerRight;
-        [SerializeField] private GenericRoller endEffectorRollerRight2;
 
 
         [Header("Rollers - Funnel (como Firebots)")]
@@ -59,6 +58,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [SerializeField] private VoltecBSetpoint lowAlgae;
         [SerializeField] private VoltecBSetpoint highAlgae;
         [SerializeField] private VoltecBSetpoint barge;
+        [SerializeField] private VoltecBSetpoint bargeBack;
 
         [Header("Intake Components")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -196,7 +196,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     break;
                 case ReefscapeSetpoints.Barge:
                     // Un solo setpoint de barge: sube y ahi mismo se hace el outtake con rollers
-                    SetSetpoint(barge);
+                    SetSetpoint(FacingBarge() ? barge : bargeBack);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
                     SetState(ReefscapeSetpoints.Stow);
@@ -233,9 +233,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                 }
 
                 endEffectorRollerLeft.ChangeAngularVelocity(endEffectorOuttakeVelocity);
-                endEffectorRollerRight2.ChangeAngularVelocity(-endEffectorOuttakeVelocity);
                 endEffectorRollerRight.ChangeAngularVelocity(-endEffectorOuttakeVelocity);
             }
+        }
+
+        private bool FacingBarge()
+        {
+        return (transform.position.x > 0 && transform.rotation.eulerAngles.y > 180) || (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
         }
 
         private void SetSetpoint(VoltecBSetpoint setpoint)
@@ -254,13 +258,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             if (wantsCoralIntake)
             {
                 endEffectorRollerLeft.ChangeAngularVelocity(-endEffectorIntakeVelocity);
-                endEffectorRollerRight2.ChangeAngularVelocity(endEffectorIntakeVelocity);
                 endEffectorRollerRight.ChangeAngularVelocity(endEffectorIntakeVelocity);
             }
             else if (CurrentSetpoint != ReefscapeSetpoints.Place)
             {
                 endEffectorRollerLeft.ChangeAngularVelocity(0);
-                endEffectorRollerRight2.ChangeAngularVelocity(0);
                 endEffectorRollerRight.ChangeAngularVelocity(0);
             }
 
