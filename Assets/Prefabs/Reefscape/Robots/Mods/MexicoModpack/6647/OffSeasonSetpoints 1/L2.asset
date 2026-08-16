@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: L2
   m_EditorClassIdentifier: 
   elevatorHeight: 26
-  algaeArmAngle: 0
+  algaeArmAngle: -180

@@ -1,3 +1,4 @@
+using System.Collections;
 using Games.Reefscape.Enums;
 using Games.Reefscape.GamePieceSystem;
 using Games.Reefscape.Robots;
@@ -58,7 +59,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [SerializeField] private VoltecBSetpoint lowAlgae;
         [SerializeField] private VoltecBSetpoint highAlgae;
         [SerializeField] private VoltecBSetpoint barge;
-        [SerializeField] private VoltecBSetpoint bargeBack;
 
         [Header("Intake Components")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -80,11 +80,23 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [SerializeField] private AudioSource funnelRollerSource;
         [SerializeField] private AudioClip funnelRollerClip;
 
+        [Header("Algae Roller Audio")]
+        [SerializeField] private AudioSource algaeRollerSource;
+        [SerializeField] private AudioClip algaeRollerClip;
+
+        [Header("Colliders")]
+        [SerializeField] private BoxCollider[] algaeDisableColliders;
+
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
 
         private float _elevatorTargetHeight;
         private float _algaeArmTargetAngle;
+        private bool _endEffectorRollersActive;
+        private bool _funnelRollersActive;
+        private bool _algaeRollersActive;
+        private bool _outtakeWasPressed;
+        private bool _isScoring;
 
         protected override void Start()
         {
@@ -120,6 +132,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             funnelRollerSource.loop = true;
             funnelRollerSource.Stop();
 
+            algaeRollerSource.clip = algaeRollerClip;
+            algaeRollerSource.loop = true;
+            algaeRollerSource.Stop();
+
         }
 
         private void LateUpdate()
@@ -132,6 +148,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             bool hasAlgae = _algaeController.HasPiece();
             bool hasCoral = _coralController.HasPiece();
             bool intakePressed = IntakeAction.IsPressed();
+
+            // Deteccion manual de flanco de subida para el outtake (igual que TitaniumRams):
+            // asi el spin de los rollers sigue directo al boton, no al CurrentSetpoint,
+            // y no se queda pegado si no hay pieza que soltar.
+            bool outtakeHeld = OuttakeAction != null && OuttakeAction.IsPressed();
+            bool outtakeJustPressed = outtakeHeld && !_outtakeWasPressed;
 
             _algaeController.SetTargetState(algaeStowState);
             _coralController.SetTargetState(coralStowState);
@@ -165,7 +187,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     {
                         SetSetpoint(l1Place);
                     }
-                    PlacePiece();
+
+                    if (outtakeJustPressed)
+                    {
+                        PlacePiece();
+                        StartCoroutine(ScoreCoroutine());
+                    }
                     break;
                 case ReefscapeSetpoints.L1:
                     SetSetpoint(l1);
@@ -196,7 +223,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     break;
                 case ReefscapeSetpoints.Barge:
                     // Un solo setpoint de barge: sube y ahi mismo se hace el outtake con rollers
-                    SetSetpoint(FacingBarge() ? barge : bargeBack);
+                    SetSetpoint(barge);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
                     SetState(ReefscapeSetpoints.Stow);
@@ -206,18 +233,21 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             UpdateSetpoints();
             UpdateRollers(hasCoral, hasAlgae, intakePressed);
             UpdateAudio();
+
+            _outtakeWasPressed = outtakeHeld;
         }
 
         private void PlacePiece()
         {
-            if (_algaeController.HasPiece())
+            // Las algas solo se anotan en el Barge (fisicamente no hay processor).
+            // No usamos HasPiece() solo porque tambien liberaria el alga si por error
+            // se presiona outtake en otro setpoint (p. ej. Processor) mientras se trae.
+            if (_algaeController.HasPiece() && LastSetpoint == ReefscapeSetpoints.Barge)
             {
                 // Barge (estilo Robonauts): no se avienta, solo sube y se outtakea con los rollers
-                algaeRollerLeft.ChangeAngularVelocity(-algaeOuttakeVelocity);
-                algaeRollerRight.ChangeAngularVelocity(algaeOuttakeVelocity);
                 _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4f, 0));
             }
-            else
+            else if (_coralController.HasPiece())
             {
                 if (LastSetpoint == ReefscapeSetpoints.L4)
                 {
@@ -231,15 +261,51 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                 {
                     _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 6));
                 }
-
-                endEffectorRollerLeft.ChangeAngularVelocity(endEffectorOuttakeVelocity);
-                endEffectorRollerRight.ChangeAngularVelocity(-endEffectorOuttakeVelocity);
             }
         }
 
-        private bool FacingBarge()
+        private IEnumerator ScoreCoroutine()
         {
-        return (transform.position.x > 0 && transform.rotation.eulerAngles.y > 180) || (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
+            _isScoring = true;
+
+            // Igual que en TitaniumRams: mientras el boton de outtake siga presionado,
+            // los rollers (y el audio, que sigue las banderas de abajo) se mantienen
+            // girando sin limite de tiempo, para poder despejar un jam. Se detienen
+            // en el instante que se suelta el boton, sin depender del CurrentSetpoint.
+            bool scoringAlgae = LastSetpoint == ReefscapeSetpoints.Barge;
+
+            while (OuttakeAction != null && OuttakeAction.IsPressed())
+            {
+                if (scoringAlgae)
+                {
+                    algaeRollerLeft.ChangeAngularVelocity(-algaeOuttakeVelocity);
+                    algaeRollerRight.ChangeAngularVelocity(algaeOuttakeVelocity);
+                    _algaeRollersActive = true;
+                }
+                else
+                {
+                    endEffectorRollerLeft.ChangeAngularVelocity(endEffectorOuttakeVelocity);
+                    endEffectorRollerRight.ChangeAngularVelocity(-endEffectorOuttakeVelocity);
+                    _endEffectorRollersActive = true;
+                }
+
+                yield return null;
+            }
+
+            if (scoringAlgae)
+            {
+                algaeRollerLeft.ChangeAngularVelocity(0);
+                algaeRollerRight.ChangeAngularVelocity(0);
+                _algaeRollersActive = false;
+            }
+            else
+            {
+                endEffectorRollerLeft.ChangeAngularVelocity(0);
+                endEffectorRollerRight.ChangeAngularVelocity(0);
+                _endEffectorRollersActive = false;
+            }
+
+            _isScoring = false;
         }
 
         private void SetSetpoint(VoltecBSetpoint setpoint)
@@ -250,6 +316,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
 
         private void UpdateRollers(bool hasCoral, bool hasAlgae, bool intakePressed)
         {
+            // Mientras se esta anotando (ver ScoreCoroutine), esta logica no debe pisar
+            // la velocidad que esta aplicando la corrutina.
+            if (_isScoring)
+            {
+                return;
+            }
+
             bool wantsCoralIntake = CurrentSetpoint == ReefscapeSetpoints.Intake &&
                                      CurrentRobotMode == ReefscapeRobotMode.Coral &&
                                      intakePressed && !hasCoral && !hasAlgae;
@@ -259,11 +332,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             {
                 endEffectorRollerLeft.ChangeAngularVelocity(-endEffectorIntakeVelocity);
                 endEffectorRollerRight.ChangeAngularVelocity(endEffectorIntakeVelocity);
+                _endEffectorRollersActive = true;
             }
-            else if (CurrentSetpoint != ReefscapeSetpoints.Place)
+            else
             {
                 endEffectorRollerLeft.ChangeAngularVelocity(0);
                 endEffectorRollerRight.ChangeAngularVelocity(0);
+                _endEffectorRollersActive = false;
             }
 
             // Funnel Rollers
@@ -272,15 +347,17 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                 funnelRollerLeft.ChangeAngularVelocity(-funnelIntakeVelocity);
                 funnelRollerLeft2.ChangeAngularVelocity(-funnelIntakeVelocity);
                 funnelRollerRight.ChangeAngularVelocity(funnelIntakeVelocity);
+                _funnelRollersActive = true;
             }
             else
             {
                 funnelRollerLeft.ChangeAngularVelocity(0);
                 funnelRollerLeft2.ChangeAngularVelocity(0);
                 funnelRollerRight.ChangeAngularVelocity(0);
+                _funnelRollersActive = false;
             }
 
-            // Algae Rollers
+            // Algae Rollers (solo intake: reef y lollipop; el outtake vive en ScoreCoroutine)
             bool wantsAlgaeIntake = (CurrentSetpoint == ReefscapeSetpoints.LowAlgae ||
                                       CurrentSetpoint == ReefscapeSetpoints.HighAlgae ||
                                       CurrentSetpoint == ReefscapeSetpoints.Stack) &&
@@ -290,11 +367,30 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             {
                 algaeRollerLeft.ChangeAngularVelocity(-algaeIntakeVelocity);
                 algaeRollerRight.ChangeAngularVelocity(algaeIntakeVelocity);
+                _algaeRollersActive = true;
             }
-            else if (!(CurrentSetpoint == ReefscapeSetpoints.Place && hasAlgae))
+            else
             {
                 algaeRollerLeft.ChangeAngularVelocity(0);
                 algaeRollerRight.ChangeAngularVelocity(0);
+                _algaeRollersActive = false;
+            }
+
+            // Igual que en OvertureWorlds: se apagan los colliders del alga mientras se
+            // esta intakeando, para que la pieza no rebote raro contra el frame del robot
+            ToggleAlgaeColliders(!wantsAlgaeIntake);
+        }
+
+        private void ToggleAlgaeColliders(bool enable)
+        {
+            if (algaeDisableColliders == null) return;
+
+            foreach (var col in algaeDisableColliders)
+            {
+                if (col != null)
+                {
+                    col.enabled = enable;
+                }
             }
         }
 
@@ -308,34 +404,42 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         {
             if (BaseGameManager.Instance.RobotState == RobotState.Disabled)
             {
-                if (endEffectorRollerSource.isPlaying || funnelRollerSource.isPlaying || algaeStallSource.isPlaying)
+                if (endEffectorRollerSource.isPlaying || funnelRollerSource.isPlaying || algaeRollerSource.isPlaying || algaeStallSource.isPlaying)
                 {
                     endEffectorRollerSource.Stop();
                     funnelRollerSource.Stop();
+                    algaeRollerSource.Stop();
                     algaeStallSource.Stop();
                 }
 
                 return;
             }
 
-            float eeSpeed = endEffectorRollerLeft.gameObject.GetComponent<Rigidbody>().angularVelocity.magnitude;
-            if (eeSpeed > 5f && !endEffectorRollerSource.isPlaying)
+            if (_endEffectorRollersActive && !endEffectorRollerSource.isPlaying)
             {
                 endEffectorRollerSource.Play();
             }
-            else if (eeSpeed <= 5f && endEffectorRollerSource.isPlaying)
+            else if (!_endEffectorRollersActive && endEffectorRollerSource.isPlaying)
             {
                 endEffectorRollerSource.Stop();
             }
 
-            float funnelSpeed = funnelRollerLeft.gameObject.GetComponent<Rigidbody>().angularVelocity.magnitude;
-            if (funnelSpeed > 5f && !funnelRollerSource.isPlaying)
+            if (_funnelRollersActive && !funnelRollerSource.isPlaying)
             {
                 funnelRollerSource.Play();
             }
-            else if (funnelSpeed <= 5f && funnelRollerSource.isPlaying)
+            else if (!_funnelRollersActive && funnelRollerSource.isPlaying)
             {
                 funnelRollerSource.Stop();
+            }
+
+            if (_algaeRollersActive && !algaeRollerSource.isPlaying)
+            {
+                algaeRollerSource.Play();
+            }
+            else if (!_algaeRollersActive && algaeRollerSource.isPlaying)
+            {
+                algaeRollerSource.Stop();
             }
 
             if (_algaeController.HasPiece() && !algaeStallSource.isPlaying)
