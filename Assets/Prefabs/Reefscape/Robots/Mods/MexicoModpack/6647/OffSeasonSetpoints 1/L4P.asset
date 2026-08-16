@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: L4P
   m_EditorClassIdentifier: 
   elevatorHeight: 70
-  algaeArmAngle: 0
+  algaeArmAngle: -180
