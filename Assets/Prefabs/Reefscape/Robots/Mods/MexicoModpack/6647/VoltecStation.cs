@@ -22,18 +22,18 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [SerializeField] private PidConstants algaeArmPid;
 
         [Header("Rollers - End Effector (como TitaniumRams)")]
-        [SerializeField] private GenericRoller endEffectorRollerLeft;
-        [SerializeField] private GenericRoller endEffectorRollerRight;
+        [SerializeField] private GenericAnimationJoint endEffectorRollerLeft;
+        [SerializeField] private GenericAnimationJoint endEffectorRollerRight;
 
 
         [Header("Rollers - Funnel (como Firebots)")]
-        [SerializeField] private GenericRoller funnelRollerLeft;
-        [SerializeField] private GenericRoller funnelRollerLeft2;
-        [SerializeField] private GenericRoller funnelRollerRight;
+        [SerializeField] private GenericAnimationJoint funnelRollerLeft;
+        [SerializeField] private GenericAnimationJoint funnelRollerLeft2;
+        [SerializeField] private GenericAnimationJoint funnelRollerRight;
 
         [Header("Rollers - Algae")]
-        [SerializeField] private GenericRoller algaeRollerLeft;
-        [SerializeField] private GenericRoller algaeRollerRight;
+        [SerializeField] private GenericAnimationJoint algaeRollerLeft;
+        [SerializeField] private GenericAnimationJoint algaeRollerRight;
 
         [Header("Roller Velocities")]
         [SerializeField] private float endEffectorIntakeVelocity;
@@ -288,36 +288,36 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             // End Effector Rollers
             if (wantsCoralIntake)
             {
-                endEffectorRollerLeft.ChangeAngularVelocity(-endEffectorIntakeVelocity);
-                endEffectorRollerRight.ChangeAngularVelocity(endEffectorIntakeVelocity);
+                endEffectorRollerLeft.VelocityRoller(-endEffectorIntakeVelocity).useAxis(JointAxis.X);
+                endEffectorRollerRight.VelocityRoller(endEffectorIntakeVelocity).useAxis(JointAxis.X);
                 _endEffectorRollersActive = true;
             }
             else if (wantsCoralOuttake)
             {
-                endEffectorRollerLeft.ChangeAngularVelocity(endEffectorOuttakeVelocity);
-                endEffectorRollerRight.ChangeAngularVelocity(-endEffectorOuttakeVelocity);
+                endEffectorRollerLeft.VelocityRoller(endEffectorOuttakeVelocity).useAxis(JointAxis.X);
+                endEffectorRollerRight.VelocityRoller(-endEffectorOuttakeVelocity).useAxis(JointAxis.X);
                 _endEffectorRollersActive = true;
             }
             else
             {
-                endEffectorRollerLeft.ChangeAngularVelocity(0);
-                endEffectorRollerRight.ChangeAngularVelocity(0);
+                endEffectorRollerLeft.VelocityRoller(0).useAxis(JointAxis.X);
+                endEffectorRollerRight.VelocityRoller(0).useAxis(JointAxis.X);
                 _endEffectorRollersActive = false;
             }
 
             // Funnel Rollers
             if (wantsCoralIntake)
             {
-                funnelRollerLeft.ChangeAngularVelocity(-funnelIntakeVelocity);
-                funnelRollerLeft2.ChangeAngularVelocity(-funnelIntakeVelocity);
-                funnelRollerRight.ChangeAngularVelocity(funnelIntakeVelocity);
+                funnelRollerLeft.VelocityRoller(-funnelIntakeVelocity).useAxis(JointAxis.X);
+                funnelRollerLeft2.VelocityRoller(-funnelIntakeVelocity).useAxis(JointAxis.X);
+                funnelRollerRight.VelocityRoller(funnelIntakeVelocity).useAxis(JointAxis.X);
                 _funnelRollersActive = true;
             }
             else
             {
-                funnelRollerLeft.ChangeAngularVelocity(0);
-                funnelRollerLeft2.ChangeAngularVelocity(0);
-                funnelRollerRight.ChangeAngularVelocity(0);
+                funnelRollerLeft.VelocityRoller(0).useAxis(JointAxis.X);
+                funnelRollerLeft2.VelocityRoller(0).useAxis(JointAxis.X);
+                funnelRollerRight.VelocityRoller(0).useAxis(JointAxis.X);
                 _funnelRollersActive = false;
             }
 
@@ -329,20 +329,20 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
 
             if (wantsAlgaeIntake)
             {
-                algaeRollerLeft.ChangeAngularVelocity(-algaeIntakeVelocity);
-                algaeRollerRight.ChangeAngularVelocity(algaeIntakeVelocity);
+                algaeRollerLeft.VelocityRoller(-algaeIntakeVelocity).useAxis(JointAxis.X);
+                algaeRollerRight.VelocityRoller(algaeIntakeVelocity).useAxis(JointAxis.X);
                 _algaeRollersActive = true;
             }
             else if (wantsAlgaeOuttake)
             {
-                algaeRollerLeft.ChangeAngularVelocity(-algaeOuttakeVelocity);
-                algaeRollerRight.ChangeAngularVelocity(algaeOuttakeVelocity);
+                algaeRollerLeft.VelocityRoller(-algaeOuttakeVelocity).useAxis(JointAxis.X);
+                algaeRollerRight.VelocityRoller(algaeOuttakeVelocity).useAxis(JointAxis.X);
                 _algaeRollersActive = true;
             }
             else
             {
-                algaeRollerLeft.ChangeAngularVelocity(0);
-                algaeRollerRight.ChangeAngularVelocity(0);
+                algaeRollerLeft.VelocityRoller(0).useAxis(JointAxis.X);
+                algaeRollerRight.VelocityRoller(0).useAxis(JointAxis.X);
                 _algaeRollersActive = false;
             }
 
