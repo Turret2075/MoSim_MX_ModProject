@@ -35,7 +35,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private VoltecOffseasonSetpoint coralStow;
         [SerializeField] private VoltecOffseasonSetpoint groundCoral;
         [SerializeField] private VoltecOffseasonSetpoint l1;
-        [SerializeField] private VoltecOffseasonSetpoint l1High;
         [SerializeField] private VoltecOffseasonSetpoint l2;
         [SerializeField] private VoltecOffseasonSetpoint l2Place;
         [SerializeField] private VoltecOffseasonSetpoint l3;
@@ -76,6 +75,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private GamePieceState coralChassisStowState;
         [SerializeField] private GamePieceState coralArmStowState;
         [SerializeField] private GamePieceState algaeStowState;
+        [SerializeField] private GamePieceState algaeIntakeState;
+
 
         [Header("Intake Wheels")]
         [SerializeField] private GenericAnimationJoint[] intakeWheels;
@@ -393,9 +394,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     break;
                 }
 
-                case ReefscapeSetpoints.RobotSpecial:
-                    SetSetpoint(l1High);
-                    break;
 
                 case ReefscapeSetpoints.Climb:
                     SetSetpoint(climbPrep);
@@ -458,11 +456,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     break;
             }
-
-            if (LastSetpoint == ReefscapeSetpoints.L1 || LastSetpoint == ReefscapeSetpoints.RobotSpecial)
-            {
-                yield return new WaitUntil(() => _coralController.ReleaseGamePieceWithForce(new Vector3(0, -1.5f, 0)));
-            }
         }
 
         private bool FacingBarge()
@@ -501,8 +494,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         _disruptable = false;
                         _intakeSequenceRunning = true;
 
-                        _armTargetAngle = hasAlgae ? _armTargetAngle : groundCoral.armAngle;
-                        _elevatorTargetHeight = hasAlgae ? _elevatorTargetHeight : coralStow.elevatorHeight;
+                        _armTargetAngle = _armTargetAngle;
+                        _elevatorTargetHeight = _elevatorTargetHeight;
                         _intakeTargetAngle = groundCoral.intakeAngle;
 
                         _coralController.SetTargetState(_coralController.currentStateNum switch
@@ -611,6 +604,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
         private void UpdateAutoAlign()
         {
+            if (_align == null) return; // Falta el componente ReefscapeAutoAlign en el GameObject de Voltec (revisar en el Inspector)
+
             bool isCoralSetpoint = CurrentSetpoint == ReefscapeSetpoints.L1 ||
                                     CurrentSetpoint == ReefscapeSetpoints.L2 ||
                                     CurrentSetpoint == ReefscapeSetpoints.L3 ||

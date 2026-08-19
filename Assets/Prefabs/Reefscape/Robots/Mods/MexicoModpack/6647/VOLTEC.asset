@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 6647
   teamName: VOLTEC
-  robotPrefab: {fileID: 5060534743255372558, guid: dcf798cb5aa56a64a8b64d12cb3b14fc,
+  robotPrefab: {fileID: 5060534743255372558, guid: a4726db1601160a4d93f6c1ead9f5108,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
@@ -28,5 +28,5 @@ MonoBehaviour:
   - {fileID: 6829736770845459078, guid: 6d88ef0a051098f4c9f966c7bf817596, type: 3}
   - {fileID: 6829736770845459078, guid: 9d404ab9e4d805b40bc1177cab1a1dab, type: 3}
   alternateTutorialCards: []
-  autoClimbs: 0
+  autoClimbs: 1
   alternateAutoClimbs: 0
