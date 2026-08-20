@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: HighAlgaeBack
   m_EditorClassIdentifier: 
   elevatorHeight: 44
-  armAngle: -90
+  armAngle: -180
   intakeAngle: -10

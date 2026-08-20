@@ -34,17 +34,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private VoltecOffseasonSetpoint stow;
         [SerializeField] private VoltecOffseasonSetpoint coralStow;
         [SerializeField] private VoltecOffseasonSetpoint groundCoral;
+        [Tooltip("Posicion del elevador cuando baja a recoger el coral desde el chasis, despues del handoff.")]
+        [SerializeField] private VoltecOffseasonSetpoint coralPickup;
         [SerializeField] private VoltecOffseasonSetpoint l1;
         [SerializeField] private VoltecOffseasonSetpoint l2;
         [SerializeField] private VoltecOffseasonSetpoint l2Place;
         [SerializeField] private VoltecOffseasonSetpoint l3;
-        [SerializeField] private VoltecOffseasonSetpoint l3Back;
         [SerializeField] private VoltecOffseasonSetpoint l3Place;
-        [SerializeField] private VoltecOffseasonSetpoint l3BackPlace;
         [SerializeField] private VoltecOffseasonSetpoint l4;
-        [SerializeField] private VoltecOffseasonSetpoint l4Back;
         [SerializeField] private VoltecOffseasonSetpoint l4Place;
-        [SerializeField] private VoltecOffseasonSetpoint l4BackPlace;
+
 
         [Header("Algae Setpoints")]
         [SerializeField] private VoltecOffseasonSetpoint lowAlgae;
@@ -83,6 +82,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private float intakeWheelSpeed = 300f;
         [SerializeField] private GenericAnimationJoint[] eEWheels;
         [SerializeField] private float eEWheelSpeed = 300f;
+        [Tooltip("Un poco mas fuerte que eEWheelSpeed para que el algae se sienta con mas garra al intakear.")]
+        [SerializeField] private float algaeIntakeRollerSpeed = 400f;
 
         [Header("Algae Stall Audio")]
         [SerializeField] private AudioSource algaeStallSource;
@@ -106,6 +107,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private bool _disruptable;
         private bool wasCoral;
         private bool _isPlacingCoral;
+        private bool _pickupCoroutineRunning;
 
         private ReefscapeSetpoints? _bufferedSetpoint;
         private bool bufferAlgeaState;
@@ -260,7 +262,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
                         _algaeController.SetTargetState(algaeStowState);
                         foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
                     }
 
                     break;
@@ -274,7 +276,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     if (_algaeController.HasPiece())
                     {
-                        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 1.15f, 0));
+                        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 3f, 0));
                         if (wasCoral)
                         {
                             SetRobotMode(ReefscapeRobotMode.Coral);
@@ -291,10 +293,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         switch (LastSetpoint)
                         {
                             case ReefscapeSetpoints.L4:
-                                SetSetpoint(FacingReef ? l4Place : l4BackPlace);
+                                SetSetpoint(l4Place);
                                 break;
                             case ReefscapeSetpoints.L3:
-                                SetSetpoint(FacingReef ? l3Place : l3BackPlace);
+                                SetSetpoint(l3Place);
                                 break;
                             case ReefscapeSetpoints.L2:
                                 SetSetpoint(l2Place);
@@ -336,13 +338,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     if (IntakeAction.IsPressed())
                     {
                         foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
                     }
 
                     break;
 
                 case ReefscapeSetpoints.L3:
-                    SetSetpoint(FacingReef ? l3 : l3Back);
+                    SetSetpoint(l3);
                     break;
 
                 case ReefscapeSetpoints.HighAlgae:
@@ -352,13 +354,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     if (IntakeAction.IsPressed())
                     {
                         foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
                     }
 
                     break;
 
                 case ReefscapeSetpoints.L4:
-                    SetSetpoint(FacingReef ? l4 : l4Back);
+                    SetSetpoint(l4);
                     break;
 
                 case ReefscapeSetpoints.Stack:
@@ -368,7 +370,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     if (IntakeAction.IsPressed())
                     {
                         foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
                     }
 
                     break;
@@ -376,21 +378,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 case ReefscapeSetpoints.Barge:
                 {
                     VoltecOffseasonSetpoint targetBarge = FacingBarge() ? bargeFront : bargeBack;
-
-                    float currentElevHeight = elevator.GetElevatorHeight();
-                    float targetBargeElevHeight = targetBarge.elevatorHeight;
-                    bool elevatorNearTarget = Mathf.Abs(currentElevHeight - targetBargeElevHeight) <= 1f;
-
-                    if (elevatorNearTarget)
-                    {
-                        SetSetpoint(targetBarge);
-                    }
-                    else
-                    {
-                        _elevatorTargetHeight = targetBarge.elevatorHeight;
-                        _intakeTargetAngle = targetBarge.intakeAngle;
-                    }
-
+                    SetSetpoint(targetBarge);
                     break;
                 }
 
@@ -438,13 +426,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             switch (LastSetpoint)
             {
                 case ReefscapeSetpoints.L4:
-                    SetSetpoint(FacingReef ? l4Place : l4BackPlace);
+                    SetSetpoint(l4Place);
                     yield return new WaitForSeconds(0.1f);
                     yield return new WaitUntil(() => _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 0)));
 
                     break;
                 case ReefscapeSetpoints.L3:
-                    SetSetpoint(FacingReef ? l3Place : l3BackPlace);
+                    SetSetpoint(l3Place);
                     yield return new WaitUntil(() =>
                         _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0.5f, FacingReef ? 2.5f : -2.5f)));
 
@@ -456,6 +444,29 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     break;
             }
+        }
+
+        private IEnumerator PickupCoralFromChassis()
+        {
+            _pickupCoroutineRunning = true;
+
+            // 1. El coral ya esta agarrado a chasis (coralChassisStowState) con el brazo en posicion.
+            yield return new WaitForSeconds(0.1f);
+
+            // 2. Bajamos el elevador (y ajustamos el brazo si coralPickup trae un angulo distinto) para ir a recogerlo.
+            _elevatorTargetHeight = coralPickup.elevatorHeight;
+            _armTargetAngle = coralPickup.armAngle;
+            yield return new WaitForSeconds(0.15f);
+
+            // 3. Ya lo tiene el end effector: avanzamos el estado de la pieza.
+            _coralController.SetTargetState(coralArmStowState);
+            yield return new WaitForSeconds(0.15f);
+
+            // 4. Subimos de vuelta a la posicion de stow.
+            _elevatorTargetHeight = coralStow.elevatorHeight;
+            _armTargetAngle = coralStow.armAngle;
+
+            _pickupCoroutineRunning = false;
         }
 
         private bool FacingBarge()
@@ -494,8 +505,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         _disruptable = false;
                         _intakeSequenceRunning = true;
 
-                        _armTargetAngle = _armTargetAngle;
-                        _elevatorTargetHeight = _elevatorTargetHeight;
+                        _armTargetAngle = hasAlgae ? _armTargetAngle : groundCoral.armAngle;
+                        _elevatorTargetHeight = hasAlgae ? _elevatorTargetHeight : groundCoral.elevatorHeight;
                         _intakeTargetAngle = groundCoral.intakeAngle;
 
                         _coralController.SetTargetState(_coralController.currentStateNum switch
@@ -524,28 +535,28 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                             _armTargetAngle = hasAlgae ? _armTargetAngle : coralStow.armAngle;
                             _intakeTargetAngle = coralStow.intakeAngle;
 
-                            if (Utils.WithinAngularRange(arm.GetSingleAxisAngle(JointAxis.X), -coralStow.armAngle, 5))
+                            // Bug anterior: comparaba contra -coralStow.armAngle y nunca daba true.
+                            bool armAtChassisAngle =
+                                Utils.WithinAngularRange(arm.GetSingleAxisAngle(JointAxis.X), coralStow.armAngle, 5f);
+
+                            if (armAtChassisAngle && !hasAlgae && !_pickupCoroutineRunning)
                             {
-                                _elevatorTargetHeight = hasAlgae ? _elevatorTargetHeight : groundCoral.elevatorHeight;
-                                foreach (var wheel in eEWheels)
-                                    wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                                // El coral ya llego al chasis con el brazo en posicion: ahora bajamos
+                                // el elevador a recogerlo (igual que RoboWhales).
+                                StartCoroutine(PickupCoralFromChassis());
                             }
-                            else
+                            else if (!armAtChassisAngle)
                             {
                                 _elevatorTargetHeight = hasAlgae ? _elevatorTargetHeight : coralStow.elevatorHeight;
                             }
 
                             _disruptable = true;
+                        }
 
-                            float elev = elevator.GetElevatorHeight();
-                            bool elevatorAtCoralGrab = Mathf.Abs(elev - groundCoral.elevatorHeight) <= 1f;
-
-                            if (elevatorAtCoralGrab && _coralController.atTarget &&
-                                Mathf.Approximately(_elevatorTargetHeight, groundCoral.elevatorHeight) &&
-                                Utils.WithinAngularRange(arm.GetSingleAxisAngle(JointAxis.X), -coralStow.armAngle, 3f))
-                            {
-                                _coralController.SetTargetState(coralArmStowState);
-                            }
+                        if (_pickupCoroutineRunning)
+                        {
+                            foreach (var wheel in eEWheels)
+                                wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
                         }
 
                         bool atArmStow = _coralController.atTarget && _coralController.currentStateNum == coralArmStowState.stateNum;
@@ -646,7 +657,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private void SetSetpoints()
         {
             // No noWrap: el brazo debe poder girar hasta atras (rango completo).
-            arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.X);
+            // noWrap(135): tu rango util es -180..0..+90 (arco de 270 grados pasando por el 0).
+            // El arco sin usar es +90..180/-180 (90 grados) - 135 esta justo a la mitad de esa zona muerta.
+            // Esto evita que el PID intente el "camino corto" que cruza el limite fisico y causa el teletransporte.
+            arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.X).noWrap(135f);
 
             elevator.SetTarget(_elevatorTargetHeight);
 

@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: L4Place
   m_EditorClassIdentifier: 
   elevatorHeight: 55
-  armAngle: 25
+  armAngle: 0
   intakeAngle: -10

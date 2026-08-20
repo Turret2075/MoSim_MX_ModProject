@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 999179001d3555146aa94ec9069df323, type: 3}
-  m_Name: L4Back
+  m_Name: GrabbingCoral
   m_EditorClassIdentifier: 
-  elevatorHeight: 55
-  armAngle: -130
-  intakeAngle: -10
+  elevatorHeight: 5
+  armAngle: 90
+  intakeAngle: -140
