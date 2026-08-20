@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 999179001d3555146aa94ec9069df323, type: 3}
   m_Name: Stack
   m_EditorClassIdentifier: 
-  elevatorHeight: 0
-  armAngle: 0
+  elevatorHeight: 25
+  armAngle: 30
   intakeAngle: -10
