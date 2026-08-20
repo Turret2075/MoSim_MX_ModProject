@@ -244,6 +244,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
             UpdateIntakeAudio();
 
+            if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.5f);
+            else if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.8f);
+            else DriveController.SetDriveMp(1);
+
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
@@ -276,7 +280,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     if (_algaeController.HasPiece())
                     {
-                        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 5f, 0));
+                        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4f, 0));
                         if (wasCoral)
                         {
                             SetRobotMode(ReefscapeRobotMode.Coral);
