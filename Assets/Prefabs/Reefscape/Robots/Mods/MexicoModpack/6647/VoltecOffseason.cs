@@ -36,7 +36,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private VoltecOffseasonSetpoint groundCoral;
         [Tooltip("Posicion del elevador cuando baja a recoger el coral desde el chasis, despues del handoff.")]
         [SerializeField] private VoltecOffseasonSetpoint coralPickup;
-        [SerializeField] private VoltecOffseasonSetpoint l1;
         [SerializeField] private VoltecOffseasonSetpoint l2;
         [SerializeField] private VoltecOffseasonSetpoint l2Place;
         [SerializeField] private VoltecOffseasonSetpoint l3;
@@ -92,6 +91,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [Header("Robot Audio")]
         [SerializeField] private AudioSource rollerSource;
         [SerializeField] private AudioClip intakeClip;
+        [Tooltip("Segunda capa de sonido de intake (ej. IntakeDeeperSound), suena igual/junto con rollerSource.")]
+        [SerializeField] private AudioSource rollerDeeperSource;
+        [SerializeField] private AudioClip intakeDeeperClip;
+
+        [Header("Coral Pickup Audio")]
+        [Tooltip("Se reproduce UNA sola vez, justo cuando el elevador empieza a bajar a coralPickup.")]
+        [SerializeField] private AudioSource coralPickupSource;
+        [SerializeField] private AudioClip coralPickupClip;
 
         [Header("Auto Align Offsets")]
         [SerializeField] private float atSetpointOffset;
@@ -108,6 +115,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private bool wasCoral;
         private bool _isPlacingCoral;
         private bool _pickupCoroutineRunning;
+        private bool _l2SequenceRunning;
+        private bool _l2SequenceComplete;
 
         private ReefscapeSetpoints? _bufferedSetpoint;
         private bool bufferAlgeaState;
@@ -150,6 +159,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             rollerSource.clip = intakeClip;
             rollerSource.loop = true;
             rollerSource.Stop();
+
+            rollerDeeperSource.playOnAwake = false;
+            rollerDeeperSource.clip = intakeDeeperClip;
+            rollerDeeperSource.loop = true;
+            rollerDeeperSource.Stop();
+
+            coralPickupSource.playOnAwake = false;
+            coralPickupSource.loop = false;
+            coralPickupSource.Stop();
 
             algaeStallSource.playOnAwake = false;
             algaeStallSource.clip = algaeStallAudio;
@@ -222,11 +240,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 }
                 else if (_disruptable && CurrentRobotMode != ReefscapeRobotMode.Coral)
                 {
+                    // Modo Algae en reposo (comportamiento original): no tocamos CurrentSetpoint,
+                    // asi Barge/Processor/Place/outtake funcionan normal.
                 }
-                else
+                else if (CurrentRobotMode != ReefscapeRobotMode.Coral)
                 {
+                    // Modo Algae interrumpido (comportamiento original): forzamos a Stow.
                     SetState(ReefscapeSetpoints.Stow);
                 }
+                // Modo Coral (fix nuevo): no forzamos nada - IntakeSequence() maneja todo sin
+                // pelearse con el Update() de la base (esto es lo que arreglaba el parpadeo).
             }
 
             if ((!_intakeSequenceRunning && CurrentSetpoint != ReefscapeSetpoints.Intake) && _bufferedSetpoint != null)
@@ -244,7 +267,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
             UpdateIntakeAudio();
 
-            if (CurrentSetpoint is ReefscapeSetpoints.Climb or ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0.5f);
+            if (CurrentSetpoint != ReefscapeSetpoints.L2)
+            {
+                _l2SequenceComplete = false;
+            }
+
+            if (CurrentSetpoint == ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0f);
+            else if (CurrentSetpoint == ReefscapeSetpoints.Climb) DriveController.SetDriveMp(0.5f);
             else if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.8f);
             else DriveController.SetDriveMp(1);
 
@@ -317,7 +346,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                             case ReefscapeSetpoints.L4:
                             case ReefscapeSetpoints.L3:
                             case ReefscapeSetpoints.L2:
-                            case ReefscapeSetpoints.L1:
                                 float outSpeed = FacingReef ? -eEWheelSpeed : eEWheelSpeed;
                                 foreach (var wheel in eEWheels)
                                     wheel.VelocityRoller(outSpeed).useAxis(JointAxis.Y);
@@ -328,11 +356,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     break;
 
                 case ReefscapeSetpoints.L1:
-                    SetSetpoint(l1);
+                    // El robot real no puede hacer L1 con coral - lo mandamos a Stow.
+                    SetState(ReefscapeSetpoints.Stow);
                     break;
 
                 case ReefscapeSetpoints.L2:
-                    SetSetpoint(l2);
+                    if (!_l2SequenceRunning && !_l2SequenceComplete)
+                    {
+                        StartCoroutine(GoToL2Sequence());
+                    }
                     break;
 
                 case ReefscapeSetpoints.LowAlgae:
@@ -460,10 +492,18 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             // 2. Bajamos el elevador (y ajustamos el brazo si coralPickup trae un angulo distinto) para ir a recogerlo.
             _elevatorTargetHeight = coralPickup.elevatorHeight;
             _armTargetAngle = coralPickup.armAngle;
+
+            if (coralPickupSource != null && coralPickupClip != null)
+            {
+                coralPickupSource.PlayOneShot(coralPickupClip);
+            }
+
             yield return new WaitForSeconds(0.15f);
 
             // 3. Ya lo tiene el end effector: avanzamos el estado de la pieza.
             _coralController.SetTargetState(coralArmStowState);
+            _elevatorTargetHeight = coralPickup.elevatorHeight;
+            _armTargetAngle = coralPickup.armAngle;
             yield return new WaitForSeconds(0.15f);
 
             // 4. Subimos de vuelta a la posicion de stow.
@@ -471,6 +511,27 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             _armTargetAngle = coralStow.armAngle;
 
             _pickupCoroutineRunning = false;
+        }
+
+        private IEnumerator GoToL2Sequence()
+        {
+            _l2SequenceRunning = true;
+
+            // 1. Primero sube/baja el elevador y acomoda el intake.
+            _elevatorTargetHeight = coralStow.elevatorHeight;
+            _intakeTargetAngle = l2.intakeAngle;
+
+            yield return new WaitForSeconds(0.2f);
+
+            // 2. Ya paso el tiempo: gira el brazo (solo si seguimos en L2, por si el driver cambio de setpoint).
+            if (CurrentSetpoint == ReefscapeSetpoints.L2)
+            {
+                _elevatorTargetHeight = l2.elevatorHeight;
+                _armTargetAngle = l2.armAngle;
+            }
+
+            _l2SequenceRunning = false;
+            _l2SequenceComplete = true;
         }
 
         private bool FacingBarge()
@@ -584,9 +645,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         {
             if (BaseGameManager.Instance.RobotState == RobotState.Disabled)
             {
-                if (rollerSource.isPlaying || algaeStallSource.isPlaying)
+                if (rollerSource.isPlaying || rollerDeeperSource.isPlaying || algaeStallSource.isPlaying)
                 {
                     rollerSource.Stop();
+                    rollerDeeperSource.Stop();
                     algaeStallSource.Stop();
                 }
 
@@ -607,6 +669,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 rollerSource.Stop();
             }
 
+            if (!rollerDeeperSource.isPlaying && intakeAudioActive)
+            {
+                rollerDeeperSource.Play();
+            }
+            else if (rollerDeeperSource.isPlaying && !intakeAudioActive)
+            {
+                rollerDeeperSource.Stop();
+            }
+
             if (_algaeController.HasPiece() && !algaeStallSource.isPlaying)
             {
                 algaeStallSource.Play();
@@ -621,8 +692,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         {
             if (_align == null) return; // Falta el componente ReefscapeAutoAlign en el GameObject de Voltec (revisar en el Inspector)
 
-            bool isCoralSetpoint = CurrentSetpoint == ReefscapeSetpoints.L1 ||
-                                    CurrentSetpoint == ReefscapeSetpoints.L2 ||
+            bool isCoralSetpoint = CurrentSetpoint == ReefscapeSetpoints.L2 ||
                                     CurrentSetpoint == ReefscapeSetpoints.L3 ||
                                     CurrentSetpoint == ReefscapeSetpoints.L4;
 

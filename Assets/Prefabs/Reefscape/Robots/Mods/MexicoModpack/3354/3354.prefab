@@ -32152,7 +32152,7 @@ MonoBehaviour:
   climbingAngularVelocity: 60
   rollerAudioSource: {fileID: 9123264024012505342}
   rollerClip: {fileID: 8300000, guid: 602fb269d44b4964d8d4881108b75f19, type: 3}
-  volRoller: 0.5
+  volRoller: 0.34
   oneShotAudioSource: {fileID: 3402860935518802787}
   detectorClickClip: {fileID: 8300000, guid: 812c364f26c0a8143b217ad64749b8c3, type: 3}
   volClick: 0.5

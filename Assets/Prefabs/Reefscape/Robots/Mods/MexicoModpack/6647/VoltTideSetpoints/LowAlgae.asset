@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 999179001d3555146aa94ec9069df323, type: 3}
   m_Name: LowAlgae
   m_EditorClassIdentifier: 
-  elevatorHeight: 30
+  elevatorHeight: 28
   armAngle: 0
   intakeAngle: -10
