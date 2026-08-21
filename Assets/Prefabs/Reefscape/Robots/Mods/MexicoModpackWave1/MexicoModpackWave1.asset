@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 713155721937481dbf0332a6dcf52567, type: 3}
-  m_Name: MexicoModpack
+  m_Name: MexicoModpackWave1
   m_EditorClassIdentifier: 
-  modpackName: Mexico Modpack
-  modpackVersion: 3.1.0
-  authorName: Beemi,Turret2075,Eback9005
+  modpackName: MexicoModpack Wave1
+  modpackVersion: 4.0.0
+  authorName: MexicoModpackTeam
   description: ModPack of Mexican FRC teams, mainly from PrepaTec
   robots:
   - {fileID: 11400000, guid: 9238343625cea134ba3a11ad19f98b8c, type: 2}
