@@ -17,14 +17,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
     {
         [Header("Components")]
         [SerializeField] private GenericElevator elevator;
+        [SerializeField] private GenericJoint endEffector;
         [SerializeField] private GenericJoint algaeArm;
-        [SerializeField] private GenericJoint funnelFlap;
         [SerializeField] private GenericJoint climberBar;
         [SerializeField] private GenericJoint climberFlap;
         
         [Header("PIDS")]
+        [SerializeField] private PidConstants endEffectorPid;
         [SerializeField] private PidConstants algaeArmPid;
-        [SerializeField] private PidConstants funnelFlapPid;
         [SerializeField] private PidConstants climberBarPid;
         [SerializeField] private PidConstants climberFlapPid;
 
@@ -32,16 +32,13 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [SerializeField] private KeikoSetpoint stow;
         [SerializeField] private KeikoSetpoint intake;
         [SerializeField] private KeikoSetpoint l1;
-        [SerializeField] private KeikoSetpoint l1Place;
         [SerializeField] private KeikoSetpoint l2;
         [SerializeField] private KeikoSetpoint l3;
         [SerializeField] private KeikoSetpoint l4;
-        [SerializeField] private KeikoSetpoint l4Place;
         
         [Header("algae Setpoints")]
         [SerializeField] private KeikoSetpoint lowAlgae;
         [SerializeField] private KeikoSetpoint highAlgae;
-        [SerializeField] private KeikoSetpoint bargePlace;
         
         [Header("Intake Componenets")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -70,25 +67,27 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
 
         private float _elevatorTargetHeight;
-        private float _flapTargetAngle;
+        private float _endEffectorTargetAngle;
         private float _climbBarTargetAngle;
-        private float _climbFlapTargetAngle;
+        private float _funnelPivotTargetAngle;
         private LayerMask coralMask;
         private bool canClack;
+        private bool _climbLocked;
         
         protected override void Start()
         {
             base.Start();
             
+            endEffector.SetPid(endEffectorPid);
             algaeArm.SetPid(algaeArmPid);
-            funnelFlap.SetPid(funnelFlapPid);
             climberBar.SetPid(climberBarPid);
             climberFlap.SetPid(climberFlapPid);
 
             _elevatorTargetHeight = 0;
-            _flapTargetAngle = 0;
+            _endEffectorTargetAngle = 0;
             _climbBarTargetAngle = 0;
-            _climbFlapTargetAngle = 0;
+            _funnelPivotTargetAngle = 0;
+            _climbLocked = false;
             
             RobotGamePieceController.SetPreload(coralStowState);
             _coralController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Coral.ToString());
@@ -123,8 +122,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
 
         private void LateUpdate()
         {
+            endEffector.UpdatePid(endEffectorPid);
             algaeArm.UpdatePid(algaeArmPid);
-            funnelFlap.UpdatePid(funnelFlapPid);
             climberBar.UpdatePid(climberBarPid);
             climberFlap.UpdatePid(climberFlapPid);
         }
@@ -145,21 +144,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                 case ReefscapeSetpoints.Intake:
                     SetSetpoint(intake);
 
-                    _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
-                    _coralController.RequestIntake(coralIntake, !hasCoral && !hasAlgae);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
+                    _coralController.RequestIntake(coralIntake, !_climbLocked && !hasCoral && !hasAlgae);
                     break;
                 case ReefscapeSetpoints.Place:
-                    if (LastSetpoint == ReefscapeSetpoints.Barge)
-                    {
-                        SetSetpoint(bargePlace);
-                    } 
-                    else if (LastSetpoint == ReefscapeSetpoints.L4)
-                    {
-                        SetSetpoint(l4Place);
-                    } else if (LastSetpoint == ReefscapeSetpoints.L1)
-                    {
-                        SetSetpoint(l1Place);
-                    }
                     PlacePiece();
                     break;
                 case ReefscapeSetpoints.L1:
@@ -167,7 +155,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
                 case ReefscapeSetpoints.Stack:
                     SetSetpoint(intake);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
                 case ReefscapeSetpoints.L2:
@@ -175,7 +163,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
                 case ReefscapeSetpoints.LowAlgae:
                     SetSetpoint(lowAlgae);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
                 case ReefscapeSetpoints.L3:
@@ -183,7 +171,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
                 case ReefscapeSetpoints.HighAlgae:
                     SetSetpoint(highAlgae);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
                 case ReefscapeSetpoints.L4:
@@ -193,15 +181,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     SetSetpoint(stow);
                     break;
                 case ReefscapeSetpoints.Barge:
-                    SetSetpoint(bargePlace);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
                     SetState(ReefscapeSetpoints.Stow);
                     break;
                 case ReefscapeSetpoints.Climb:
+                    _climbLocked = true;
                     _climbBarTargetAngle = -120;
-                    _climbFlapTargetAngle = -115;
-                    _flapTargetAngle = -110;
+                    _funnelPivotTargetAngle = -115;
                     break;
                 case ReefscapeSetpoints.Climbed:
                     _climbBarTargetAngle = 5;
@@ -245,15 +232,16 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         private void SetSetpoint(KeikoSetpoint setpoint)
         {
             _elevatorTargetHeight = setpoint.elevatorHeight;
+            _endEffectorTargetAngle = setpoint.endEffectorAngle;
         }
 
         private void UpdateSetpoints()
         {
             elevator.SetTarget(_elevatorTargetHeight);
+            endEffector.SetTargetAngle(_endEffectorTargetAngle).withAxis(JointAxis.X);
             algaeArm.SetTargetAngle(0).withAxis(JointAxis.X);
-            funnelFlap.SetTargetAngle(_flapTargetAngle).withAxis(JointAxis.X);
             climberBar.SetTargetAngle(_climbBarTargetAngle).withAxis(JointAxis.X);
-            climberFlap.SetTargetAngle(_climbFlapTargetAngle).withAxis(JointAxis.X);
+            climberFlap.SetTargetAngle(_funnelPivotTargetAngle).withAxis(JointAxis.X);
         }
 
         private void UpdateAudio()
@@ -269,7 +257,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                 return;
             }
 
-            if (((IntakeAction.IsPressed() && !_coralController.HasPiece() && !_coralController.HasPiece()) ||
+            if (((IntakeAction.IsPressed() && !_coralController.HasPiece() && !_algaeController.HasPiece()) ||
                  OuttakeAction.IsPressed()) &&
                 !rollerSource.isPlaying)
             {
