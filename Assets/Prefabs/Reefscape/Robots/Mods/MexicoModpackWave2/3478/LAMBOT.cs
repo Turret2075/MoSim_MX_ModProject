@@ -1,6 +1,7 @@
 using Games.Reefscape.Enums;
 using Games.Reefscape.GamePieceSystem;
 using Games.Reefscape.Robots;
+using Games.Reefscape.Scoring.Scorers;
 using MoSimCore.BaseClasses.GameManagement;
 using MoSimCore.Enums;
 using MoSimLib;
@@ -10,6 +11,7 @@ using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
 {
@@ -18,18 +20,27 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [Header("Components")]
         [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint endEffector;
-        [SerializeField] private GenericJoint algaeArm;
         [SerializeField] private GenericJoint climberBar;
         [SerializeField] private GenericJoint climberFlap;
+
+        [Header("End Effector Rollers - Coral (parte inferior)")]
+        [SerializeField] private GenericRoller[] coralEndEffectorRollers;
+        [SerializeField] private GenericAnimationJoint[] coralEndEffectorAnimationRollers;
+        [SerializeField] private float coralRollerSpeed = 10f;
+
+        [Header("End Effector Rollers - Algae (parte superior)")]
+        [SerializeField] private GenericRoller[] algaeEndEffectorRollers;
+        [SerializeField] private GenericAnimationJoint[] algaeEndEffectorAnimationRollers;
+        [SerializeField] private float algaeRollerSpeed = 10f;
         
         [Header("PIDS")]
         [SerializeField] private PidConstants endEffectorPid;
-        [SerializeField] private PidConstants algaeArmPid;
         [SerializeField] private PidConstants climberBarPid;
         [SerializeField] private PidConstants climberFlapPid;
 
         [Header("coral Setpoints")]
         [SerializeField] private KeikoSetpoint stow;
+        [SerializeField] private KeikoSetpoint coralStow;
         [SerializeField] private KeikoSetpoint intake;
         [SerializeField] private KeikoSetpoint l1;
         [SerializeField] private KeikoSetpoint l2;
@@ -37,8 +48,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [SerializeField] private KeikoSetpoint l4;
         
         [Header("algae Setpoints")]
+        [SerializeField] private KeikoSetpoint algaeStow;
         [SerializeField] private KeikoSetpoint lowAlgae;
         [SerializeField] private KeikoSetpoint highAlgae;
+        [SerializeField] private KeikoSetpoint barge;
+        
+        [Header("climb Setpoints")]
+        [SerializeField] private KeikoSetpoint climb;
+        [SerializeField] private KeikoSetpoint climbed;
         
         [Header("Intake Componenets")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -79,7 +96,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             base.Start();
             
             endEffector.SetPid(endEffectorPid);
-            algaeArm.SetPid(algaeArmPid);
             climberBar.SetPid(climberBarPid);
             climberFlap.SetPid(climberFlapPid);
 
@@ -123,7 +139,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         private void LateUpdate()
         {
             endEffector.UpdatePid(endEffectorPid);
-            algaeArm.UpdatePid(algaeArmPid);
             climberBar.UpdatePid(climberBarPid);
             climberFlap.UpdatePid(climberFlapPid);
         }
@@ -136,16 +151,31 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             _algaeController.SetTargetState(algaeStowState);
             _coralController.SetTargetState(coralStowState);
             
+            // Supercycle: coral y alga se piden de forma independiente, cada una solo se
+            // bloquea por tener ya SU propia pieza, no por tener la otra. Así el robot
+            // puede cargar alga y coral al mismo tiempo (ver Robonauts.RobonautsIntakeSequence /
+            // el switch de Intake, mismo criterio).
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
-                    SetSetpoint(stow);
+                    if (hasAlgae)
+                    {
+                        SetSetpoint(algaeStow);
+                    }
+                    else if (hasCoral)
+                    {
+                        SetSetpoint(coralStow);
+                    }
+                    else
+                    {
+                        SetSetpoint(stow);
+                    }
                     break;
                 case ReefscapeSetpoints.Intake:
                     SetSetpoint(intake);
 
-                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae && !hasCoral);
-                    _coralController.RequestIntake(coralIntake, !_climbLocked && !hasCoral && !hasAlgae);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae);
+                    _coralController.RequestIntake(coralIntake, !_climbLocked && !hasCoral);
                     break;
                 case ReefscapeSetpoints.Place:
                     PlacePiece();
@@ -155,7 +185,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
                 case ReefscapeSetpoints.Stack:
                     SetSetpoint(intake);
-                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
                 case ReefscapeSetpoints.L2:
@@ -163,7 +193,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
                 case ReefscapeSetpoints.LowAlgae:
                     SetSetpoint(lowAlgae);
-                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
                 case ReefscapeSetpoints.L3:
@@ -171,7 +201,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
                 case ReefscapeSetpoints.HighAlgae:
                     SetSetpoint(highAlgae);
-                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
                 case ReefscapeSetpoints.L4:
@@ -181,51 +211,138 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     SetSetpoint(stow);
                     break;
                 case ReefscapeSetpoints.Barge:
+                    SetSetpoint(barge);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
                     SetState(ReefscapeSetpoints.Stow);
                     break;
                 case ReefscapeSetpoints.Climb:
                     _climbLocked = true;
+                    SetSetpoint(climb);
                     _climbBarTargetAngle = -120;
                     _funnelPivotTargetAngle = -115;
                     break;
                 case ReefscapeSetpoints.Climbed:
+                    SetSetpoint(climbed);
                     _climbBarTargetAngle = 5;
                     break;
             }
             
             UpdateSetpoints();
+            UpdateRollers();
             UpdateAudio();
+        }
+
+        private void UpdateRollers()
+        {
+            bool hasCoral = _coralController.HasPiece();
+            bool hasAlgae = _algaeController.HasPiece();
+            bool placing = CurrentSetpoint == ReefscapeSetpoints.Place;
+
+            // GenericRoller (coralEndEffectorRollers / algaeEndEffectorRollers) es un roller
+            // físico que solo expone flipVelocity() -- sin velocidad variable -- igual que
+            // StuyPulse.intakeRollers y Robonauts.physRollers: se flipea mientras se sostiene
+            // la pieza o se está en Place (para soltarla). No tiene VelocityRoller.
+            if (hasCoral || placing)
+            {
+                foreach (var roller in coralEndEffectorRollers)
+                    roller.flipVelocity();
+            }
+
+            if (hasAlgae || placing)
+            {
+                foreach (var roller in algaeEndEffectorRollers)
+                    roller.flipVelocity();
+            }
+
+            // GenericAnimationJoint (coralEndEffectorAnimationRollers / algaeEndEffectorAnimationRollers)
+            // sí tiene velocidad variable vía VelocityRoller(...).useAxis(...), igual que
+            // eEWheels/intakeWheels en StuyPulse: estos controlan intake/outtake con signo y magnitud.
+            float coralSpeed = 0f;
+            float algaeSpeed = 0f;
+
+            if (placing)
+            {
+                if (OuttakeAction.IsPressed())
+                {
+                    // Con las dos piezas cargadas se saca la que le toca al modo actual,
+                    // mismo criterio que PlacePiece(). Con una sola, se saca esa.
+                    bool outtakeCoral = hasCoral && (!hasAlgae || CurrentRobotMode != ReefscapeRobotMode.Algae);
+                    bool outtakeAlgae = hasAlgae && (!hasCoral || CurrentRobotMode == ReefscapeRobotMode.Algae);
+
+                    if (outtakeCoral) coralSpeed = -coralRollerSpeed;
+                    if (outtakeAlgae) algaeSpeed = -algaeRollerSpeed;
+                }
+            }
+            else if (IntakeAction.IsPressed())
+            {
+                if (!hasCoral) coralSpeed = coralRollerSpeed;
+                if (CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae) algaeSpeed = algaeRollerSpeed;
+            }
+
+            foreach (var animRoller in coralEndEffectorAnimationRollers)
+                animRoller.VelocityRoller(coralSpeed).useAxis(JointAxis.Y);
+
+            foreach (var animRoller in algaeEndEffectorAnimationRollers)
+                animRoller.VelocityRoller(algaeSpeed).useAxis(JointAxis.Y);
         }
 
         private void PlacePiece()
         {
-            if (_algaeController.HasPiece())
+            bool hasAlgae = _algaeController.HasPiece();
+            bool hasCoral = _coralController.HasPiece();
+
+            if (hasAlgae && hasCoral)
             {
-                if (LastSetpoint == ReefscapeSetpoints.Barge)
+                // Supercycle: con ambas piezas cargadas, coloca la que corresponde al modo
+                // actual y cambia de modo para dejar lista la otra (mismo patrón que
+                // Robonauts.PlaceGamePiece cuando coralController y algaeController tienen pieza).
+                if (CurrentRobotMode == ReefscapeRobotMode.Algae)
                 {
-                    _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 10, 1.5f));
+                    PlaceAlgae();
+                    SetRobotMode(ReefscapeRobotMode.Coral);
                 }
                 else
                 {
-                    _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 0, 1.5f));
+                    PlaceCoral();
+                    SetRobotMode(ReefscapeRobotMode.Algae);
                 }
+            }
+            else if (hasAlgae)
+            {
+                PlaceAlgae();
             }
             else
             {
-                if (LastSetpoint == ReefscapeSetpoints.L4)
-                {
-                    _coralController.ReleaseGamePieceWithContinuedForce(new Vector3(0, 0, 5.5f), 1f, 0.5f);
-                }
-                else if (LastSetpoint == ReefscapeSetpoints.L1)
-                {
-                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 2));
-                }
-                else
-                {
-                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 6));
-                }
+                PlaceCoral();
+            }
+        }
+
+        private void PlaceAlgae()
+        {
+            if (LastSetpoint == ReefscapeSetpoints.Barge)
+            {
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 10, 1.5f));
+            }
+            else
+            {
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 0, 1.5f));
+            }
+        }
+
+        private void PlaceCoral()
+        {
+            if (LastSetpoint == ReefscapeSetpoints.L4)
+            {
+                _coralController.ReleaseGamePieceWithContinuedForce(new Vector3(0, 0, 5.5f), 1f, 0.5f);
+            }
+            else if (LastSetpoint == ReefscapeSetpoints.L1)
+            {
+                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 2));
+            }
+            else
+            {
+                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 6));
             }
         }
 
@@ -238,8 +355,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         private void UpdateSetpoints()
         {
             elevator.SetTarget(_elevatorTargetHeight);
-            endEffector.SetTargetAngle(_endEffectorTargetAngle).withAxis(JointAxis.X);
-            algaeArm.SetTargetAngle(0).withAxis(JointAxis.X);
+            endEffector.SetTargetAngle(_endEffectorTargetAngle).withAxis(JointAxis.Y);
             climberBar.SetTargetAngle(_climbBarTargetAngle).withAxis(JointAxis.X);
             climberFlap.SetTargetAngle(_funnelPivotTargetAngle).withAxis(JointAxis.X);
         }

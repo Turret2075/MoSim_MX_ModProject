@@ -866,7 +866,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         private void SetSetpoints()
         {
 
-            arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.X).noWrap(180);
+            arm.SetTargetAngle(_armTargetAngle).withAxis(JointAxis.X).noWrap(noWrapAngle);
             
             elevator.SetTarget(_elevatorTargetHeight);
 

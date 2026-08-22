@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: BargeFront
   m_EditorClassIdentifier: 
   armAngle: 145
-  elevatorHeight: 48.4
+  elevatorHeight: 52
   intakeAngle: -17.5
-  climberAngle: -115
+  climberAngle: -100

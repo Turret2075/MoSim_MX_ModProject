@@ -9,10 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0aa2a0b2f3e3598499e082439eb0c3c4, type: 3}
-  m_Name: L1 High
+  m_Script: {fileID: 11500000, guid: 961cf892cf6e9734dbc9270b0dc66c9f, type: 3}
+  m_Name: L3
   m_EditorClassIdentifier: 
-  armAngle: 65
-  elevatorHeight: 14
-  intakeAngle: -17.5
-  climberAngle: -100
+  elevatorHeight: 30
+  endEffectorAngle: 10

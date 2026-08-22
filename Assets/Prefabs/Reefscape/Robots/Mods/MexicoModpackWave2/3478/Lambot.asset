@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 3478
   teamName: Lambot
-  robotPrefab: {fileID: 1625790350021671778, guid: 5f848da3a909ce546b292f8cff072c33,
+  robotPrefab: {fileID: 8292468254655104283, guid: 77a18abb72e370244ab3d388a1534866,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
