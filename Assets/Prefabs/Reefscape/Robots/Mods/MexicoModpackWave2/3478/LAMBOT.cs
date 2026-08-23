@@ -270,9 +270,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                 case ReefscapeSetpoints.RobotSpecial:
                     if (_climbBarTargetAngle == 120)
                     {
-                        _climbBarTargetAngle = 100;
+                        _climbBarTargetAngle = 90;
                     }
-                    else if (_climbBarTargetAngle != 100) SetState(ReefscapeSetpoints.Stow);
+                    else if (_climbBarTargetAngle != 90) SetState(ReefscapeSetpoints.Stow);
                     break;
                 case ReefscapeSetpoints.Climb:
                     _climbLocked = true;
@@ -286,7 +286,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
             }
             
-            if (ClimbAction.IsPressed() && (LastSetpoint == ReefscapeSetpoints.RobotSpecial || _climbBarTargetAngle == 100))
+            if (ClimbAction.IsPressed() && (LastSetpoint == ReefscapeSetpoints.RobotSpecial || _climbBarTargetAngle == 90))
             {
                 SetState(ReefscapeSetpoints.Climbed);
             }
@@ -378,7 +378,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             }
             else if (LastSetpoint == ReefscapeSetpoints.L1)
             {
-                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 3.2f));
+                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 1.5f));
             }
             else
             {
