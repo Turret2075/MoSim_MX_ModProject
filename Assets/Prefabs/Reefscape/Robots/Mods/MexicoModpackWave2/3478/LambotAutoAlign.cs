@@ -178,9 +178,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
             var faceDirection = useSideA ? -reference.right : reference.right;
             var sideSign = useSideA ? 1f : -1f;
 
-            // Standoff based on whether the robot approaches front- or back-first (robot's current orientation).
-            var approachFront = Vector3.Dot(transform.forward, faceDirection) >= 0f;
-            var standoff = (approachFront ? bargeFrontStandoffInches : bargeBackStandoffInches) * INCHES_TO_METERS;
+            // Always approach front-first; back-side approach is disabled so the robot only ever
+            // docks to the barge with one consistent side of itself, regardless of current heading.
+            var standoff = bargeFrontStandoffInches * INCHES_TO_METERS;
 
             var center = reference.position
                          + reference.right * (sideSign * standoff)
@@ -218,11 +218,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
             var finalT = Mathf.Clamp01(_bargeSlideBaseline + _bargeSlide);
             var finalTarget = Vector3.Lerp(leftCorner, rightCorner, finalT);
 
-            // Pick whichever of the two perpendicular barge headings is closest to the robot's current yaw.
-            var yawA = Quaternion.LookRotation(reference.right, Vector3.up).eulerAngles.y;
-            var yawB = Quaternion.LookRotation(-reference.right, Vector3.up).eulerAngles.y;
-            var robotYaw = transform.eulerAngles.y;
-            var targetYaw = Mathf.Abs(Mathf.DeltaAngle(robotYaw, yawA)) < Mathf.Abs(Mathf.DeltaAngle(robotYaw, yawB)) ? yawA : yawB;
+            // Always face the same fixed side of the robot toward the barge (never the closest-to-current
+            // heading), so align only ever docks the robot one way even though it still works from either
+            // side of the barge.
+            var targetYaw = Quaternion.LookRotation(-faceDirection, Vector3.up).eulerAngles.y;
             var targetRotation = Quaternion.Euler(0, targetYaw + bargeRotation, 0);
 
             finalTarget = ApplyReefAvoidance(finalTarget, ref _bargeRoutingAroundReef, ref _bargeRoutingSide, NearestReefPos(transform.position));

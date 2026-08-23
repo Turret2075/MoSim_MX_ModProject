@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 6647
   teamName: VOLTEC
-  robotPrefab: {fileID: 5060534743255372558, guid: a4726db1601160a4d93f6c1ead9f5108,
+  robotPrefab: {fileID: 5060534743255372558, guid: dcf798cb5aa56a64a8b64d12cb3b14fc,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
