@@ -4595,13 +4595,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1143225527486148663}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.22912644, y: -0, z: -0, w: 0.97339666}
-  m_LocalPosition: {x: -0.0019999407, y: 0.6420001, z: 0.04100001}
+  m_LocalRotation: {x: 0.44159907, y: -0, z: -0, w: 0.8972125}
+  m_LocalPosition: {x: 0, y: 0.663, z: 0.074}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 9004258967009137388}
-  m_LocalEulerAnglesHint: {x: 26.491, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 52.412, y: 0, z: 0}
 --- !u!82 &8157554562101205886
 AudioSource:
   m_ObjectHideFlags: 0
@@ -33690,10 +33690,10 @@ MonoBehaviour:
   initialAutoAlignOffset: {x: 0, y: 0, z: -4}
   algaeAutoAlignOffset: {x: 7, y: 0, z: 8}
   algaeAutoAlignOffsetAlt: {x: -7, y: 0, z: 8}
-  l4AutoAlignOffset: {x: 0, y: 0, z: 8}
-  l3AutoAlignOffset: {x: 0, y: 0, z: 8}
-  l2AutoAlignOffset: {x: 0, y: 0, z: 8}
-  bargeAutoAlignOffset: {x: 0, y: 0, z: 8}
+  l4AutoAlignOffset: {x: 0, y: 0, z: 9}
+  l3AutoAlignOffset: {x: 0, y: 0, z: 9}
+  l2AutoAlignOffset: {x: 0, y: 0, z: 9}
+  bargeAutoAlignOffset: {x: -8, y: 0, z: 0}
   endEffectorPid:
     kP: 5
     kI: 0
@@ -33922,9 +33922,10 @@ MonoBehaviour:
   leftLeds: []
   edgesLeds: []
   centerLeds: []
-  shaderGraphShader: {fileID: 0}
+  shaderGraphShader: {fileID: -6465566751694194690, guid: 88d82d76b25302e4f81533f3cee81aab,
+    type: 3}
   intensity: 150
-  align: {fileID: 0}
+  align: {fileID: 7920079353161466863}
   alignFarDistance: 1
   alignAtTargetDistance: 0.1
   reefAlignFarColor: {r: 1, g: 0, b: 0, a: 1}
@@ -33959,13 +33960,13 @@ MonoBehaviour:
     kD: 0.01
     Max: 0.8
     Isaturation: 1
-  offset: {x: -7.8, y: 0, z: 0}
+  offset: {x: -8.2, y: 0, z: 0}
   rotation: 0
   enableForwardAlign: 1
   enableBackwardsAlign: 0
   maxAlignDistanceFeet: 20
   bargeOffset: {x: 0, y: 0, z: 0}
-  bargeRotation: 0
+  bargeRotation: 180
   bargeFrontStandoffInches: 47.3
   bargeBackStandoffInches: 26
   maxBargeAlignDistanceFeet: 30
