@@ -24,14 +24,22 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [SerializeField] private GenericJoint climberFlap;
 
         [Header("End Effector Rollers - Coral (parte inferior)")]
-        [SerializeField] private GenericRoller[] coralEndEffectorRollers;
         [SerializeField] private GenericAnimationJoint[] coralEndEffectorAnimationRollers;
         [SerializeField] private float coralRollerSpeed = 10f;
 
         [Header("End Effector Rollers - Algae (parte superior)")]
-        [SerializeField] private GenericRoller[] algaeEndEffectorRollers;
         [SerializeField] private GenericAnimationJoint[] algaeEndEffectorAnimationRollers;
         [SerializeField] private float algaeRollerSpeed = 10f;
+
+        [Header("Auto Align")]
+        [SerializeField] private LambotAutoAlign autoAlign;
+        [SerializeField] private Vector3 initialAutoAlignOffset;
+        [SerializeField] private Vector3 algaeAutoAlignOffset;
+        [SerializeField] private Vector3 algaeAutoAlignOffsetAlt;
+        [SerializeField] private Vector3 l4AutoAlignOffset;
+        [SerializeField] private Vector3 l3AutoAlignOffset;
+        [SerializeField] private Vector3 l2AutoAlignOffset;
+        [SerializeField] private Vector3 bargeAutoAlignOffset;
         
         [Header("PIDS")]
         [SerializeField] private PidConstants endEffectorPid;
@@ -151,6 +159,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             _algaeController.SetTargetState(algaeStowState);
             _coralController.SetTargetState(coralStowState);
             
+            // Reset de align: igual que LambotOffseason, al re-triggerear los botones de
+            // align con el end effector ya en el ángulo de coralStow, se limpia el offset.
+            if ((AutoAlignLeftAction.triggered || AutoAlignRightAction.triggered) &&
+                Utils.InAngularRange(endEffector.GetSingleAxisAngle(JointAxis.X), coralStow.endEffectorAngle, 1))
+            {
+                autoAlign.offset = initialAutoAlignOffset;
+            }
+            
             // Supercycle: coral y alga se piden de forma independiente, cada una solo se
             // bloquea por tener ya SU propia pieza, no por tener la otra. Así el robot
             // puede cargar alga y coral al mismo tiempo (ver Robonauts.RobonautsIntakeSequence /
@@ -176,6 +192,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
 
                     _algaeController.RequestIntake(algaeIntake, !_climbLocked && CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae);
                     _coralController.RequestIntake(coralIntake, !_climbLocked && !hasCoral);
+
+                    // Igual que Robonauts: en cuanto hay coral a bordo, el modo se fuerza a
+                    // Coral. Así, si el supercycle termina con coral Y alga cargados, el
+                    // primer Place siempre suelta coral primero (a menos que el driver
+                    // cambie el modo manualmente después).
+                    if (hasCoral)
+                    {
+                        SetRobotMode(ReefscapeRobotMode.Coral);
+                    }
                     break;
                 case ReefscapeSetpoints.Place:
                     PlacePiece();
@@ -184,33 +209,62 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     SetSetpoint(l1);
                     break;
                 case ReefscapeSetpoints.Stack:
-                    SetSetpoint(intake);
-                    _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae);
-                    _coralController.RequestIntake(coralIntake, false);
+                    SetSetpoint(stow);
                     break;
                 case ReefscapeSetpoints.L2:
+                    autoAlign.offset =
+                        Utils.InAngularRange(endEffector.GetSingleAxisAngle(JointAxis.X), l2.endEffectorAngle, 20)
+                            ? l2AutoAlignOffset
+                            : initialAutoAlignOffset;
                     SetSetpoint(l2);
                     break;
                 case ReefscapeSetpoints.LowAlgae:
+                {
+                    bool flip = ComputeAlignFlip();
+                    if (AutoAlignLeftAction.IsPressed())
+                        autoAlign.offset = !flip ? algaeAutoAlignOffset : algaeAutoAlignOffsetAlt;
+                    else if (AutoAlignRightAction.IsPressed())
+                        autoAlign.offset = !flip ? algaeAutoAlignOffsetAlt : algaeAutoAlignOffset;
+
                     SetSetpoint(lowAlgae);
                     _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
+                }
                 case ReefscapeSetpoints.L3:
+                    autoAlign.offset = FacingReef
+                        ? Utils.InAngularRange(endEffector.GetSingleAxisAngle(JointAxis.X), l3.endEffectorAngle, 20)
+                            ? l3AutoAlignOffset
+                            : initialAutoAlignOffset
+                        : l3AutoAlignOffset;
                     SetSetpoint(l3);
                     break;
                 case ReefscapeSetpoints.HighAlgae:
+                {
+                    bool flip = ComputeAlignFlip();
+                    if (AutoAlignLeftAction.IsPressed())
+                        autoAlign.offset = !flip ? algaeAutoAlignOffset : algaeAutoAlignOffsetAlt;
+                    else if (AutoAlignRightAction.IsPressed())
+                        autoAlign.offset = !flip ? algaeAutoAlignOffsetAlt : algaeAutoAlignOffset;
+
                     SetSetpoint(highAlgae);
                     _algaeController.RequestIntake(algaeIntake, !_climbLocked && IntakeAction.IsPressed() && !hasAlgae);
                     _coralController.RequestIntake(coralIntake, false);
                     break;
+                }
                 case ReefscapeSetpoints.L4:
+                    autoAlign.offset = FacingReef
+                        ? Utils.InAngularRange(endEffector.GetSingleAxisAngle(JointAxis.X), l4.endEffectorAngle, 20)
+                            ? l4AutoAlignOffset
+                            : initialAutoAlignOffset
+                        : l4AutoAlignOffset;
                     SetSetpoint(l4);
                     break;
                 case ReefscapeSetpoints.Processor:
                     SetSetpoint(stow);
                     break;
                 case ReefscapeSetpoints.Barge:
+                    autoAlign.bargeOffset = bargeAutoAlignOffset;
                     SetSetpoint(barge);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
@@ -219,12 +273,12 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                 case ReefscapeSetpoints.Climb:
                     _climbLocked = true;
                     SetSetpoint(climb);
-                    _climbBarTargetAngle = -120;
-                    _funnelPivotTargetAngle = -115;
+                    _climbBarTargetAngle = 110;
+                    _funnelPivotTargetAngle = -75;
                     break;
                 case ReefscapeSetpoints.Climbed:
                     SetSetpoint(climbed);
-                    _climbBarTargetAngle = 5;
+                    _climbBarTargetAngle = -45;
                     break;
             }
             
@@ -239,24 +293,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             bool hasAlgae = _algaeController.HasPiece();
             bool placing = CurrentSetpoint == ReefscapeSetpoints.Place;
 
-            // GenericRoller (coralEndEffectorRollers / algaeEndEffectorRollers) es un roller
-            // físico que solo expone flipVelocity() -- sin velocidad variable -- igual que
-            // StuyPulse.intakeRollers y Robonauts.physRollers: se flipea mientras se sostiene
-            // la pieza o se está en Place (para soltarla). No tiene VelocityRoller.
-            if (hasCoral || placing)
-            {
-                foreach (var roller in coralEndEffectorRollers)
-                    roller.flipVelocity();
-            }
-
-            if (hasAlgae || placing)
-            {
-                foreach (var roller in algaeEndEffectorRollers)
-                    roller.flipVelocity();
-            }
-
             // GenericAnimationJoint (coralEndEffectorAnimationRollers / algaeEndEffectorAnimationRollers)
-            // sí tiene velocidad variable vía VelocityRoller(...).useAxis(...), igual que
+            // tiene velocidad variable vía VelocityRoller(...).useAxis(...), igual que
             // eEWheels/intakeWheels en StuyPulse: estos controlan intake/outtake con signo y magnitud.
             float coralSpeed = 0f;
             float algaeSpeed = 0f;
@@ -320,14 +358,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
 
         private void PlaceAlgae()
         {
-            if (LastSetpoint == ReefscapeSetpoints.Barge)
-            {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 10, 1.5f));
-            }
-            else
-            {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 0, 1.5f));
-            }
+        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 3f, 0));
         }
 
         private void PlaceCoral()
@@ -338,12 +369,21 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             }
             else if (LastSetpoint == ReefscapeSetpoints.L1)
             {
-                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 2));
+                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 3.2f));
             }
             else
             {
                 _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 6));
             }
+        }
+
+        private bool ComputeAlignFlip()
+        {
+            var flip = false;
+            if (GetActiveCamera().transform.eulerAngles.y < 180) flip = !flip;
+            if (Mathf.Abs(transform.position.x) > 4.489323f && PlayerPrefs.GetInt("PerspectiveAutoAlign", 1) == 1) flip = !flip;
+            if (transform.position.x > 0) flip = !flip;
+            return flip;
         }
 
         private void SetSetpoint(KeikoSetpoint setpoint)
@@ -355,8 +395,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         private void UpdateSetpoints()
         {
             elevator.SetTarget(_elevatorTargetHeight);
-            endEffector.SetTargetAngle(_endEffectorTargetAngle).withAxis(JointAxis.Y);
-            climberBar.SetTargetAngle(_climbBarTargetAngle).withAxis(JointAxis.X);
+            endEffector.SetTargetAngle(_endEffectorTargetAngle).withAxis(JointAxis.X);
+            climberBar.SetTargetAngle(_climbBarTargetAngle).withAxis(JointAxis.Y);
             climberFlap.SetTargetAngle(_funnelPivotTargetAngle).withAxis(JointAxis.X);
         }
 

@@ -7,7 +7,7 @@ using MoSimCore.Enums;
 using RobotFramework.Controllers.Drivetrain;
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
+namespace Prefabs.Reefscape.Robots.Mods.Lambot
 {
     /// <summary>
     /// Single auto-align component for the offseason robot, replacing both ReefscapeAutoAlign and
@@ -21,7 +21,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
     /// LambotOffseason sets `offset` each frame for reef branches and `bargeOffset` each frame for
     /// the barge case.
     /// </summary>
-    public class LambotOffseasonAutoAlign : AutoAlign
+    public class LambotAutoAlign : AutoAlign
     {
         [Header("Reef Branch Align")]
         public Vector3 offset;
