@@ -5,45 +5,34 @@ using MoSimCore.BaseClasses.GameManagement;
 using MoSimCore.Enums;
 using UnityEngine;
 
-namespace Prefabs.Reefscape.Robots.Mods.Lambot
+namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
 {
     /// <summary>
-    /// Lambot-specific LED controller, ported from the behavior described for the real robot's LED code
-    /// (screenshots of alignToReef(), the coral/algae idle color if/else, and updateHangerModeCommand()) plus
-    /// the plain-text summary given alongside them. Three independently-lit sections, matching the real
-    /// code's Section.Left / Section.Edges / Section.Center - wired the same multi-material way
-    /// StuyPulseLEDController wires its optional left/right accent strips, except here all three are always
-    /// separate (no falling back to a shared strip) since this robot always has three physical strips.
+    /// Same as LambotLEDs2025, retargeted to the offseason robot's combined LambotAutoAlign
+    /// component instead of ReefscapeAutoAlign. LambotAutoAlign : AutoAlign (same base class
+    /// ReefscapeAutoAlign presumably extends too, since it calls the inherited AlignPosition() without
+    /// defining it) and doesn't redeclare getDistance() itself, so it's assumed to inherit the same
+    /// getDistance() API from AutoAlign that RoboGymLights already reads off ReefscapeAutoAlign - only the
+    /// field's type changes below, the red/yellow/green distance-gradient logic is otherwise identical.
+    ///
+    /// Bonus/side-effect worth knowing about: LambotAutoAlign handles both reef-branch align AND
+    /// barge align in one component (barge kicks in whenever CurrentSetpoint == Barge and an align button is
+    /// held). Since the LED logic below only checks whether an align button is pressed - not which kind of
+    /// align is active - the same red/yellow/green Left/Edges feedback will show during barge alignment too,
+    /// not just reef. That wasn't explicitly asked for, but falls out naturally from swapping the align type
+    /// and seemed more useful than suppressing it - remove it (gate on CurrentSetpoint != Barge) if that's
+    /// not wanted.
     ///
     /// Priority (highest first), same top-down "first match wins" idiom as StuyPulseLEDController/ReefscapeLEDS:
-    ///   1. Disabled -> alliance color, all three sections (no rainbow/scroll asset was described for this
-    ///      robot, so this borrows StuyPulseLEDController's disabled convention instead of inventing one).
-    ///   2. Hang mode -> Aqua, all three sections, overriding everything else. The real code's
-    ///      updateHangerModeCommand() is actually more nuanced than a flat color (Purple while the toggle is
-    ///      first switched on, then Aqua-if-coral/Blue-if-not once switched back off) and only touches
-    ///      Section.Center - but the plain-text summary just says "aqua on hang mode" as a single state, so
-    ///      that's what's implemented. It's also not clear MoSim exposes a matching "hangerModeEnabled"
-    ///      toggle at all, so this is driven off ReefscapeRobotBase.CurrentSetpoint == Climb/Climbed instead
-    ///      (the same setpoints StuyPulseLEDController/ReefscapeLEDS already use for their own climb states),
-    ///      which is the closest grounded equivalent. If Lambot's actual hang toggle needs to be wired up
-    ///      differently, or the Purple/two-tone behavior is wanted after all, swap the isHanging check below.
-    ///   3. Auto-aligning to reef (Left + Edges only, Center keeps showing the coral/algae mode color from #4
-    ///      the whole time - the real alignToReef() only ever touches Left/Edges, never Center): red while
-    ///      still far from the target, yellow while closing in, green once at the target. The real code's
-    ///      progression is driven by a one-shot RunOnce command (Red at the start of the command, then
-    ///      Yellow/Green in finallyDo based on a `pidDrive.finishedCorrectly()` this project doesn't expose) -
-    ///      ported here as a continuous distance-based gradient using ReefscapeAutoAlign.getDistance(), the
-    ///      same align-distance API RoboGymLights already reads from, so it updates live instead of only at
-    ///      the start/end of the align command.
+    ///   1. Disabled -> alliance color, all three sections.
+    ///   2. Hang mode -> Aqua, all three sections, overriding everything else. Driven off
+    ///      ReefscapeRobotBase.CurrentSetpoint == Climb/Climbed (see LambotLights2025 for why).
+    ///   3. Auto-aligning (reef or barge, see note above) -> Left/Edges red -> yellow -> green as
+    ///      align.getDistance() shrinks, Center keeps showing the coral/algae mode color the whole time.
     ///   4. Otherwise, all three sections show the coral/algae mode color (Blue for coral, Magenta for
-    ///      algae) - Left/Edges mirror Center here so the whole robot reads as one consistent color when not
-    ///      actively aligning, rather than sitting dark. NOTE: one of the screenshots (the isCoralMode
-    ///      if/else) shows Green for coral mode rather than Blue, but its syntax was a broken if/else/else
-    ///      with no matching if for the last branch, and the accompanying plain-text summary was explicit
-    ///      ("blue/magenta for coral/algae mode") - so Blue/Magenta is what's implemented. Swap
-    ///      coralModeColor below if Green was actually intended.
+    ///      algae).
     /// </summary>
-    public class LambotLEDs2025 : MonoBehaviour
+    public class LambotLights2025 : MonoBehaviour
     {
         [Header("LED Surfaces")]
         [Tooltip("Section.Left - drag every GameObject (with a Renderer) that makes up this strip.")]
@@ -61,8 +50,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
         [SerializeField] private float intensity = 150f;
 
         [Header("Reef Align (Left + Edges)")]
-        [Tooltip("Reference to this robot's auto-align component (same field RoboGymLights uses) for getDistance().")]
-        [SerializeField] private ReefscapeAutoAlign align;
+        [Tooltip("Reference to this robot's combined reef+barge auto-align component for getDistance().")]
+        [SerializeField] private LambotAutoAlign align;
         [Tooltip("At or beyond this distance from the target, Left/Edges show reefAlignFarColor (red).")]
         [SerializeField] private float alignFarDistance = 1.0f;
         [Tooltip("At or below this distance from the target, Left/Edges show reefAlignAtTargetColor (green). Between this and alignFarDistance shows reefAlignInProgressColor (yellow).")]
@@ -93,7 +82,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
         private void Start()
         {
             _base = GetComponent<ReefscapeRobotBase>();
-            if (align == null) align = GetComponent<ReefscapeAutoAlign>();
+            if (align == null) align = GetComponent<LambotAutoAlign>();
 
             _leftMaterial = BuildSharedMaterial(leftLeds);
             _edgesMaterial = BuildSharedMaterial(edgesLeds);

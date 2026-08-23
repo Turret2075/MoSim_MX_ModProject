@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 961cf892cf6e9734dbc9270b0dc66c9f, type: 3}
   m_Name: Intake
   m_EditorClassIdentifier: 
-  elevatorHeight: 3
-  endEffectorAngle: 2
+  elevatorHeight: 1
+  endEffectorAngle: 1

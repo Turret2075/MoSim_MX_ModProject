@@ -25,7 +25,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         [SerializeField] private GenericJoint groundIntake;
         [SerializeField] private GenericJoint climber;
         [SerializeField] private GenericRoller[] intakeRollers;
-        [SerializeField] private LambotOffseasonAutoAlign autoAlign;
+        [SerializeField] private LambotAutoAlign autoAlign;
         
         
         [Header("PIDS")]
