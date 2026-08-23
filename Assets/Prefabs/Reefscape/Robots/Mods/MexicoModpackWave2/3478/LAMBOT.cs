@@ -268,18 +268,27 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     SetSetpoint(barge);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
-                    SetState(ReefscapeSetpoints.Stow);
+                    if (_climbBarTargetAngle == 120)
+                    {
+                        _climbBarTargetAngle = 100;
+                    }
+                    else if (_climbBarTargetAngle != 100) SetState(ReefscapeSetpoints.Stow);
                     break;
                 case ReefscapeSetpoints.Climb:
                     _climbLocked = true;
                     SetSetpoint(climb);
-                    _climbBarTargetAngle = 110;
+                    _climbBarTargetAngle = 120;
                     _funnelPivotTargetAngle = -75;
                     break;
                 case ReefscapeSetpoints.Climbed:
                     SetSetpoint(climbed);
                     _climbBarTargetAngle = -45;
                     break;
+            }
+            
+            if (ClimbAction.IsPressed() && (LastSetpoint == ReefscapeSetpoints.RobotSpecial || _climbBarTargetAngle == 100))
+            {
+                SetState(ReefscapeSetpoints.Climbed);
             }
             
             UpdateSetpoints();

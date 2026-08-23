@@ -570,7 +570,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -5453,8 +5453,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123123
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -8148,8 +8148,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -8318,8 +8318,8 @@ MeshCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 69420
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -8964,8 +8964,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -22912,7 +22912,7 @@ HingeJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1563209948457801481}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 6406533146934981341}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
@@ -23599,8 +23599,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -30246,7 +30246,7 @@ MonoBehaviour:
   clickerL1: {fileID: 4605854942647253218}
   clickerR1: {fileID: 4206433136967228087}
   armPid:
-    kP: 3
+    kP: 5
     kI: 0
     kD: 0.1
     Max: 2
@@ -30260,8 +30260,8 @@ MonoBehaviour:
   armAxis: 0
   wheelAxis: 1
   stowAngle: 90
-  deployAngle: 180
-  retractAngle: 85
+  deployAngle: 165
+  retractAngle: 73
   targetIntakeWheelSpeed: 125
   climbingAngularVelocity: 60
   rollerAudioSource: {fileID: 3425948393615328481}
@@ -38227,8 +38227,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -38813,14 +38813,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2555254622435572356}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.13917695, y: 0.008270031, z: 0.0011623512, w: 0.99023235}
+  m_LocalRotation: {x: -0.0828053, y: 0.008322634, z: 0.0006915573, w: 0.9965308}
   m_LocalPosition: {x: 0, y: 0.314325, z: -0.30914727}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3170569215401429362}
   m_Father: {fileID: 7287171245319067019}
-  m_LocalEulerAnglesHint: {x: -16.001, y: 0.957, z: 0}
+  m_LocalEulerAnglesHint: {x: -9.5, y: 0.957, z: 0}
 --- !u!54 &6970598992228510227
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -43650,8 +43650,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -46782,8 +46782,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123123
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -54674,7 +54674,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3700708464016129883}
   serializedVersion: 4
-  m_Mass: 3
+  m_Mass: 5
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -67963,8 +67963,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -84178,7 +84178,7 @@ HingeJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5793445418246731634}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 6406533146934981341}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
@@ -92876,8 +92876,8 @@ MeshCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 69420
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -96626,7 +96626,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -100433,7 +100433,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -107445,7 +107445,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -114682,14 +114682,14 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.09, z: 0.08}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.08, y: 0.09, z: 0.05603243}
+  m_Center: {x: -0.000000004944438, y: 4.3719842e-10, z: 0.011983827}
 --- !u!1 &7979802575705755763
 GameObject:
   m_ObjectHideFlags: 0
@@ -120837,7 +120837,7 @@ HingeJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8376837119025792918}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 6406533146934981341}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
@@ -126451,8 +126451,8 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 64
+  m_LayerOverridePriority: 123789
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
