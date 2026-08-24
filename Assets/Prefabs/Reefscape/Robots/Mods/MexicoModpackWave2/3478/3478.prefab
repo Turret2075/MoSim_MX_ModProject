@@ -33677,15 +33677,15 @@ MonoBehaviour:
   climberBar: {fileID: 4928417952319434152}
   climberFlap: {fileID: 2308436830197146121}
   coralEndEffectorAnimationRollers:
+  - {fileID: 8392782625964234247}
+  - {fileID: 3702057339606526716}
   - {fileID: 1509496546222757330}
   - {fileID: 6952499917986479197}
-  - {fileID: 3702057339606526716}
-  - {fileID: 8392782625964234247}
-  coralRollerSpeed: 300
+  coralRollerSpeed: -300
   algaeEndEffectorAnimationRollers:
-  - {fileID: 8392782625964234247}
   - {fileID: 9167088950662057860}
-  algaeRollerSpeed: 500
+  - {fileID: 8392782625964234247}
+  algaeRollerSpeed: -500
   autoAlign: {fileID: 7920079353161466863}
   initialAutoAlignOffset: {x: 0, y: 0, z: -4}
   algaeAutoAlignOffset: {x: 7, y: 0, z: 8}
@@ -33905,7 +33905,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40c9f738d2c54a48ad3e959efd15d13b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cageScoringTrigger: {fileID: 0}
+  cageScoringTrigger: {fileID: 1769847819042957296}
   autoClimbTriggers: []
 --- !u!114 &5431163670039476030
 MonoBehaviour:
