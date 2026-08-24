@@ -13,7 +13,6 @@ using RobotFramework.Controllers.GamePieceSystem;
 using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
-using Robots.Climbing;
 using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
@@ -24,7 +23,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint arm;
         [SerializeField] private GenericJoint groundIntake;
-        [SerializeField] private GenericJoint climber;
         [SerializeField] private GenericRoller[] intakeRollers;
         [SerializeField] private LambotAutoAlign autoAlign;
         
@@ -32,7 +30,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         [Header("PIDS")]
         [SerializeField] private PidConstants armPid;
         [SerializeField] private PidConstants intakePid;
-        [SerializeField] private PidConstants climberPid;
 
         [Header("coral Setpoints")] 
         [SerializeField] private LambotOffseasonSetpoint stow;
@@ -57,10 +54,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         [SerializeField] private LambotOffseasonSetpoint processor;
         [SerializeField] private LambotOffseasonSetpoint Stack;
         
-        [Header("climb Setpoints")]
-        [SerializeField] private LambotOffseasonSetpoint climbStow;
-        [SerializeField] public LambotOffseasonSetpoint climbPrep;
-        [SerializeField] private LambotOffseasonSetpoint climbed;
+
         
         [Header("Intake Componenets")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -134,10 +128,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         private float _elevatorTargetHeight;
         private float _armTargetAngle;
         private float _intakeTargetAngle;
-        public float _climberTargetAngle;
+
         [SerializeField] private float noWrapAngle;
 
-        private ClimbScorer _climbScorer;
         private bool _intakeSequenceRunning;
         private bool _disruptable;
         private bool wasCoral;
@@ -150,14 +143,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
 
         private bool armNearTarget;
 
-        [Header("Center of Mass")]
-        [SerializeField] private bool addCenterOfMassX;
-        [SerializeField] private bool addCenterOfMassZ;
-        [SerializeField] private float climbedCenterOfMassX;
-        [SerializeField] private float climbedCenterOfMassZ;
-        private Rigidbody _mainRb;
-        private Vector3 _originalCenterOfMass;
-        private bool _isCgShifted;
+
 
         private DriveController driveController;
 
@@ -167,18 +153,16 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         {
             base.Start();
 
-            _climbScorer = gameObject.GetComponent<ClimbScorer>();
             
             superCycler = true;
             
             arm.SetPid(armPid);
             groundIntake.SetPid(intakePid);
-            climber.SetPid(climberPid);
+
 
             _elevatorTargetHeight = 0;
             _armTargetAngle = stow.armAngle;
             _intakeTargetAngle = stow.intakeAngle;
-            _climberTargetAngle = stow.climberAngle;
                         
             RobotGamePieceController.SetPreload(coralArmStowState);
             _coralController = RobotGamePieceController.GetPieceByName(ReefscapeGamePieceType.Coral.ToString());
@@ -219,16 +203,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                 
             driveController = gameObject.GetComponent<DriveController>();
 
-            _mainRb = gameObject.GetComponent<Rigidbody>();
-            _isCgShifted = false;
-            if (_mainRb != null)
-            {
-                _originalCenterOfMass = _mainRb.centerOfMass;
-            }
-            else
-            {
-                Debug.LogWarning("ts isnt working btw???");
-            }
 
             _coralLayerMask = LayerMask.GetMask("Coral");
             _algaeLayerMask = LayerMask.GetMask("Algae");
@@ -242,7 +216,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         {
             arm.UpdatePid(armPid);
             groundIntake.UpdatePid(intakePid);
-            climber.UpdatePid(climberPid);
         }
 
         private void FixedUpdate()
@@ -322,9 +295,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             }
             
             UpdateIntakeAudio();
-            if (CurrentSetpoint is ReefscapeSetpoints.Climb) DriveController.SetDriveMp(0.875f);
-            else if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.6f);
-            else if (CurrentSetpoint is ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0);
+            if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.6f);
             else DriveController.SetDriveMp(1);
 
 
@@ -338,7 +309,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                             : coralStow);
                     }
 
-                    _climberTargetAngle = stow.climberAngle;
                     break;
                 case ReefscapeSetpoints.Intake:
                     if (CurrentRobotMode == ReefscapeRobotMode.Algae && !_algaeController.HasPiece())
@@ -526,7 +496,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                         // Elevator not at height yet, only move elevator and keep arm at current position
                         _elevatorTargetHeight = targetBargeSetpoint.elevatorHeight;
                         _intakeTargetAngle = targetBargeSetpoint.intakeAngle;
-                        _climberTargetAngle = targetBargeSetpoint.climberAngle;
                         // _armTargetAngle stays at current value
                     }
 
@@ -536,10 +505,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                     // Otherwise do nothing, stay at current setpoint
                     break;
                 case ReefscapeSetpoints.Climb:
-                    SetSetpoint(climbPrep);
-                    break;
-                case ReefscapeSetpoints.Climbed:
-                    SetSetpoint(climbed);
+                    SetSetpoint(stow);
                     break;
                 case ReefscapeSetpoints.Processor:
                     SetSetpoint(processor);
@@ -552,22 +518,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             
             SetSetpoints();
 
-            if (_mainRb != null)
-            {
-                if (CurrentSetpoint == ReefscapeSetpoints.Climbed)
-                {
-                    if (!_isCgShifted)
-                    {
-                        _mainRb.centerOfMass = new Vector3(climbedCenterOfMassX, _originalCenterOfMass.y, climbedCenterOfMassZ);
-                        _isCgShifted = true;
-                    }
-                }
-                else if (_isCgShifted)
-                {
-                    _mainRb.centerOfMass = _originalCenterOfMass;
-                    _isCgShifted = false;
-                }
-            }
 
             RunCoralVision();
             RunAlgaeVision();
@@ -896,7 +846,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             _armTargetAngle = setpoint.armAngle;
             _elevatorTargetHeight = setpoint.elevatorHeight;
             _intakeTargetAngle = setpoint.intakeAngle;
-            _climberTargetAngle = setpoint.climberAngle;
         }
         
         private void SetSetpoints()
@@ -907,8 +856,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             elevator.SetTarget(_elevatorTargetHeight);
 
             groundIntake.SetTargetAngle(_intakeTargetAngle).withAxis(JointAxis.X).noWrap(135f);
-
-            climber.SetTargetAngle(_climberTargetAngle).withAxis(JointAxis.X).noWrap(180f);
         }
     }
 }

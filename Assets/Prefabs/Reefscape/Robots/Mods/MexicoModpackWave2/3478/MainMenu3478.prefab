@@ -34005,7 +34005,7 @@ GameObject:
   - component: {fileID: 5431163670039476030}
   - component: {fileID: 7920079353161466863}
   m_Layer: 0
-  m_Name: 3478
+  m_Name: MainMenu3478
   m_TagString: BlueRobot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
