@@ -8,6 +8,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         [Tooltip("Deg")] public float armAngle;
         [Tooltip("Inch")] public float elevatorHeight;
         [Tooltip("Deg")] public float intakeAngle;
-        [Tooltip("Deg")] public float climberAngle;
+
     }
 }

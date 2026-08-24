@@ -85,6 +85,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [SerializeField] private AudioSource funnelCloseSource;
         [SerializeField] private AudioClip funnelCloseAudio;
         [SerializeField] private BoxCollider coralTrigger;
+
+        [Header("Colliders")]
+        [SerializeField] private BoxCollider[] algaeDisableColliders;
         private OverlapBoxBounds soundDetector;
         
         
@@ -321,6 +324,17 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             {
                 SetState(ReefscapeSetpoints.Climbed);
             }
+
+            if ((CurrentRobotMode == ReefscapeRobotMode.Algae && CurrentSetpoint == ReefscapeSetpoints.Intake) || (CurrentSetpoint == ReefscapeSetpoints.LowAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.HighAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.Stack && IntakeAction.IsPressed()))
+            {
+                ToggleAlgaeColliders(false);
+                _algaeController.RequestIntake(algaeIntake, true);
+            }
+            else
+            {
+                ToggleAlgaeColliders(true);
+                _algaeController.RequestIntake(algaeIntake, false);
+            }
             
             UpdateSetpoints();
             UpdateRollers();
@@ -412,6 +426,19 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             else
             {
                 _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 3.5f));
+            }
+        }
+
+        private void ToggleAlgaeColliders(bool enable)
+        {
+            if (algaeDisableColliders == null) return;
+
+            foreach (var collider in algaeDisableColliders)
+            {
+                if (collider != null)
+                {
+                    collider.enabled = enable;
+                }
             }
         }
 

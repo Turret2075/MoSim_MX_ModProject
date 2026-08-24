@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: MexicoModpack
+  m_Name: MexicoModpackWave1
   m_EditorClassIdentifier: 
-  m_GroupName: MexicoModpack
+  m_GroupName: MexicoModpackWave1
   m_GUID: 812ef14b3f73a62468e1459bef130b8c
   m_SerializeEntries:
   - m_GUID: c9c58d11f80ef45478eceeae83c8a540

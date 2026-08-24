@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e5d17a21594effb4e9591490b009e7aa, type: 3}
-  m_Name: MexicoModpack_BundledAssetGroupSchema
+  m_Name: MexicoModpackWave2_BundledAssetGroupSchema
   m_EditorClassIdentifier: 
-  m_Group: {fileID: 11400000, guid: 97b8a6583c284ec4cadac1d99b49b215, type: 2}
+  m_Group: {fileID: 11400000, guid: cfd0c67671154464ba9eb151d10191c5, type: 2}
   m_InternalBundleIdMode: 1
   m_Compression: 1
   m_IncludeAddressInCatalog: 1
@@ -35,9 +35,9 @@ MonoBehaviour:
   m_RedirectLimit: -1
   m_RetryCount: 0
   m_BuildPath:
-    m_Id: a63b0599358fc104a9511b1afcbd2995
+    m_Id: dfa710c9474249e4bb18484c549f59b8
   m_LoadPath:
-    m_Id: bc4dba5d895146b4b96c4324c4824f6b
+    m_Id: ac9e66c5817c7794cbd9e6a361d70739
   m_BundleMode: 0
   m_AssetBundleProviderType:
     m_AssemblyName: Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
