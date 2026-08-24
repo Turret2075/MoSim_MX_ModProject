@@ -98,6 +98,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         private LayerMask coralMask;
         private bool canClack;
         private bool _climbLocked;
+        private bool _outtakeWasPressed;
         
         protected override void Start()
         {
@@ -155,7 +156,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         {
             bool hasAlgae = _algaeController.HasPiece();
             bool hasCoral = _coralController.HasPiece();
-            
+
+            // Deteccion manual de flanco de subida para el outtake: no usamos
+            // OuttakeAction.triggered directamente porque FixedUpdate puede correr
+            // mas de una vez en el mismo frame, y .triggered puede seguir en true en
+            // el segundo tick, causando que se suelte alga y coral "al mismo tiempo"
+            // en vez de con dos pulsaciones (igual que en TitaniumRams).
+            bool outtakeHeld = OuttakeAction != null && OuttakeAction.IsPressed();
+            bool outtakeJustPressed = outtakeHeld && !_outtakeWasPressed;
+
             _algaeController.SetTargetState(algaeStowState);
             _coralController.SetTargetState(coralStowState);
             
@@ -203,7 +212,29 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     }
                     break;
                 case ReefscapeSetpoints.Place:
-                    PlacePiece();
+                    if (outtakeJustPressed)
+                    {
+                        bool hadBoth = hasCoral && hasAlgae;
+
+                        PlacePiece();
+
+                        if (hadBoth)
+                        {
+                            // Superciclo: si tenías coral Y alga y acabás de soltar la
+                            // pieza correspondiente al modo actual, cambia automáticamente
+                            // al otro modo para poder soltar la otra con la próxima
+                            // pulsada de outtake (igual que en TitaniumRams).
+                            switch (CurrentRobotMode)
+                            {
+                                case ReefscapeRobotMode.Algae:
+                                    SetRobotMode(ReefscapeRobotMode.Coral);
+                                    break;
+                                case ReefscapeRobotMode.Coral:
+                                    SetRobotMode(ReefscapeRobotMode.Algae);
+                                    break;
+                            }
+                        }
+                    }
                     break;
                 case ReefscapeSetpoints.L1:
                     SetSetpoint(l1);
@@ -294,6 +325,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             UpdateSetpoints();
             UpdateRollers();
             UpdateAudio();
+
+            _outtakeWasPressed = outtakeHeld;
         }
 
         private void UpdateRollers()
@@ -312,13 +345,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             {
                 if (OuttakeAction.IsPressed())
                 {
-                    // Con las dos piezas cargadas se saca la que le toca al modo actual,
-                    // mismo criterio que PlacePiece(). Con una sola, se saca esa.
-                    bool outtakeCoral = hasCoral && (!hasAlgae || CurrentRobotMode != ReefscapeRobotMode.Algae);
-                    bool outtakeAlgae = hasAlgae && (!hasCoral || CurrentRobotMode == ReefscapeRobotMode.Algae);
-
-                    if (outtakeCoral) coralSpeed = -coralRollerSpeed;
-                    if (outtakeAlgae) algaeSpeed = -algaeRollerSpeed;
+                    // Igual que en TitaniumRams: al outtakear giran los dos sets de rollers
+                    // (coral y algae) juntos, sin importar cuál de las dos piezas se está
+                    // soltando realmente.
+                    coralSpeed = -coralRollerSpeed;
+                    algaeSpeed = -algaeRollerSpeed;
                 }
             }
             else if (IntakeAction.IsPressed())
@@ -339,20 +370,18 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             bool hasAlgae = _algaeController.HasPiece();
             bool hasCoral = _coralController.HasPiece();
 
+            // Con ambas piezas cargadas se suelta la que le toca al modo actual (el
+            // cambio al otro modo para la siguiente pulsada lo maneja el caso Place
+            // en FixedUpdate). Con una sola, se suelta esa.
             if (hasAlgae && hasCoral)
             {
-                // Supercycle: con ambas piezas cargadas, coloca la que corresponde al modo
-                // actual y cambia de modo para dejar lista la otra (mismo patrón que
-                // Robonauts.PlaceGamePiece cuando coralController y algaeController tienen pieza).
                 if (CurrentRobotMode == ReefscapeRobotMode.Algae)
                 {
                     PlaceAlgae();
-                    SetRobotMode(ReefscapeRobotMode.Coral);
                 }
                 else
                 {
                     PlaceCoral();
-                    SetRobotMode(ReefscapeRobotMode.Algae);
                 }
             }
             else if (hasAlgae)
@@ -378,11 +407,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             }
             else if (LastSetpoint == ReefscapeSetpoints.L1)
             {
-                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 1.5f));
+                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 3.2f));
             }
             else
             {
-                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 6));
+                _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 3.5f));
             }
         }
 

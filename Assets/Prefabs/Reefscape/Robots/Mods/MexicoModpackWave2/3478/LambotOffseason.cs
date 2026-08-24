@@ -13,6 +13,7 @@ using RobotFramework.Controllers.GamePieceSystem;
 using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
+using Robots.Climbing;
 using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
@@ -136,7 +137,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         public float _climberTargetAngle;
         [SerializeField] private float noWrapAngle;
 
-        
+        private ClimbScorer _climbScorer;
         private bool _intakeSequenceRunning;
         private bool _disruptable;
         private bool wasCoral;
@@ -149,6 +150,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
 
         private bool armNearTarget;
 
+        [Header("Center of Mass")]
+        [SerializeField] private bool addCenterOfMassX;
+        [SerializeField] private bool addCenterOfMassZ;
+        [SerializeField] private float climbedCenterOfMassX;
+        [SerializeField] private float climbedCenterOfMassZ;
+        private Rigidbody _mainRb;
+        private Vector3 _originalCenterOfMass;
+        private bool _isCgShifted;
+
         private DriveController driveController;
 
         // Start is called before the first frame update
@@ -156,6 +166,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         void Start()
         {
             base.Start();
+
+            _climbScorer = gameObject.GetComponent<ClimbScorer>();
             
             superCycler = true;
             
@@ -206,6 +218,20 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             armSource.Stop();
                 
             driveController = gameObject.GetComponent<DriveController>();
+
+            _mainRb = gameObject.GetComponent<Rigidbody>();
+            _isCgShifted = false;
+            if (_mainRb != null)
+            {
+                _originalCenterOfMass = _mainRb.centerOfMass;
+            }
+            else
+            {
+                Debug.LogWarning("ts isnt working btw???");
+            }
+
+            _coralLayerMask = LayerMask.GetMask("Coral");
+            _algaeLayerMask = LayerMask.GetMask("Algae");
 
             _coralLayerMask = LayerMask.GetMask("Coral");
             _algaeLayerMask = LayerMask.GetMask("Algae");
@@ -296,6 +322,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             }
             
             UpdateIntakeAudio();
+            if (CurrentSetpoint is ReefscapeSetpoints.Climb) DriveController.SetDriveMp(0.875f);
+            else if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.6f);
+            else if (CurrentSetpoint is ReefscapeSetpoints.Climbed) DriveController.SetDriveMp(0);
+            else DriveController.SetDriveMp(1);
+
 
             switch (CurrentSetpoint)
             {
@@ -520,6 +551,23 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             OPIntakeSequence();
             
             SetSetpoints();
+
+            if (_mainRb != null)
+            {
+                if (CurrentSetpoint == ReefscapeSetpoints.Climbed)
+                {
+                    if (!_isCgShifted)
+                    {
+                        _mainRb.centerOfMass = new Vector3(climbedCenterOfMassX, _originalCenterOfMass.y, climbedCenterOfMassZ);
+                        _isCgShifted = true;
+                    }
+                }
+                else if (_isCgShifted)
+                {
+                    _mainRb.centerOfMass = _originalCenterOfMass;
+                    _isCgShifted = false;
+                }
+            }
 
             RunCoralVision();
             RunAlgaeVision();
@@ -845,22 +893,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             
         private void SetSetpoint(LambotOffseasonSetpoint setpoint)
         {
-            if ((CurrentSetpoint == ReefscapeSetpoints.Climb || CurrentSetpoint == ReefscapeSetpoints.Climbed) &&
-                _algaeController.HasPiece())
-            {
-                _armTargetAngle = groundAlgae.armAngle;
-                _elevatorTargetHeight = groundAlgae.elevatorHeight;
-                _intakeTargetAngle = setpoint.intakeAngle;
-                _climberTargetAngle = setpoint.climberAngle;
-            }
-            else
-            {
-                _armTargetAngle = setpoint.armAngle;
-                _elevatorTargetHeight = setpoint.elevatorHeight;
-                _intakeTargetAngle = setpoint.intakeAngle;
-                _climberTargetAngle = setpoint.climberAngle;
-            }
-            
+            _armTargetAngle = setpoint.armAngle;
+            _elevatorTargetHeight = setpoint.elevatorHeight;
+            _intakeTargetAngle = setpoint.intakeAngle;
+            _climberTargetAngle = setpoint.climberAngle;
         }
         
         private void SetSetpoints()
