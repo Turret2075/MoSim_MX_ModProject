@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 9162ef73a8b7ff14a81079bd59987bc0
   m_currentHash:
     serializedVersion: 2
-    Hash: d2ad986c5b7f0c940a29814b2de7b59d
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
@@ -41,16 +41,16 @@ MonoBehaviour:
   m_BundleTimeout: 0
   m_BundleRetryCount: 0
   m_BundleRedirectLimit: -1
-  m_SharedBundleSettings: 0
-  m_SharedBundleSettingsCustomGroupIndex: 0
+  m_SharedBundleSettings: 1
+  m_SharedBundleSettingsCustomGroupIndex: 2
   m_ContiguousBundles: 1
   m_StripUnityVersionFromBundleBuild: 0
   m_DisableVisibleSubAssetRepresentations: 0
-  m_BuiltInBundleNaming: 0
-  mBuiltInBundleCustomNaming: 
+  m_BuiltInBundleNaming: 2
+  mBuiltInBundleCustomNaming: mexicomodpackwave1
   m_MonoScriptBundleNaming: 2
   m_CheckForContentUpdateRestrictionsOption: 0
-  m_MonoScriptBundleCustomNaming: 
+  m_MonoScriptBundleCustomNaming: mexicomodpackwave1
   m_RemoteCatalogBuildPath:
     m_Id: 
   m_RemoteCatalogLoadPath:
@@ -86,22 +86,36 @@ MonoBehaviour:
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
       - m_Id: 3995af1f76783674a86b8f7323c5f71e
         m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/Packed Assets'
+      - m_Id: 5d16abd672d5ff14786b1cf3dbe8a898
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/MexicoModpackWave2'
+      - m_Id: 5f16f4c16c6edb34c8331e166067bb14
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/MexicoModpackWave1'
       - m_Id: 627bab2970104a046864120c8cb6850a
         m_Value: 'ServerData/[BuildTarget]'
+      - m_Id: 65e395f6c8de8e54ea51fb6c15a954c6
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/MexicoModpackWave1'
       - m_Id: 6ae011911ed4dff4eb609933b6caac2a
         m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
       - m_Id: 6baa3e245bf74ac47804229dfaac0279
         m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/PrepaTecModpack'
+      - m_Id: 7537d188fd3d27d4a86b30515edf29f5
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/MexicoModpackWave2'
+      - m_Id: 75bc70da68e9dfe47a404893bc7d5a94
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/MxModpackW2'
       - m_Id: 7ffe83d9cfbf3b24a9bb07b2de9e8dc7
         m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/PrepaTecPack'
       - m_Id: 8fe6bd5f7a053fa4d93e80c1cc7c44a5
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/PrepaTecModpack'
+      - m_Id: 9a56afea2d629c44098bd0bab50c4239
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/MxModpackW2'
       - m_Id: a2842c0f9ded8a54d9ba8ec693eb3bcc
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/Packed Assets'
       - m_Id: a44532d1913522240835d41d3bdadf6d
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/PrepatecModpack'
       - m_Id: a63b0599358fc104a9511b1afcbd2995
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/MexicoModpack'
+      - m_Id: b5729401cabe2ad4d92f275cb03467a5
+        m_Value: '{UnityEngine.Application.dataPath}/../Mods/MxModpackW1'
       - m_Id: b86ef2ac929a37d44ad5f1f2ef6d47d8
         m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/PrepatecModpack'
       - m_Id: bc4dba5d895146b4b96c4324c4824f6b
@@ -110,6 +124,8 @@ MonoBehaviour:
         m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/MechTechMod'
       - m_Id: dc362afee9112ee489246a2a832e6005
         m_Value: '{UnityEngine.Application.dataPath}/../Mods/MechTechMod'
+      - m_Id: e5d340fb85fc2c848a6cdcefbe56e60e
+        m_Value: '{UnityEngine.Application.persistentDataPath}/Mods/MxModpackW1'
     m_ProfileEntryNames:
     - m_Id: 067e7677776176d459115365ce143ae6
       m_Name: Remote.LoadPath
@@ -126,8 +142,17 @@ MonoBehaviour:
     - m_Id: 3995af1f76783674a86b8f7323c5f71e
       m_Name: Packed Assets_LoadPath
       m_InlineUsage: 0
+    - m_Id: 5d16abd672d5ff14786b1cf3dbe8a898
+      m_Name: MexicoModpackWave2_LoadPath
+      m_InlineUsage: 0
+    - m_Id: 5f16f4c16c6edb34c8331e166067bb14
+      m_Name: MexicoModpackWave1_BuildPath
+      m_InlineUsage: 0
     - m_Id: 627bab2970104a046864120c8cb6850a
       m_Name: Remote.BuildPath
+      m_InlineUsage: 0
+    - m_Id: 65e395f6c8de8e54ea51fb6c15a954c6
+      m_Name: MexicoModpackWave1_LoadPath
       m_InlineUsage: 0
     - m_Id: 6ae011911ed4dff4eb609933b6caac2a
       m_Name: Local.LoadPath
@@ -135,11 +160,20 @@ MonoBehaviour:
     - m_Id: 6baa3e245bf74ac47804229dfaac0279
       m_Name: PrepaTecModpack_LoadPath
       m_InlineUsage: 0
+    - m_Id: 7537d188fd3d27d4a86b30515edf29f5
+      m_Name: MexicoModpackWave2_BuildPath
+      m_InlineUsage: 0
+    - m_Id: 75bc70da68e9dfe47a404893bc7d5a94
+      m_Name: MxModpackW2_BuildPath
+      m_InlineUsage: 0
     - m_Id: 7ffe83d9cfbf3b24a9bb07b2de9e8dc7
       m_Name: PrepaTecPack_LoadPath
       m_InlineUsage: 0
     - m_Id: 8fe6bd5f7a053fa4d93e80c1cc7c44a5
       m_Name: PrepaTecModpack_BuildPath
+      m_InlineUsage: 0
+    - m_Id: 9a56afea2d629c44098bd0bab50c4239
+      m_Name: MxModpackW2_LoadPath
       m_InlineUsage: 0
     - m_Id: a2842c0f9ded8a54d9ba8ec693eb3bcc
       m_Name: Packed Assets_BuildPath
@@ -149,6 +183,9 @@ MonoBehaviour:
       m_InlineUsage: 0
     - m_Id: a63b0599358fc104a9511b1afcbd2995
       m_Name: MexicoModpack_BuildPath
+      m_InlineUsage: 0
+    - m_Id: b5729401cabe2ad4d92f275cb03467a5
+      m_Name: MxModpackW1_BuildPath
       m_InlineUsage: 0
     - m_Id: b86ef2ac929a37d44ad5f1f2ef6d47d8
       m_Name: PrepatecModpack_LoadPath
@@ -161,6 +198,9 @@ MonoBehaviour:
       m_InlineUsage: 0
     - m_Id: dc362afee9112ee489246a2a832e6005
       m_Name: MechTechMod_BuildPath
+      m_InlineUsage: 0
+    - m_Id: e5d340fb85fc2c848a6cdcefbe56e60e
+      m_Name: MxModpackW1_LoadPath
       m_InlineUsage: 0
     m_ProfileVersion: 1
   m_LabelTable:
