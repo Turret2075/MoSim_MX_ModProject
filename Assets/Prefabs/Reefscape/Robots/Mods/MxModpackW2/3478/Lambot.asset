@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aff2b59de2c4a0c96d6b848990b46af, type: 3}
+  m_Name: Lambot
+  m_EditorClassIdentifier: 
+  teamNumber: 3478
+  teamName: Lambot
+  robotPrefab: {fileID: 8292468254655104283, guid: 77a18abb72e370244ab3d388a1534866,
+    type: 3}
+  robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
+    type: 3}
+  mainMenuPrefab: {fileID: 8292468254655104283, guid: d0536095292cba84e8d69ce7ffb11226,
+    type: 3}
+  hasAlternateRobot: 1
+  alternateRobotPrefab: {fileID: 1625790350021671778, guid: b2c20b6d64a5b6e4a934294a37a39dde,
+    type: 3}
+  alternateMainMenuPrefab: {fileID: 1625790350021671778, guid: 83cf20d13b4ae7f4cae6fd02bbf3b050,
+    type: 3}
+  robotImage: {fileID: 21300000, guid: b240faac9896db840968c9a86969ecb1, type: 3}
+  tutorialCards:
+  - {fileID: 6829736770845459078, guid: fcbfc95ba894e4d45a73738c4bc831af, type: 3}
+  - {fileID: 6829736770845459078, guid: 028cc7624cb9df449a9d23233696e8a0, type: 3}
+  - {fileID: 6829736770845459078, guid: 9b7688a86ab39d3469e456aad48e4be4, type: 3}
+  alternateTutorialCards:
+  - {fileID: 6829736770845459078, guid: cda15f2242f7a37448f95c8dcbb77858, type: 3}
+  - {fileID: 6829736770845459078, guid: a25319fc92ddc7d49b2ab1c9e46ce00c, type: 3}
+  - {fileID: 6829736770845459078, guid: 5a6443a0e2c226c4394f597d4b060352, type: 3}
+  autoClimbs: 0
+  alternateAutoClimbs: 0

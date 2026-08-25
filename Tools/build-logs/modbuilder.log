@@ -1,0 +1,13 @@
+[2026-08-24T14:53:49.380Z] SUCCESS  target=win64  groups=MexicoModpackWave2  exitCode=0
+[2026-08-24T15:08:39.144Z] SUCCESS  target=osx  groups=MexicoModpackWave2  exitCode=0
+[2026-08-24T15:30:25.288Z] SUCCESS  target=linux64  groups=MexicoModpackWave2  exitCode=0
+[2026-08-24T16:07:39.349Z] SUCCESS  target=win64  groups=MexicoModpackWave2  exitCode=0
+[2026-08-24T16:11:41.942Z] SUCCESS  target=osx  groups=MexicoModpackWave2  exitCode=0
+[2026-08-24T16:14:00.214Z] SUCCESS  target=linux64  groups=MexicoModpackWave2  exitCode=0
+[2026-08-24T16:30:13.292Z] SUCCESS  target=win64  groups=MexicoModpackWave1  exitCode=0
+[2026-08-24T18:30:00.402Z] FAILURE  target=win64  groups=MexicoModpackWave2(v1.0.1)  exitCode=0  reason="build log contains "error CS""
+[2026-08-24T18:40:19.936Z] SUCCESS  target=win64  groups=MxModpackW2  exitCode=0
+[2026-08-24T18:43:05.912Z] SUCCESS  target=osx  groups=MxModpackW2  exitCode=0
+[2026-08-24T18:46:17.436Z] FAILURE  target=linux64  groups=MxModpackW2  exitCode=0  reason="build log contains "error CS""
+[2026-08-24T18:47:19.251Z] SUCCESS  target=linux64  groups=MxModpackW2  exitCode=0
+[2026-08-24T21:39:32.725Z] SUCCESS  target=win64  groups=MxModpackW1  exitCode=0
