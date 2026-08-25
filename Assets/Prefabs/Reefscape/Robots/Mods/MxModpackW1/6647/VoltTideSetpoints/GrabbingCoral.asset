@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 999179001d3555146aa94ec9069df323, type: 3}
   m_Name: GrabbingCoral
   m_EditorClassIdentifier: 
-  elevatorHeight: 15
+  elevatorHeight: 18
   armAngle: 90
   intakeAngle: -140

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Intake
   m_EditorClassIdentifier: 
   elevatorHeight: 7.5
-  algaeArmAngle: -162
+  algaeArmAngle: -180
