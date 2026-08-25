@@ -11,3 +11,6 @@
 [2026-08-24T18:46:17.436Z] FAILURE  target=linux64  groups=MxModpackW2  exitCode=0  reason="build log contains "error CS""
 [2026-08-24T18:47:19.251Z] SUCCESS  target=linux64  groups=MxModpackW2  exitCode=0
 [2026-08-24T21:39:32.725Z] SUCCESS  target=win64  groups=MxModpackW1  exitCode=0
+[2026-08-25T02:17:00.663Z] SUCCESS  target=win64  groups=MxModpackW2(v1.0.3)  exitCode=0
+[2026-08-25T02:21:30.582Z] SUCCESS  target=osx  groups=MxModpackW2(v1.0.3)  exitCode=0
+[2026-08-25T02:26:56.946Z] SUCCESS  target=linux64  groups=MxModpackW2(v1.0.3)  exitCode=0
