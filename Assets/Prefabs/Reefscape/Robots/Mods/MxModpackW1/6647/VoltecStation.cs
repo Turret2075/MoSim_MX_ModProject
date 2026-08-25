@@ -9,6 +9,7 @@ using RobotFramework.Controllers.GamePieceSystem;
 using RobotFramework.Controllers.PidSystems;
 using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
+using MoSimLib;
 using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
@@ -22,19 +23,17 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [Header("PIDS")]
         [SerializeField] private PidConstants algaeArmPid;
 
-        [Header("Rollers - End Effector (como TitaniumRams)")]
-        [SerializeField] private GenericRoller endEffectorRollerLeft;
-        [SerializeField] private GenericRoller endEffectorRollerRight;
+        [Header("Animation Joints - End Effector (estilo TitaniumRams)")]
+        [SerializeField] private GenericAnimationJoint[] endEffectorWheels;        // antes endEffectorRollerRight
+        [SerializeField] private GenericAnimationJoint[] endEffectorWheelsReverse; // antes endEffectorRollerLeft
 
+        [Header("Animation Joints - Funnel (como Firebots)")]
+        [SerializeField] private GenericAnimationJoint[] funnelWheels;        // antes funnelRollerRight
+        [SerializeField] private GenericAnimationJoint[] funnelWheelsReverse; // antes funnelRollerLeft / funnelRollerLeft2
 
-        [Header("Rollers - Funnel (como Firebots)")]
-        [SerializeField] private GenericRoller funnelRollerLeft;
-        [SerializeField] private GenericRoller funnelRollerLeft2;
-        [SerializeField] private GenericRoller funnelRollerRight;
-
-        [Header("Rollers - Algae")]
-        [SerializeField] private GenericRoller algaeRollerLeft;
-        [SerializeField] private GenericRoller algaeRollerRight;
+        [Header("Animation Joints - Algae")]
+        [SerializeField] private GenericAnimationJoint[] algaeWheels;        // antes algaeRollerRight
+        [SerializeField] private GenericAnimationJoint[] algaeWheelsReverse; // antes algaeRollerLeft
 
         [Header("Roller Velocities")]
         [SerializeField] private float endEffectorIntakeVelocity;
@@ -50,8 +49,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [SerializeField] private VoltecBSetpoint l1Place;
         [SerializeField] private VoltecBSetpoint l2;
         [SerializeField] private VoltecBSetpoint l3;
-        [SerializeField] private VoltecBSetpoint l4;
-        [SerializeField] private VoltecBSetpoint l4Place;
 
         [Header("Algae Setpoints")]
         [SerializeField] private VoltecBSetpoint AlgaeStow;
@@ -171,17 +168,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     break;
                 case ReefscapeSetpoints.Intake:
                     SetSetpoint(intake);
-                    // Solo agarra coral de la Station, no del piso ni algas aqui
-                    _coralController.RequestIntake(coralIntake, CurrentRobotMode == ReefscapeRobotMode.Coral && !hasCoral && !hasAlgae);
+                    // Superciclo (igual que TitaniumRams): solo checa que no traigas
+                    // coral ya, no importa si ya traes alga, para poder cargar ambas.
+                    _coralController.RequestIntake(coralIntake, CurrentRobotMode == ReefscapeRobotMode.Coral && !hasCoral);
                     break;
                 case ReefscapeSetpoints.Place:
                     if (LastSetpoint == ReefscapeSetpoints.Barge)
                     {
                         SetSetpoint(barge);
-                    }
-                    else if (LastSetpoint == ReefscapeSetpoints.L4)
-                    {
-                        SetSetpoint(l4Place);
                     }
                     else if (LastSetpoint == ReefscapeSetpoints.L1)
                     {
@@ -190,8 +184,38 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
 
                     if (outtakeJustPressed)
                     {
+                        // Superciclo (igual que en TitaniumRams): si traiamos coral Y alga
+                        // a la vez, al anotar la pieza del modo actual nos brincamos solos
+                        // al otro modo para ir directo a soltar la que quedo pendiente.
+                        bool hadBoth = hasCoral && hasAlgae;
+
+                        // hadBoth solo es true en la PRIMERA de las dos anotadas (para la
+                        // segunda ya solo queda una pieza), asi que sin esto el robot se
+                        // quedaba trabado en modo Algae despues de soltar el alga sola en
+                        // el barge. Igual que Lambot (que fuerza Coral en cuanto detecta
+                        // coral a bordo): al terminar de anotar el alga en el barge sin
+                        // traer coral pendiente, regresamos solos a modo Coral.
+                        bool placingAlgaeAlone = !hadBoth && hasAlgae && LastSetpoint == ReefscapeSetpoints.Barge;
+
                         PlacePiece();
                         StartCoroutine(ScoreCoroutine());
+
+                        if (hadBoth)
+                        {
+                            switch (CurrentRobotMode)
+                            {
+                                case ReefscapeRobotMode.Algae:
+                                    SetRobotMode(ReefscapeRobotMode.Coral);
+                                    break;
+                                case ReefscapeRobotMode.Coral:
+                                    SetRobotMode(ReefscapeRobotMode.Algae);
+                                    break;
+                            }
+                        }
+                        else if (placingAlgaeAlone)
+                        {
+                            SetRobotMode(ReefscapeRobotMode.Coral);
+                        }
                     }
                     break;
                 case ReefscapeSetpoints.L1:
@@ -199,24 +223,23 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     break;
                 case ReefscapeSetpoints.Stack:
                     SetSetpoint(AlgaeIntake);
-                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae && !hasCoral);
+                    // Superciclo: solo checa que no traigas alga ya, no importa si ya
+                    // traes coral, para poder cargar ambas piezas a la vez.
+                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae);
                     break;
                 case ReefscapeSetpoints.L2:
                     SetSetpoint(l2);
                     break;
                 case ReefscapeSetpoints.LowAlgae:
                     SetSetpoint(lowAlgae);
-                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae && !hasCoral);
+                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae);
                     break;
                 case ReefscapeSetpoints.L3:
                     SetSetpoint(l3);
                     break;
                 case ReefscapeSetpoints.HighAlgae:
                     SetSetpoint(highAlgae);
-                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae && !hasCoral);
-                    break;
-                case ReefscapeSetpoints.L4:
-                    SetSetpoint(l4);
+                    _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae);
                     break;
                 case ReefscapeSetpoints.Processor:
                     SetSetpoint(stow);
@@ -245,17 +268,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             if (_algaeController.HasPiece() && LastSetpoint == ReefscapeSetpoints.Barge)
             {
                 // Barge (estilo Robonauts): no se avienta, solo sube y se outtakea con los rollers
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4f, 0));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 5f, 0));
             }
             else if (_coralController.HasPiece())
             {
-                if (LastSetpoint == ReefscapeSetpoints.L4)
+                if (LastSetpoint == ReefscapeSetpoints.L1)
                 {
-                    _coralController.ReleaseGamePieceWithContinuedForce(new Vector3(0, 0, 5.5f), 1f, 0.5f);
-                }
-                else if (LastSetpoint == ReefscapeSetpoints.L1)
-                {
-                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 2));
+                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, 4));
                 }
                 else
                 {
@@ -278,14 +297,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             {
                 if (scoringAlgae)
                 {
-                    algaeRollerLeft.ChangeAngularVelocity(-algaeOuttakeVelocity);
-                    algaeRollerRight.ChangeAngularVelocity(algaeOuttakeVelocity);
+                    foreach (var wheel in algaeWheels) wheel.VelocityRoller(algaeOuttakeVelocity).useAxis(JointAxis.Z);
+                    foreach (var wheel in algaeWheelsReverse) wheel.VelocityRoller(-algaeOuttakeVelocity).useAxis(JointAxis.Z);
                     _algaeRollersActive = true;
                 }
                 else
                 {
-                    endEffectorRollerLeft.ChangeAngularVelocity(endEffectorOuttakeVelocity);
-                    endEffectorRollerRight.ChangeAngularVelocity(-endEffectorOuttakeVelocity);
+                    foreach (var wheel in endEffectorWheels) wheel.VelocityRoller(-endEffectorOuttakeVelocity).useAxis(JointAxis.Z);
+                    foreach (var wheel in endEffectorWheelsReverse) wheel.VelocityRoller(endEffectorOuttakeVelocity).useAxis(JointAxis.Z);
                     _endEffectorRollersActive = true;
                 }
 
@@ -294,14 +313,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
 
             if (scoringAlgae)
             {
-                algaeRollerLeft.ChangeAngularVelocity(0);
-                algaeRollerRight.ChangeAngularVelocity(0);
+                foreach (var wheel in algaeWheels) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
+                foreach (var wheel in algaeWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 _algaeRollersActive = false;
             }
             else
             {
-                endEffectorRollerLeft.ChangeAngularVelocity(0);
-                endEffectorRollerRight.ChangeAngularVelocity(0);
+                foreach (var wheel in endEffectorWheels) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
+                foreach (var wheel in endEffectorWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 _endEffectorRollersActive = false;
             }
 
@@ -323,56 +342,58 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                 return;
             }
 
+            // Superciclo: los rollers de coral giran aunque ya traigas alga cargada,
+            // solo se bloquean si ya traes coral (mismo criterio que RequestIntake).
             bool wantsCoralIntake = CurrentSetpoint == ReefscapeSetpoints.Intake &&
                                      CurrentRobotMode == ReefscapeRobotMode.Coral &&
-                                     intakePressed && !hasCoral && !hasAlgae;
+                                     intakePressed && !hasCoral;
 
-            // End Effector Rollers
+            // End Effector - AnimationJoints (estilo TitaniumRams)
             if (wantsCoralIntake)
             {
-                endEffectorRollerLeft.ChangeAngularVelocity(-endEffectorIntakeVelocity);
-                endEffectorRollerRight.ChangeAngularVelocity(endEffectorIntakeVelocity);
+                foreach (var wheel in endEffectorWheels) wheel.VelocityRoller(endEffectorIntakeVelocity).useAxis(JointAxis.Z);
+                foreach (var wheel in endEffectorWheelsReverse) wheel.VelocityRoller(-endEffectorIntakeVelocity).useAxis(JointAxis.Z);
                 _endEffectorRollersActive = true;
             }
             else
             {
-                endEffectorRollerLeft.ChangeAngularVelocity(0);
-                endEffectorRollerRight.ChangeAngularVelocity(0);
+                foreach (var wheel in endEffectorWheels) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
+                foreach (var wheel in endEffectorWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 _endEffectorRollersActive = false;
             }
 
-            // Funnel Rollers
+            // Funnel - AnimationJoints (estilo TitaniumRams)
             if (wantsCoralIntake)
             {
-                funnelRollerLeft.ChangeAngularVelocity(-funnelIntakeVelocity);
-                funnelRollerLeft2.ChangeAngularVelocity(-funnelIntakeVelocity);
-                funnelRollerRight.ChangeAngularVelocity(funnelIntakeVelocity);
+                foreach (var wheel in funnelWheels) wheel.VelocityRoller(funnelIntakeVelocity).useAxis(JointAxis.Z);
+                foreach (var wheel in funnelWheelsReverse) wheel.VelocityRoller(-funnelIntakeVelocity).useAxis(JointAxis.Z);
                 _funnelRollersActive = true;
             }
             else
             {
-                funnelRollerLeft.ChangeAngularVelocity(0);
-                funnelRollerLeft2.ChangeAngularVelocity(0);
-                funnelRollerRight.ChangeAngularVelocity(0);
+                foreach (var wheel in funnelWheels) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
+                foreach (var wheel in funnelWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 _funnelRollersActive = false;
             }
 
             // Algae Rollers (solo intake: reef y lollipop; el outtake vive en ScoreCoroutine)
+            // Superciclo: giran aunque ya traigas coral cargado, solo se bloquean si
+            // ya traes alga (mismo criterio que RequestIntake).
             bool wantsAlgaeIntake = (CurrentSetpoint == ReefscapeSetpoints.LowAlgae ||
                                       CurrentSetpoint == ReefscapeSetpoints.HighAlgae ||
                                       CurrentSetpoint == ReefscapeSetpoints.Stack) &&
-                                     intakePressed && !hasAlgae && !hasCoral;
+                                     intakePressed && !hasAlgae;
 
             if (wantsAlgaeIntake)
             {
-                algaeRollerLeft.ChangeAngularVelocity(-algaeIntakeVelocity);
-                algaeRollerRight.ChangeAngularVelocity(algaeIntakeVelocity);
+                foreach (var wheel in algaeWheels) wheel.VelocityRoller(algaeIntakeVelocity).useAxis(JointAxis.Z);
+                foreach (var wheel in algaeWheelsReverse) wheel.VelocityRoller(-algaeIntakeVelocity).useAxis(JointAxis.Z);
                 _algaeRollersActive = true;
             }
             else
             {
-                algaeRollerLeft.ChangeAngularVelocity(0);
-                algaeRollerRight.ChangeAngularVelocity(0);
+                foreach (var wheel in algaeWheels) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
+                foreach (var wheel in algaeWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 _algaeRollersActive = false;
             }
 
