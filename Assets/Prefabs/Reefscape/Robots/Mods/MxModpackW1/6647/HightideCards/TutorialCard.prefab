@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: 1967486601383204409, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_Name
-      value: TutorialCard 2
+      value: TutorialCard
       objectReference: {fileID: 0}
     - target: {fileID: 4956299056046692928, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
@@ -21,18 +21,23 @@ PrefabInstance:
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_text
-      value: Lynk's Climber Is Single Deploy, So Be Careful To Not Deploy Early
+      value: For kamikaze to score algae in barge, leave a gap so it can shoot it.
+      objectReference: {fileID: 0}
+    - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_fontSizeBase
-      value: 28
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 6718568964111546190, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 3bf7ef9a2de6ab7498822fce373d0b0a,
+      objectReference: {fileID: 21300000, guid: 9c054bffaa8663149b61a7e75e0da51b,
         type: 3}
     - target: {fileID: 7647712989278884331, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}

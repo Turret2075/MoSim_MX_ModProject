@@ -14,21 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 6647
   teamName: VOLTEC
-  robotPrefab: {fileID: 5060534743255372558, guid: dcf798cb5aa56a64a8b64d12cb3b14fc,
+  robotPrefab: {fileID: 5060534743255372558, guid: a4726db1601160a4d93f6c1ead9f5108,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
   mainMenuPrefab: {fileID: 5060534743255372558, guid: 7dfb4cf6c14e4584c864f8dd0acfe87c,
     type: 3}
-  hasAlternateRobot: 0
+  hasAlternateRobot: 1
   alternateRobotPrefab: {fileID: 5060534743255372558, guid: dcf798cb5aa56a64a8b64d12cb3b14fc,
     type: 3}
-  alternateMainMenuPrefab: {fileID: 0}
+  alternateMainMenuPrefab: {fileID: 5060534743255372558, guid: bf99ccfac7431604dbe8b712504ddcc6,
+    type: 3}
   robotImage: {fileID: 21300000, guid: 8af4b0cdbc3c55f489ad1d8ddbc8a69a, type: 3}
   tutorialCards:
-  - {fileID: 6829736770845459078, guid: 82c9aeba2163f3a40875a3c3f9d16ee5, type: 3}
-  - {fileID: 6829736770845459078, guid: 6d88ef0a051098f4c9f966c7bf817596, type: 3}
-  - {fileID: 6829736770845459078, guid: 9d404ab9e4d805b40bc1177cab1a1dab, type: 3}
-  alternateTutorialCards: []
+  - {fileID: 6829736770845459078, guid: 126793a0df923114bb68b70611a51309, type: 3}
+  - {fileID: 6829736770845459078, guid: 7bf4f865c0c21934ebe82c8664cceaa6, type: 3}
+  - {fileID: 6829736770845459078, guid: 40aada715fb3a18469687b4c50d42a21, type: 3}
+  alternateTutorialCards:
+  - {fileID: 6829736770845459078, guid: 38d69af509dd2304f8c8ca91e9c6fefc, type: 3}
+  - {fileID: 6829736770845459078, guid: e13e0507dedca0b4a9f8f6e6a8e4443a, type: 3}
+  - {fileID: 6829736770845459078, guid: 1b99bec656c3882488d942403b519fce, type: 3}
   autoClimbs: 1
   alternateAutoClimbs: 0

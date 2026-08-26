@@ -39,7 +39,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
         [SerializeField] private OvertureMonterreySetpoint intake;
 
         [SerializeField] private OvertureMonterreySetpoint stack;
-        [SerializeField] private OvertureMonterreySetpoint l1;
         [SerializeField] private OvertureMonterreySetpoint l2;
         [SerializeField] private OvertureMonterreySetpoint l2Place;
         [SerializeField] private OvertureMonterreySetpoint l2back;
@@ -308,7 +307,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     }
                     else
                     {
-                        SetSetpoint(l1);
+                        SetSetpoint(stow);
                     }
                     break;
                 case ReefscapeSetpoints.Stack:
@@ -430,7 +429,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                         yield return new WaitForSeconds(0.1f);
                         _coralController.ReleaseGamePieceWithContinuedForce(new Vector3(0, 0, 2f), 0.5f, 1.75f);
                     }
-                    else if (LastSetpoint == ReefscapeSetpoints.L1 || LastSetpoint == ReefscapeSetpoints.Stow)
+                    else if (LastSetpoint == ReefscapeSetpoints.Stow)
                     {
                         _coralController.ReleaseGamePieceWithForce(new Vector3(0, 2f, 0));
                     }                    
