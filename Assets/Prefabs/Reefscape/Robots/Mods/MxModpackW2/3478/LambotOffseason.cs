@@ -99,6 +99,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
         [SerializeField]private GenericAnimationJoint[] eEWheels;
         [SerializeField] private float eEWheelSpeed = 300f;
 
+        [Header("EE Rollers Reverse")]
+        [SerializeField] private GenericAnimationJoint[] eERollersReverse;
+
 
         
         [Header("Algae Stall Audio")]
@@ -295,7 +298,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             }
             
             UpdateIntakeAudio();
-            if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.6f);
+            if (CurrentSetpoint is ReefscapeSetpoints.Barge || LastSetpoint == ReefscapeSetpoints.Barge) DriveController.SetDriveMp(0.9f);
             else DriveController.SetDriveMp(1);
 
 
@@ -316,8 +319,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                         SetSetpoint(groundAlgae);
                         _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
                         _algaeController.SetTargetState(algaeStowState);
-                        foreach (var wheel in eEWheels) 
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(eEWheelSpeed);
                     }
 
                     break;
@@ -367,28 +369,12 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                         switch (LastSetpoint)
                         {
                             case  ReefscapeSetpoints.Barge:
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(-eEWheelSpeed).useAxis(JointAxis.Y);
-                                break;
                             case  ReefscapeSetpoints.Processor:
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(-eEWheelSpeed).useAxis(JointAxis.Y);
-                                break;
                             case  ReefscapeSetpoints.L4:
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(-eEWheelSpeed).useAxis(JointAxis.Y);
-                                break;
                             case  ReefscapeSetpoints.L3:
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(-eEWheelSpeed).useAxis(JointAxis.Y);
-                                break;
                             case  ReefscapeSetpoints.L2:
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(-eEWheelSpeed).useAxis(JointAxis.Y);
-                                break;
                             case  ReefscapeSetpoints.L1:
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(-eEWheelSpeed).useAxis(JointAxis.Y);
+                                SpinEERollers(-eEWheelSpeed);
                                 break;
                         }
 
@@ -418,8 +404,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
-                        foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(eEWheelSpeed);
                     }
                     break;
                 }
@@ -441,8 +426,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
 
                     if (IntakeAction.IsPressed())
                     {
-                        foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(eEWheelSpeed);
                     }
                     SetSetpoint(highAlgae);
                     _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
@@ -469,8 +453,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                     
                     if (IntakeAction.IsPressed())
                     {
-                        foreach (var wheel in eEWheels) 
-                            wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(eEWheelSpeed);
                     }
                     break;
                 case ReefscapeSetpoints.Barge:
@@ -519,8 +502,20 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
             SetSetpoints();
 
 
-            RunCoralVision();
-            RunAlgaeVision();
+            // Coral/algae vision auto-steer disabled per request (rotaba al lado contrario de la pieza)
+            // RunCoralVision();
+            // RunAlgaeVision();
+        }
+
+        // Spins eEWheels at `speed` and eERollersReverse at the opposite speed,
+        // so the reverse set always turns the other way (useful to center a piece
+        // instead of pushing it to one side when both wheel sets grip it).
+        private void SpinEERollers(float speed)
+        {
+            foreach (var wheel in eEWheels)
+                wheel.VelocityRoller(speed).useAxis(JointAxis.X);
+            foreach (var wheel in eERollersReverse)
+                wheel.VelocityRoller(-speed).useAxis(JointAxis.X);
         }
 
         private void RunCoralVision()
@@ -729,8 +724,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._9978
                             if (Utils.WithinAngularRange(arm.GetSingleAxisAngle(JointAxis.X), coralStow.armAngle, 5))
                             {
                                 _elevatorTargetHeight = hasAlgea ? _elevatorTargetHeight : groundCoral.elevatorHeight;
-                                foreach (var wheel in eEWheels) 
-                                    wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                                SpinEERollers(eEWheelSpeed);
 
                             }
                             else
