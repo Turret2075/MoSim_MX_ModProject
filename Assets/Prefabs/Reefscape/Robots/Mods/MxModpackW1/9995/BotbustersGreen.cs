@@ -354,7 +354,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
 
         private void AutoAlignOffsets()
         {
-            bool isL3 = CurrentSetpoint is ReefscapeSetpoints.L3;
+            bool isL3 = (CurrentSetpoint is ReefscapeSetpoints.L3) || (LastSetpoint is ReefscapeSetpoints.L3) ;
             float zOffset = !FacingReef ? backReefOffset : 0f;
 
             align.offset = new Vector3(0f, 0f, zOffset);
