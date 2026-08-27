@@ -94,6 +94,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         private bool _algaeRollersActive;
         private bool _outtakeWasPressed;
         private bool _isScoring;
+        private bool _algaeCollidersLocked;
 
         protected override void Start()
         {
@@ -268,7 +269,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             if (_algaeController.HasPiece() && LastSetpoint == ReefscapeSetpoints.Barge)
             {
                 // Barge (estilo Robonauts): no se avienta, solo sube y se outtakea con los rollers
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 5f, 0));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 5.75f, 0));
             }
             else if (_coralController.HasPiece())
             {
@@ -293,6 +294,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             // en el instante que se suelta el boton, sin depender del CurrentSetpoint.
             bool scoringAlgae = LastSetpoint == ReefscapeSetpoints.Barge;
 
+            // Al outtakear alga se apagan los colliders para que la pieza salga
+            // limpia (sin rebotar) del end effector; se reactivan mas abajo tras
+            // el delay, una vez que el outtake ya termino.
+            if (scoringAlgae)
+            {
+                _algaeCollidersLocked = true;
+                ToggleAlgaeColliders(false);
+            }
+
             while (OuttakeAction != null && OuttakeAction.IsPressed())
             {
                 if (scoringAlgae)
@@ -316,6 +326,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                 foreach (var wheel in algaeWheels) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 foreach (var wheel in algaeWheelsReverse) wheel.VelocityRoller(0).useAxis(JointAxis.Z);
                 _algaeRollersActive = false;
+
+                // Espera 1 segundo antes de reactivar los colliders del alga,
+                // para darle tiempo a la pieza de alejarse del robot.
+                StartCoroutine(ReactivateAlgaeCollidersAfterDelay(1f));
             }
             else
             {
@@ -325,6 +339,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             }
 
             _isScoring = false;
+        }
+
+        private IEnumerator ReactivateAlgaeCollidersAfterDelay(float delaySeconds)
+        {
+            yield return new WaitForSeconds(delaySeconds);
+            _algaeCollidersLocked = false;
+            ToggleAlgaeColliders(true);
         }
 
         private void SetSetpoint(VoltecBSetpoint setpoint)
@@ -398,8 +419,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
             }
 
             // Igual que en OvertureWorlds: se apagan los colliders del alga mientras se
-            // esta intakeando, para que la pieza no rebote raro contra el frame del robot
-            ToggleAlgaeColliders(!wantsAlgaeIntake);
+            // esta intakeando, para que la pieza no rebote raro contra el frame del robot.
+            // Si acabamos de outtakear un alga, _algaeCollidersLocked se encarga de que
+            // esta logica no reactive los colliders antes de que pase el delay de 1s.
+            if (!_algaeCollidersLocked)
+            {
+                ToggleAlgaeColliders(!wantsAlgaeIntake);
+            }
         }
 
         private void ToggleAlgaeColliders(bool enable)
