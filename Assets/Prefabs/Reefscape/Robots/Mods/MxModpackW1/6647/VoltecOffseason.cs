@@ -16,6 +16,17 @@ using UnityEngine;
 
 namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 {
+    // REPARACION VoltecOffseason (resumen):
+    // - Base: se tomo la arquitectura de VolTide (handoff de chasis frame-by-frame via
+    //   HandoffCoralFromChassis + bandera pegajosa _algaeSecured) en vez del pickup viejo de
+    //   Offseason (coroutine con tiempos fijos), porque esa coroutine + _pickupCoroutineRunning
+    //   no protegia bien contra el parpadeo de HasPiece()/currentStateNum, y eso era lo que
+    //   rompia el re-intake de coral despues de: agarrar alga + coral (superciclo), outtakear
+    //   el alga, y volver a intake (el "ya no agarra coral" que reportaron).
+    // - Fix extra sobre VolTide: se agrego Processor a la lista de setpoints excluidos en
+    //   IntakeSequence() (le faltaba, junto a Barge/Place), porque sin eso el bloque de
+    //   handoff de coral podia correr mientras se iba a Processor con algae a bordo y le
+    //   pisaba el setpoint de Processor con algaeStow - eso era el "no dejaba procesar" de VolTide.
     public class VoltecOffseason : ReefscapeRobotBase
     {
         [Header("Components")]
@@ -142,6 +153,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private bool _l2SequenceRunning;
         private bool _l2SequenceComplete;
         private bool _algaeCollidersLocked;
+        // "Pegajosa": una vez que confirmamos algae a bordo, se queda en true hasta
+        // que la soltamos EXPLICITAMENTE (ver ReleaseGamePieceWithForce en el case
+        // Place). Esto es justo lo que _algaeController.HasPiece() no garantiza -
+        // si HasPiece() parpadea a false por un frame justo cuando el driver
+        // presiona intake (la carrera que reportaste: "agarro el alga y presiono
+        // intake, baja el brazo como si no tuviera alga"), esta bandera no se
+        // entera de ese parpadeo y sigue protegiendo el brazo/elevador.
+        private bool _algaeSecured;
 
         private ReefscapeSetpoints? _bufferedSetpoint;
         private bool bufferAlgeaState;
@@ -179,6 +198,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             _isPlacingCoral = false;
             _bufferedSetpoint = null;
             bufferAlgeaState = false;
+            _algaeSecured = false;
 
             rollerSource.playOnAwake = false;
             rollerSource.clip = intakeClip;
@@ -225,6 +245,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             }
 
             _algaeController.SetTargetState(algaeStowState);
+
+            // Actualizamos la bandera pegajosa ANTES de todo lo demas (incluida
+            // IntakeSequence, que corre hasta el final de este mismo FixedUpdate),
+            // asi que si HasPiece() es true en cualquier punto de este frame ya
+            // queda registrado para el resto del frame Y para los siguientes,
+            // aunque HasPiece() luego parpadee.
+            if (_algaeController.HasPiece())
+            {
+                _algaeSecured = true;
+            }
 
             if (_algaeController.HasPiece() || CurrentSetpoint == ReefscapeSetpoints.Barge)
             {
@@ -283,7 +313,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 _bufferedSetpoint = null;
             }
 
-            bool coralAtEE = _coralController.currentStateNum == coralArmStowState.stateNum && _coralController.atTarget;
+            // HasPiece() extra por la misma razon que en HandoffCoralFromChassis:
+            // currentStateNum/atTarget pueden leer "viejo" un frame tras placear.
+            bool coralAtEE = _coralController.HasPiece() &&
+                              _coralController.currentStateNum == coralArmStowState.stateNum && _coralController.atTarget;
 
             if (coralAtEE && CurrentRobotMode != ReefscapeRobotMode.Coral)
             {
@@ -324,6 +357,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     {
                         SetSetpoint(_algaeController.HasPiece() ? algaeStow : coralStow);
                     }
+                    else
+                    {
+                        SetSetpoint(stow);
+                    }
 
                     climber.NotClimbing();
                     break;
@@ -349,6 +386,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     if (_algaeController.HasPiece())
                     {
                         _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4f, 0));
+                        _algaeSecured = false; // la soltamos a proposito: ya no hay que protegerla
 
                         // Al soltar el alga se apagan los colliders para que la pieza salga
                         // limpia (sin rebotar) y se reactivan 1 segundo despues.
@@ -608,10 +646,29 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         // tocaba en ese punto del ciclo.
         private bool HandoffCoralFromChassis(bool hasAlgae)
         {
-            bool atChassisStow = _coralController.currentStateNum == coralChassisStowState.stateNum &&
+            // HasPiece() extra: sin esto, si currentStateNum/atTarget se quedan
+            // "viejos" un frame justo despues de placear (antes de que el
+            // controller registre que ya no hay pieza), esta funcion podia leer
+            // atChassisStow=true para un coral que ni siquiera existe todavia y
+            // saltarse directo a la fase de pickup en el SIGUIENTE coral,
+            // brincandose groundCoral por completo.
+            bool atChassisStow = _coralController.HasPiece() &&
+                                  _coralController.currentStateNum == coralChassisStowState.stateNum &&
                                   _coralController.atTarget;
 
-            if (atChassisStow && !hasAlgae)
+            // Con algae a bordo, esta funcion no hace absolutamente nada con el
+            // handoff de coral (el coral solo avanza su propio estado via el
+            // switch de arriba en IntakeSequence, sin mover brazo/elevador para
+            // recogerlo fisicamente). Lo fijamos EXPLICITAMENTE en algaeStow aqui
+            // tambien (ademas de en IntakeSequence) para que quede blindado sin
+            // importar en que punto del ciclo del coral estemos.
+            if (_algaeController.HasPiece() || hasAlgae)
+            {
+                _armTargetAngle = algaeStow.armAngle;
+                _elevatorTargetHeight = algaeStow.elevatorHeight;
+            }
+
+            if (atChassisStow && (!_algaeController.HasPiece() || !hasAlgae))
             {
                 _intakeTargetAngle = coralStow.intakeAngle;
 
@@ -652,8 +709,25 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         return true;
                     }
                 }
+            }
 
+            // Igual que en el codigo viejo: esto corre para CUALQUIER atChassisStow,
+            // sin importar hasAlgae. Bug que acabamos de meter: antes estas dos
+            // lineas vivian DENTRO del "if (... && !hasAlgae)" de arriba, asi que
+            // durante un superciclo (algae a bordo Y coral llegando a chasis)
+            // _disruptable se quedaba en false para siempre. Eso hacia que el
+            // chequeo de arriba en FixedUpdate cayera en la rama de "Algae
+            // interrumpido" y forzara SetState(Stow) cada frame - por eso no se
+            // podia expulsar nada (Barge/Processor/Place nunca se alcanzaban) y
+            // se veia como que el robot se iba derecho a intake coral.
+            if (atChassisStow)
+            {
+                _intakeTargetAngle = coralStow.intakeAngle;
                 _disruptable = true;
+            }
+
+            if (atChassisStow && (!_algaeController.HasPiece() || !hasAlgae))
+            {
                 return false;
             }
 
@@ -683,10 +757,27 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             if (CurrentRobotMode == ReefscapeRobotMode.Coral ||
                 (_algaeController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Algae))
             {
+                // FIX (VoltecOffseason): faltaba excluir Processor aqui, igual que Barge/Place.
+                // Sin esto, durante un superciclo (algae + coral a medio handoff) al ir a
+                // Processor este bloque igual corria, entraba a HandoffCoralFromChassis, y como
+                // hasAlgae=true eso pisaba _armTargetAngle/_elevatorTargetHeight con algaeStow
+                // DESPUES de que el switch de arriba ya los habia puesto en processor.armAngle/
+                // elevatorHeight - el brazo nunca llegaba a Processor. Esto es justo el bug de
+                // "no dejaba procesar" que traia VolTide (Processor faltaba en esta lista) y que
+                // en Offseason ni se notaba porque el pickup viejo (coroutine) casi nunca coincidia
+                // con este bloque a tiempo.
                 if (CurrentSetpoint != ReefscapeSetpoints.HighAlgae && CurrentSetpoint != ReefscapeSetpoints.LowAlgae &&
-                    CurrentSetpoint != ReefscapeSetpoints.Barge && CurrentSetpoint != ReefscapeSetpoints.Place)
+                    CurrentSetpoint != ReefscapeSetpoints.Barge && CurrentSetpoint != ReefscapeSetpoints.Place &&
+                    CurrentSetpoint != ReefscapeSetpoints.Processor)
                 {
-                    bool hasAlgae = _algaeController.HasPiece();
+                    // Combinamos las 3 señales: HasPiece() cruda, la bandera pegajosa
+                    // _algaeSecured (blindaje contra el parpadeo de 1 frame), y
+                    // CurrentRobotMode==Algae (tambien es sticky por diseño en este
+                    // archivo - solo se apaga explicitamente al soltar el algae o
+                    // volver a modo Coral). Cualquiera de las tres en true basta para
+                    // proteger el brazo/elevador y no mandarlos a groundCoral.
+                    bool hasAlgae = _algaeController.HasPiece() || _algaeSecured ||
+                                     CurrentRobotMode == ReefscapeRobotMode.Algae;
                     _coralController.RequestIntake(coralIntake, IntakeAction.IsPressed());
 
                     if (IntakeAction.IsPressed() ||
@@ -709,8 +800,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         // NADA ese frame, rompiendo el manejo de algae+coral simultaneo.
                         // HandoffCoralFromChassis (abajo) sigue siendo quien sobreescribe
                         // esto en cuanto de verdad llegamos a coralChassisStow.
-                        _armTargetAngle = hasAlgae ? _armTargetAngle : groundCoral.armAngle;
-                        _elevatorTargetHeight = hasAlgae ? _elevatorTargetHeight : groundCoral.elevatorHeight;
+                        // Antes: hasAlgae ? _armTargetAngle : groundCoral.armAngle - eso deja el
+                        // brazo/elevador en lo que sea que tuvieran ANTES de este frame. Si el
+                        // driver pasaba de agarrar el alga (p.ej. en lowAlgae/highAlgae, que
+                        // esta abajo cerca del suelo) directo a pedir un coral sin pasar por
+                        // Stow, el target nunca llegaba a ser algaeStow - se quedaba en esa
+                        // posicion baja, y de ahi si bajaba mas (o se quedaba a medio camino
+                        // de groundCoral) chocando con el alga. Ahora, con algae a bordo,
+                        // fijamos explicitamente algaeStow en vez de "lo que sea que hubiera".
+                        _armTargetAngle = hasAlgae ? algaeStow.armAngle : groundCoral.armAngle;
+                        _elevatorTargetHeight = hasAlgae ? algaeStow.elevatorHeight : groundCoral.elevatorHeight;
                         _intakeTargetAngle = groundCoral.intakeAngle;
 
                         _coralController.SetTargetState(_coralController.currentStateNum switch
@@ -732,7 +831,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                             }
                         }
 
-                        bool atArmStow = _coralController.currentStateNum == coralArmStowState.stateNum &&
+                        bool atArmStow = _coralController.HasPiece() &&
+                                          _coralController.currentStateNum == coralArmStowState.stateNum &&
                                           _coralController.atTarget;
 
                         // Gate de handoff combinado (ver HandoffCoralFromChassis arriba):
@@ -764,7 +864,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                             _intakeSequenceRunning = false;
                         }
                     }
-                    else if ((_coralController.atTarget && _coralController.currentStateNum == coralArmStowState.stateNum) &&
+                    else if ((_coralController.HasPiece() && _coralController.atTarget &&
+                              _coralController.currentStateNum == coralArmStowState.stateNum) &&
                              _intakeSequenceRunning)
                     {
                         SetState(ReefscapeSetpoints.Stow);

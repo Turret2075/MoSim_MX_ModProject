@@ -47033,6 +47033,7 @@ Transform:
   - {fileID: 5571399151565648229}
   - {fileID: 6613026991877247879}
   - {fileID: 1760636144646699560}
+  - {fileID: 8607348184524402904}
   - {fileID: 3064565961298270674}
   m_Father: {fileID: 3637281082597247960}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
@@ -50326,6 +50327,59 @@ Transform:
   - {fileID: 698649084806801137}
   m_Father: {fileID: 4167249605346911643}
   m_LocalEulerAnglesHint: {x: -19.7, y: 0, z: 0}
+--- !u!1 &3343506273130833916
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8607348184524402904}
+  - component: {fileID: 7996998883280513337}
+  m_Layer: 6
+  m_Name: Collider (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8607348184524402904
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3343506273130833916}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7050709, y: -0.010954991, z: 0.011675242, w: -0.70895606}
+  m_LocalPosition: {x: -0.007840773, y: 0.0002971988, z: 0.002776118}
+  m_LocalScale: {x: 0.01, y: 0.009999995, z: 0.009999995}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 871551650725736300}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -103.764}
+--- !u!65 &7996998883280513337
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3343506273130833916}
+  m_Material: {fileID: 13400000, guid: 99a4521ed91e2a74fb49255117e7d7d0, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16574235, y: 0.03705457, z: 0.06470652}
+  m_Center: {x: 0.615023, y: 0.17264949, z: 0.032354075}
 --- !u!1 &3351293558212589035
 GameObject:
   m_ObjectHideFlags: 0
@@ -74323,6 +74377,7 @@ MonoBehaviour:
   eERollersReverse:
   - {fileID: 6143268166333468213}
   algaeDisableColliders:
+  - {fileID: 7789930537364448902}
   - {fileID: 8678288011747824392}
   - {fileID: 1380087872539134449}
   - {fileID: 6319866190687678164}
@@ -74330,6 +74385,9 @@ MonoBehaviour:
   - {fileID: 6548323338186870957}
   - {fileID: 9213740817741037752}
   - {fileID: 4342339901775559009}
+  - {fileID: 155445381051169835}
+  - {fileID: 3822712549269075586}
+  - {fileID: 21891927341314840}
   - {fileID: 947138712350007023}
   - {fileID: 4989333404679851419}
   - {fileID: 573896057322777489}
@@ -74338,7 +74396,7 @@ MonoBehaviour:
   - {fileID: 5466610084038865146}
   - {fileID: 2184312194184655948}
   - {fileID: 8090205848536283160}
-  - {fileID: 155445381051169835}
+  - {fileID: 3724607786347623173}
   algaeStallSource: {fileID: 8786412676592846585}
   algaeStallAudio: {fileID: 8300000, guid: f34ac002dfb0a834a802271489ef029a, type: 3}
   rollerSource: {fileID: 5615293880928759301}
