@@ -84,6 +84,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [Tooltip("Un poco mas fuerte que eEWheelSpeed para que el algae se sienta con mas garra al intakear.")]
         [SerializeField] private float algaeIntakeRollerSpeed = 400f;
 
+        [Header("EE Rollers Reverse")]
+        [SerializeField] private GenericAnimationJoint[] eERollersReverse;
+
         [Header("Algae Stall Audio")]
         [SerializeField] private AudioSource algaeStallSource;
         [SerializeField] private AudioClip algaeStallAudio;
@@ -294,8 +297,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         SetSetpoint(groundAlgae);
                         _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
                         _algaeController.SetTargetState(algaeStowState);
-                        foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(algaeIntakeRollerSpeed);
                     }
 
                     break;
@@ -347,8 +349,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                             case ReefscapeSetpoints.L3:
                             case ReefscapeSetpoints.L2:
                                 float outSpeed = FacingReef ? -eEWheelSpeed : eEWheelSpeed;
-                                foreach (var wheel in eEWheels)
-                                    wheel.VelocityRoller(outSpeed).useAxis(JointAxis.Y);
+                                SpinEERollers(outSpeed);
                                 break;
                         }
                     }
@@ -373,8 +374,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
-                        foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(algaeIntakeRollerSpeed);
                     }
 
                     break;
@@ -389,8 +389,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
-                        foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(algaeIntakeRollerSpeed);
                     }
 
                     break;
@@ -405,8 +404,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
-                        foreach (var wheel in eEWheels)
-                            wheel.VelocityRoller(algaeIntakeRollerSpeed).useAxis(JointAxis.Y);
+                        SpinEERollers(algaeIntakeRollerSpeed);
                     }
 
                     break;
@@ -540,6 +538,18 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                    (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
         }
 
+        // Spins eEWheels at `speed` and eERollersReverse at the opposite speed,
+        // so the reverse set always turns the other way (useful to center a piece
+        // instead of pushing it to one side when both wheel sets grip it).
+        // NOTE: this Voltec's EE rollers spin on the Z axis, not Y.
+        private void SpinEERollers(float speed)
+        {
+            foreach (var wheel in eEWheels)
+                wheel.VelocityRoller(speed).useAxis(JointAxis.Z);
+            foreach (var wheel in eERollersReverse)
+                wheel.VelocityRoller(-speed).useAxis(JointAxis.Z);
+        }
+
         private void IntakeSequence()
         {
             if (!IntakeAction.IsPressed())
@@ -620,8 +630,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                         if (_pickupCoroutineRunning)
                         {
-                            foreach (var wheel in eEWheels)
-                                wheel.VelocityRoller(eEWheelSpeed).useAxis(JointAxis.Y);
+                            SpinEERollers(eEWheelSpeed);
                         }
 
                         bool atArmStow = _coralController.atTarget && _coralController.currentStateNum == coralArmStowState.stateNum;
