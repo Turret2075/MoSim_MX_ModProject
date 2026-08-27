@@ -5317,7 +5317,7 @@ Transform:
   m_GameObject: {fileID: 392073938397528335}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000006717942, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.149, z: 0.018}
+  m_LocalPosition: {x: 0, y: 0.169, z: -0.067}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -37234,7 +37234,6 @@ GameObject:
   - component: {fileID: 8530985459213532259}
   - component: {fileID: 9158867955080160532}
   - component: {fileID: 134449921281359306}
-  - component: {fileID: 8276595810268247173}
   m_Layer: 0
   m_Name: Part 3
   m_TagString: Untagged
@@ -37309,27 +37308,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &8276595810268247173
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2439462345118394820}
-  m_Material: {fileID: 13400000, guid: 7753f476d8594a0498685718bfc29b13, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_LayerOverridePriority: 78560
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.0025490366, y: 0.005699471, z: 0.000015875034}
-  m_Center: {x: -0.0055355784, y: -0.00038059294, z: -0.0005885188}
 --- !u!1 &2440026642201650601
 GameObject:
   m_ObjectHideFlags: 0
@@ -74344,6 +74322,23 @@ MonoBehaviour:
   algaeIntakeRollerSpeed: 400
   eERollersReverse:
   - {fileID: 6143268166333468213}
+  algaeDisableColliders:
+  - {fileID: 8678288011747824392}
+  - {fileID: 1380087872539134449}
+  - {fileID: 6319866190687678164}
+  - {fileID: 2354913792204254086}
+  - {fileID: 6548323338186870957}
+  - {fileID: 9213740817741037752}
+  - {fileID: 4342339901775559009}
+  - {fileID: 947138712350007023}
+  - {fileID: 4989333404679851419}
+  - {fileID: 573896057322777489}
+  - {fileID: 110838755732413365}
+  - {fileID: 684410549354128580}
+  - {fileID: 5466610084038865146}
+  - {fileID: 2184312194184655948}
+  - {fileID: 8090205848536283160}
+  - {fileID: 155445381051169835}
   algaeStallSource: {fileID: 8786412676592846585}
   algaeStallAudio: {fileID: 8300000, guid: f34ac002dfb0a834a802271489ef029a, type: 3}
   rollerSource: {fileID: 5615293880928759301}
@@ -91984,9 +91979,9 @@ Transform:
   m_GameObject: {fileID: 6313103351438934537}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000006717942, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.152, z: -0.058}
+  m_LocalPosition: {x: -0, y: 0.1882, z: -0.0361}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 1
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8524804581606807572}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -91999,7 +91994,8 @@ AudioSource:
   m_GameObject: {fileID: 6313103351438934537}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -97980,8 +97976,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.55, y: 0.13162677, z: 0.21762861}
-  m_Center: {x: -2.0922611e-16, y: -0.0000000011762864, z: 0.008814301}
+  m_Size: {x: 0.65136606, y: 0.13162677, z: 0.21762861}
+  m_Center: {x: 0.005497501, y: -9.992474e-10, z: 0.008814299}
 --- !u!114 &3441325027158057515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102098,9 +102094,6 @@ GameObject:
   - component: {fileID: 412655909229449409}
   - component: {fileID: 324159367245596207}
   - component: {fileID: 9040607718037842941}
-  - component: {fileID: 5330916704602825401}
-  - component: {fileID: 1801266136585203377}
-  - component: {fileID: 7615878536176400200}
   m_Layer: 0
   m_Name: Part 1.009
   m_TagString: Untagged
@@ -102175,69 +102168,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5330916704602825401
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7062277159018004907}
-  m_Material: {fileID: 13400000, guid: 7753f476d8594a0498685718bfc29b13, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_LayerOverridePriority: 745472
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.00014222144, y: 0.0024562269, z: 0.000762}
-  m_Center: {x: -0.006153877, y: 0.0013133055, z: -0.00027895623}
---- !u!65 &1801266136585203377
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7062277159018004907}
-  m_Material: {fileID: 13400000, guid: 7753f476d8594a0498685718bfc29b13, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_LayerOverridePriority: 742745
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.000117473304, y: 0.0024562269, z: 0.000762}
-  m_Center: {x: -0.0047765356, y: 0.0013133055, z: -0.00027895626}
---- !u!65 &7615878536176400200
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7062277159018004907}
-  m_Material: {fileID: 13400000, guid: 7753f476d8594a0498685718bfc29b13, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.0015101326, y: 0.0001343566, z: 0.000762}
-  m_Center: {x: -0.005463377, y: 0.0025806248, z: -0.00027895623}
 --- !u!1 &7064501608500686961
 GameObject:
   m_ObjectHideFlags: 0
