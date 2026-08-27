@@ -165,6 +165,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private ReefscapeSetpoints? _bufferedSetpoint;
         private bool bufferAlgeaState;
 
+        private bool isAlgaeCycle;
         public RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         public RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
 
@@ -243,6 +244,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     roller.flipVelocity();
                 }
             }
+
+            isAlgaeCycle = _algaeController.HasPiece() || _algaeSecured || CurrentRobotMode == ReefscapeRobotMode.Algae;
 
             _algaeController.SetTargetState(algaeStowState);
 
@@ -353,13 +356,28 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
+                    // Rescatado de VoltecOffseasonOLD: este case NO tenia "else" - cuando
+                    // _intakeSequenceRunning es true y el coral aun no esta agarrado
+                    // (_coralController.HasPiece()==false), simplemente NO tocaba el
+                    // setpoint aqui, dejando que IntakeSequence() (que corre despues en
+                    // este mismo FixedUpdate) sea quien decida el target.
+                    //
+                    // El "else { SetSetpoint(stow); }" que estaba aqui era el bug: durante
+                    // un superciclo, mientras cargas algae y CurrentRobotMode==Algae, el
+                    // bloque de "Modo Algae interrumpido" de arriba fuerza CurrentSetpoint
+                    // a Stow EN CADA FRAME mientras el coral progresa por sus primeros
+                    // estados (antes de currentStateNum llegar a chassisStow) - eso es
+                    // normal y esperado. El problema era que justo en la ventanita entre
+                    // "ya presione intake" y "el coral ya se agarro fisicamente"
+                    // (_coralController.HasPiece() todavia false), este case caia al
+                    // else y mandaba el brazo/elevador al setpoint NEUTRAL "stow" en vez
+                    // de mantenerlos en algaeStow - eso era el "problema de la alga en
+                    // stow en superciclado" que reportaste. No toco IntakeSequence ni
+                    // HandoffCoralFromChassis - el handoff sigue exactamente igual.
                     if (!_intakeSequenceRunning || _coralController.HasPiece())
                     {
-                        SetSetpoint(_algaeController.HasPiece() ? algaeStow : coralStow);
-                    }
-                    else
-                    {
-                        SetSetpoint(stow);
+
+                        SetSetpoint(isAlgaeCycle ? algaeStow : coralStow);
                     }
 
                     climber.NotClimbing();
@@ -644,7 +662,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         // garantizado, un residuo de fase del coral previo podia colarse al
         // arrancar el segundo coral y mandaba el brazo a un angulo que no le
         // tocaba en ese punto del ciclo.
-        private bool HandoffCoralFromChassis(bool hasAlgae)
+        private bool HandoffCoralFromChassis(bool isAlgaeCycle)
         {
             // HasPiece() extra: sin esto, si currentStateNum/atTarget se quedan
             // "viejos" un frame justo despues de placear (antes de que el
@@ -662,13 +680,13 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             // recogerlo fisicamente). Lo fijamos EXPLICITAMENTE en algaeStow aqui
             // tambien (ademas de en IntakeSequence) para que quede blindado sin
             // importar en que punto del ciclo del coral estemos.
-            if (_algaeController.HasPiece() || hasAlgae)
+            if (isAlgaeCycle)
             {
                 _armTargetAngle = algaeStow.armAngle;
                 _elevatorTargetHeight = algaeStow.elevatorHeight;
             }
 
-            if (atChassisStow && (!_algaeController.HasPiece() || !hasAlgae))
+            if (atChassisStow && !isAlgaeCycle)
             {
                 _intakeTargetAngle = coralStow.intakeAngle;
 
@@ -700,7 +718,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     // Tolerancia mas holgada que el default (2/2) porque con el
                     // peso extra del superciclo el PID no siempre asienta tan fino.
-                    if (AtSetpoint(coralPickup, elevatorTolerance: 5f, armToleranceDeg: 5f))
+                    if (AtSetpoint(coralPickup, elevatorTolerance: 2f, armToleranceDeg: 5f))
                     {
                         _coralController.SetTargetState(coralArmStowState);
                         _handoffCommitted = true;
@@ -712,8 +730,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             }
 
             // Igual que en el codigo viejo: esto corre para CUALQUIER atChassisStow,
-            // sin importar hasAlgae. Bug que acabamos de meter: antes estas dos
-            // lineas vivian DENTRO del "if (... && !hasAlgae)" de arriba, asi que
+            // sin importar isAlgaeCycle. Bug que acabamos de meter: antes estas dos
+            // lineas vivian DENTRO del "if (... && !isAlgaeCycle)" de arriba, asi que
             // durante un superciclo (algae a bordo Y coral llegando a chasis)
             // _disruptable se quedaba en false para siempre. Eso hacia que el
             // chequeo de arriba en FixedUpdate cayera en la rama de "Algae
@@ -726,7 +744,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 _disruptable = true;
             }
 
-            if (atChassisStow && (!_algaeController.HasPiece() || !hasAlgae))
+            if (atChassisStow && !isAlgaeCycle)
             {
                 return false;
             }
@@ -760,7 +778,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 // FIX (VoltecOffseason): faltaba excluir Processor aqui, igual que Barge/Place.
                 // Sin esto, durante un superciclo (algae + coral a medio handoff) al ir a
                 // Processor este bloque igual corria, entraba a HandoffCoralFromChassis, y como
-                // hasAlgae=true eso pisaba _armTargetAngle/_elevatorTargetHeight con algaeStow
+                // isAlgaeCycle=true eso pisaba _armTargetAngle/_elevatorTargetHeight con algaeStow
                 // DESPUES de que el switch de arriba ya los habia puesto en processor.armAngle/
                 // elevatorHeight - el brazo nunca llegaba a Processor. Esto es justo el bug de
                 // "no dejaba procesar" que traia VolTide (Processor faltaba en esta lista) y que
@@ -776,9 +794,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     // archivo - solo se apaga explicitamente al soltar el algae o
                     // volver a modo Coral). Cualquiera de las tres en true basta para
                     // proteger el brazo/elevador y no mandarlos a groundCoral.
-                    bool hasAlgae = _algaeController.HasPiece() || _algaeSecured ||
-                                     CurrentRobotMode == ReefscapeRobotMode.Algae;
-                    _coralController.RequestIntake(coralIntake, IntakeAction.IsPressed());
+
 
                     if (IntakeAction.IsPressed() ||
                         (_coralController.HasPiece() && _coralController.currentStateNum != coralArmStowState.stateNum))
@@ -786,30 +802,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         _disruptable = false;
                         _intakeSequenceRunning = true;
 
-                        // Estilo StuyPulse: la asignacion base a groundCoral/coralStow va
-                        // SIEMPRE, sin condicionarla al estado actual de la pieza (el
-                        // ternario hasAlgae ya se encarga de no tocar el target mientras
-                        // cargamos algae). El guard que tenia antes aqui
-                        // (`if (currentStateNum < coralChassisStowState.stateNum)`) era el
-                        // bug: si currentStateNum se queda en 4/5 (p.ej. justo despues de
-                        // placear el primer coral, antes de que el controller resetee la
-                        // pieza), el guard se saltaba esta asignacion por completo y el
-                        // brazo se iba derecho a coralPickup ignorando groundCoral - y con
-                        // algae a bordo tampoco entraba a HandoffCoralFromChassis (esa
-                        // funcion hace early-return si hasAlgae), asi que no se asignaba
-                        // NADA ese frame, rompiendo el manejo de algae+coral simultaneo.
-                        // HandoffCoralFromChassis (abajo) sigue siendo quien sobreescribe
-                        // esto en cuanto de verdad llegamos a coralChassisStow.
-                        // Antes: hasAlgae ? _armTargetAngle : groundCoral.armAngle - eso deja el
-                        // brazo/elevador en lo que sea que tuvieran ANTES de este frame. Si el
-                        // driver pasaba de agarrar el alga (p.ej. en lowAlgae/highAlgae, que
-                        // esta abajo cerca del suelo) directo a pedir un coral sin pasar por
-                        // Stow, el target nunca llegaba a ser algaeStow - se quedaba en esa
-                        // posicion baja, y de ahi si bajaba mas (o se quedaba a medio camino
-                        // de groundCoral) chocando con el alga. Ahora, con algae a bordo,
-                        // fijamos explicitamente algaeStow en vez de "lo que sea que hubiera".
-                        _armTargetAngle = hasAlgae ? algaeStow.armAngle : groundCoral.armAngle;
-                        _elevatorTargetHeight = hasAlgae ? algaeStow.elevatorHeight : groundCoral.elevatorHeight;
+                        _armTargetAngle = isAlgaeCycle ? algaeStow.armAngle : groundCoral.armAngle;
+                        _elevatorTargetHeight = isAlgaeCycle ? algaeStow.elevatorHeight : groundCoral.elevatorHeight;
                         _intakeTargetAngle = groundCoral.intakeAngle;
 
                         _coralController.SetTargetState(_coralController.currentStateNum switch
@@ -842,7 +836,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         // si de verdad estamos en coralChassisStow, esta funcion
                         // sobreescribe _armTargetAngle/_elevatorTargetHeight; si no, los
                         // deja tal cual los puso el bloque de arriba.
-                        HandoffCoralFromChassis(hasAlgae);
+                        HandoffCoralFromChassis(isAlgaeCycle);
 
                         if (_handoffCommitted && !atArmStow)
                         {
