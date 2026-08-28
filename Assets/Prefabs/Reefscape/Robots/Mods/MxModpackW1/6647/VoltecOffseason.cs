@@ -34,7 +34,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private VoltecOffseasonSetpoint stow;
         [SerializeField] private VoltecOffseasonSetpoint coralStow;
         [SerializeField] private VoltecOffseasonSetpoint groundCoral;
-        [Tooltip("Posicion del elevador cuando baja a recoger el coral desde el chasis, despues del handoff.")]
+        [Tooltip("Posicion fisica real (elevador + brazo) donde el end effector recibe el coral desde el chasis. " +
+                 "El handoff se detecta comparando la posicion REAL de los mecanismos contra este setpoint (como el 6328), " +
+                 "no con una secuencia animada de tiempos fijos.")]
         [SerializeField] private VoltecOffseasonSetpoint coralPickup;
         [SerializeField] private VoltecOffseasonSetpoint l2;
         [SerializeField] private VoltecOffseasonSetpoint l2Place;
@@ -99,7 +101,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private AudioClip intakeDeeperClip;
 
         [Header("Coral Pickup Audio")]
-        [Tooltip("Se reproduce UNA sola vez, justo cuando el elevador empieza a bajar a coralPickup.")]
+        [Tooltip("Se reproduce UNA sola vez, justo cuando el elevador/brazo llegan fisicamente a coralPickup y ocurre el handoff.")]
         [SerializeField] private AudioSource coralPickupSource;
         [SerializeField] private AudioClip coralPickupClip;
 
@@ -117,7 +119,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private bool _disruptable;
         private bool wasCoral;
         private bool _isPlacingCoral;
-        private bool _pickupCoroutineRunning;
+        private bool _handoffSoundPlayed;
         private bool _l2SequenceRunning;
         private bool _l2SequenceComplete;
 
@@ -480,37 +482,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             }
         }
 
-        private IEnumerator PickupCoralFromChassis()
-        {
-            _pickupCoroutineRunning = true;
-
-            // 1. El coral ya esta agarrado a chasis (coralChassisStowState) con el brazo en posicion.
-            yield return new WaitForSeconds(0.1f);
-
-            // 2. Bajamos el elevador (y ajustamos el brazo si coralPickup trae un angulo distinto) para ir a recogerlo.
-            _elevatorTargetHeight = coralPickup.elevatorHeight;
-            _armTargetAngle = coralPickup.armAngle;
-
-            if (coralPickupSource != null && coralPickupClip != null)
-            {
-                coralPickupSource.PlayOneShot(coralPickupClip);
-            }
-
-            yield return new WaitForSeconds(0.15f);
-
-            // 3. Ya lo tiene el end effector: avanzamos el estado de la pieza.
-            _coralController.SetTargetState(coralArmStowState);
-            _elevatorTargetHeight = coralPickup.elevatorHeight;
-            _armTargetAngle = coralPickup.armAngle;
-            yield return new WaitForSeconds(0.15f);
-
-            // 4. Subimos de vuelta a la posicion de stow.
-            _elevatorTargetHeight = coralStow.elevatorHeight;
-            _armTargetAngle = coralStow.armAngle;
-
-            _pickupCoroutineRunning = false;
-        }
-
         private IEnumerator GoToL2Sequence()
         {
             _l2SequenceRunning = true;
@@ -605,39 +576,56 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                         bool atChassisStow = _coralController.currentStateNum == coralChassisStowState.stateNum &&
                                               _coralController.atTarget;
-                        if (atChassisStow)
+
+                        // Handoff fisico y realista (igual que el 6328): en vez de una corrutina que
+                        // scriptea bajar el elevador, esperar tiempos fijos y volver a subir, movemos
+                        // el brazo/elevador a la posicion REAL de entrega (coralPickup) y solo avanzamos
+                        // el estado de la pieza cuando los mecanismos YA estan fisicamente ahi. Nada de
+                        // animaciones ni WaitForSeconds - se detecta con la posicion real del elevador
+                        // y del brazo en cada FixedUpdate.
+                        if (atChassisStow && !hasAlgae)
                         {
-                            _armTargetAngle = hasAlgae ? _armTargetAngle : coralStow.armAngle;
+                            _armTargetAngle = coralPickup.armAngle;
+                            _elevatorTargetHeight = coralPickup.elevatorHeight;
                             _intakeTargetAngle = coralStow.intakeAngle;
 
-                            // Bug anterior: comparaba contra -coralStow.armAngle y nunca daba true.
-                            bool armAtChassisAngle =
-                                Utils.WithinAngularRange(arm.GetSingleAxisAngle(JointAxis.X), coralStow.armAngle, 5f);
+                            bool canHandoff =
+                                Utils.InRange(elevator.GetElevatorHeight(), coralPickup.elevatorHeight, 1f) &&
+                                Utils.WithinAngularRange(arm.GetSingleAxisAngle(JointAxis.X), coralPickup.armAngle, 5f);
 
-                            if (armAtChassisAngle && !hasAlgae && !_pickupCoroutineRunning)
+                            if (canHandoff)
                             {
-                                // El coral ya llego al chasis con el brazo en posicion: ahora bajamos
-                                // el elevador a recogerlo (igual que RoboWhales).
-                                StartCoroutine(PickupCoralFromChassis());
-                            }
-                            else if (!armAtChassisAngle)
-                            {
-                                _elevatorTargetHeight = hasAlgae ? _elevatorTargetHeight : coralStow.elevatorHeight;
+                                _coralController.SetTargetState(coralArmStowState);
+
+                                if (!_handoffSoundPlayed && coralPickupSource != null && coralPickupClip != null)
+                                {
+                                    coralPickupSource.PlayOneShot(coralPickupClip);
+                                    _handoffSoundPlayed = true;
+                                }
+
+                                SpinEERollers(eEWheelSpeed);
                             }
 
                             _disruptable = true;
                         }
-
-                        if (_pickupCoroutineRunning)
+                        else if (atChassisStow && hasAlgae)
                         {
-                            SpinEERollers(eEWheelSpeed);
+                            // Con algae ya en el robot nos quedamos esperando en el chasis, igual que antes.
+                            _disruptable = true;
+                        }
+                        else
+                        {
+                            _handoffSoundPlayed = false;
                         }
 
                         bool atArmStow = _coralController.atTarget && _coralController.currentStateNum == coralArmStowState.stateNum;
                         if (atArmStow)
                         {
+                            _armTargetAngle = coralStow.armAngle;
+                            _elevatorTargetHeight = coralStow.elevatorHeight;
                             SetState(ReefscapeSetpoints.Stow);
                             _intakeSequenceRunning = false;
+                            _handoffSoundPlayed = false;
                         }
                     }
                     else if ((_coralController.atTarget && _coralController.currentStateNum == coralArmStowState.stateNum) &&
