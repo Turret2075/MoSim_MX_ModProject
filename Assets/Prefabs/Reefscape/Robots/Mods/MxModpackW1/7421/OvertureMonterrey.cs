@@ -367,7 +367,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._7421._7421Monterrey
                     break;
             }
 
-            if ((CurrentRobotMode == ReefscapeRobotMode.Algae && CurrentSetpoint == ReefscapeSetpoints.Intake) || (CurrentSetpoint == ReefscapeSetpoints.LowAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.HighAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.Stack && IntakeAction.IsPressed()))
+            bool isGroundAlgaeIntake = CurrentRobotMode == ReefscapeRobotMode.Algae && CurrentSetpoint == ReefscapeSetpoints.Intake;
+            bool isReefAlgaeIntake = (CurrentSetpoint == ReefscapeSetpoints.LowAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.HighAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.Stack && IntakeAction.IsPressed());
+
+            if (isGroundAlgaeIntake)
+            {
+                // Ground algae: nunca apagar los colliders, incluso ya con el alga agarrada.
+                // El RequestIntake para este caso ya se maneja arriba en el case Intake.
+                ToggleAlgaeColliders(true);
+            }
+            else if (isReefAlgaeIntake)
             {
                 ToggleAlgaeColliders(false);
                 _algaeController.RequestIntake(algaeIntake, true);

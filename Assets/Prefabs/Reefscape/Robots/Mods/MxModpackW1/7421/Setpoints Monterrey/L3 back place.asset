@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 119c456f67f1d9942b9178f2628ef564, type: 3}
   m_Name: L3 back place
   m_EditorClassIdentifier: 
-  elevatorHeight: 22.5
+  elevatorHeight: 24
   armAngle: -80
   endEffectorAngle: 0
   climberAngle: 0
