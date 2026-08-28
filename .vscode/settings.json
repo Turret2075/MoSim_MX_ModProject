@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "MoSim_MX_ModProject.sln"
+    "dotnet.defaultSolution": "MoSimPrepatec.sln"
 }
