@@ -15,4 +15,4 @@ MonoBehaviour:
   elevatorHeight: 20
   armAngle: 0
   intakeAngle: 0
-  climberAngle: 0
+  climberAngle: 80
