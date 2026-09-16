@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: OffL2B
   m_EditorClassIdentifier: 
   elevatorHeight: 21
-  armAngle: 304.5
+  armAngle: -40
   intakeAngle: 0
   climberAngle: 80

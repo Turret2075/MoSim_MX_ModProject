@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
-  m_Name: OffClimbPrep
+  m_Script: {fileID: 11500000, guid: d12faab77f81622458525b0cf8957873, type: 3}
+  m_Name: FR
   m_EditorClassIdentifier: 
-  elevatorHeight: 9.9
-  armAngle: 120
-  intakeAngle: 100
-  climberAngle: 0
+  xOffset: -5.25
+  yOffset: 0
+  zOffset: 8
+  Rotation: 0
