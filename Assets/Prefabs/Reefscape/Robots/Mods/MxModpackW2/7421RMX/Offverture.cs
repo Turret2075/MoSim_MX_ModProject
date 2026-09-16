@@ -65,6 +65,13 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         [SerializeField] private OffvertureSetpoint climb;
         [SerializeField] private OffvertureSetpoint climbed;
+
+        [Header("Arm/Elevator Sequencing")]
+        [Tooltip("Seconds to wait between moving the arm and moving the elevator (used both going up and coming back down).")]
+        [SerializeField] private float setpointTransitionDelay = 0.25f;
+
+        private OffvertureSetpoint _activeSequenceSetpoint;
+        private Coroutine _setpointSequenceRoutine;
         
         [Header("Intake and Stow States")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -169,6 +176,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         private void LateUpdate()
         {
+            // Overture Worlds' climber needs its PID stepped every frame or its motor
+            // never settles - without this it spins forever and ignores new targets,
+            // and the runaway torque is what launches the whole robot.
             climber.UpdatePid(climberPid);
         }
 
@@ -916,10 +926,54 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         private void SetSetpoint(OffvertureSetpoint setpoint)
         {
-            _elevatorTargetHeight = setpoint.elevatorHeight;
-            _armTargetAngle = setpoint.armAngle;
+            // Ya estamos apuntando exactamente a este setpoint - no hay nada que hacer.
+            if (isCurrentSetpoint(setpoint))
+            {
+                return;
+            }
+
+            // Ya hay una secuencia corriendo hacia este mismo setpoint - déjala terminar
+            // en vez de reiniciarla en cada FixedUpdate.
+            if (_activeSequenceSetpoint == setpoint)
+            {
+                return;
+            }
+
+            _activeSequenceSetpoint = setpoint;
+
+            if (_setpointSequenceRoutine != null)
+            {
+                StopCoroutine(_setpointSequenceRoutine);
+            }
+
+            // El intake y el climber no forman parte de la secuencia brazo/elevador - se aplican de inmediato.
             _intakeTargetAngle = setpoint.intakeAngle;
             _climberTargetAngle = setpoint.climberAngle;
+
+            bool isReturningHome = setpoint == stow || setpoint == stowAlgae ||
+                                    setpoint == intakeOut || setpoint == intakeOutAlgae;
+
+            _setpointSequenceRoutine = StartCoroutine(isReturningHome
+                ? ReturnHomeSequence(setpoint)
+                : RaiseToSetpointSequence(setpoint));
+        }
+
+        // Subiendo a un setpoint: primero gira el brazo, espera, y luego sube el elevador.
+        private IEnumerator RaiseToSetpointSequence(OffvertureSetpoint setpoint)
+        {
+            _armTargetAngle = setpoint.armAngle;
+            yield return new WaitForSeconds(setpointTransitionDelay);
+            _elevatorTargetHeight = setpoint.elevatorHeight;
+            _setpointSequenceRoutine = null;
+        }
+
+        // Regresando a stow/intake: primero baja el elevador, espera, y luego regresa el brazo.
+        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint)
+        {
+            _elevatorTargetHeight = setpoint.elevatorHeight;
+            yield return new WaitForSeconds(setpointTransitionDelay);
+            _armTargetAngle = setpoint.armAngle;
+            _setpointSequenceRoutine = null;
         }
 
         private bool isCurrentSetpoint(OffvertureSetpoint setpoint)
@@ -947,7 +1001,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                  _algaeController.atTarget)
                     ? 180
                     : (!FacingReef ? 150 : 210));
-            intake.SetTargetAngle(_intakeTargetAngle).withAxis(JointAxis.X).noWrap(-90);
+            intake.SetTargetAngle(_intakeTargetAngle).withAxis(JointAxis.X);
             climber.SetTargetAngle(_climberTargetAngle).withAxis(JointAxis.X).noWrap(180f);
         }
         

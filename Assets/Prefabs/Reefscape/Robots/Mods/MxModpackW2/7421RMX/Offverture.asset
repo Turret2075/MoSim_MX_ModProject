@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 7421
   teamName: OVERTURE
-  robotPrefab: {fileID: 1627221153509397327, guid: 6bb7c4ada87a7614abdb9064880ba040,
+  robotPrefab: {fileID: 1627221153509397327, guid: 4f52a4e5690a306429a67fc00d7aa60c,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
