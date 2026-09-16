@@ -50,7 +50,16 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [SerializeField] private OffvertureSetpoint l3Back;
         [SerializeField] private OffvertureSetpoint l2Front;
         [SerializeField] private OffvertureSetpoint l2Back;
-        
+
+        [Header("Coral Place Setpoints (L2/L3/L4)")]
+        [Tooltip("OvertureWorlds-style base+place pair: the setpoints above (l2Front/l2Back/etc.) are the base branch setpoints, and these are what the arm/elevator move to on the Place setpoint - same idea as OvertureWorlds' l2Place/l3Place/l4Place, but ignoring the L4Ready intermediate stage OvertureWorlds uses for L4 (Offverture goes base -> place directly for L2/L3/L4 alike).")]
+        [SerializeField] private OffvertureSetpoint l2FrontPlace;
+        [SerializeField] private OffvertureSetpoint l2BackPlace;
+        [SerializeField] private OffvertureSetpoint l3FrontPlace;
+        [SerializeField] private OffvertureSetpoint l3BackPlace;
+        [SerializeField] private OffvertureSetpoint l4FrontPlace;
+        [SerializeField] private OffvertureSetpoint l4BackPlace;
+
         [SerializeField] private OffvertureSetpoint l1;
         
         [SerializeField] private OffvertureSetpoint groundAlgae;
@@ -67,8 +76,37 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [SerializeField] private OffvertureSetpoint climbed;
 
         [Header("Arm/Elevator Sequencing")]
-        [Tooltip("Seconds to wait between moving the arm and moving the elevator (used both going up and coming back down).")]
-        [SerializeField] private float setpointTransitionDelay = 0.25f;
+        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to a coral scoring setpoint (L2/L3/L4). L1 and the intake->arm handoff (coralTransferring) each have their own delay below and ignore this one.")]
+        [SerializeField] private float coralSetpointDelay = 0.25f;
+
+        [Tooltip("Seconds to wait between moving the elevator and moving the arm when returning from a coral setpoint back to stow/intake.")]
+        [SerializeField] private float returningCoralDelay = 0.25f;
+
+        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to an algae scoring setpoint (low/high reef algae, processor). Ground algae, the lollipop pickup, and barge are intentionally instant and ignore this delay.")]
+        [SerializeField] private float algaeSetpointDelay = 0.25f;
+
+        [Tooltip("Seconds to wait between moving the elevator and moving the arm when returning from an algae setpoint back to stow/intake.")]
+        [SerializeField] private float returningAlgaeDelay = 0.25f;
+
+        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to coralTransferring (the intake->arm coral handoff). Split out from coralSetpointDelay so handoff timing can be tuned independently of L2/L3/L4. Placeholder matches the value coralSetpointDelay used for this before the split (0.25s).")]
+        [Range(0f, 1f)]
+        [SerializeField] private float handoffDelay = 0.25f;
+
+        // Setpoints that should move the arm and elevator together with no
+        // sequencing delay at all: barge, ground algae, the lollipop pickup,
+        // climb/climbed, and now L1 (L1 is instant so the setpoint delay never
+        // affects it). These are applied directly every FixedUpdate instead of
+        // through a coroutine, so tuning changes made to the setpoint asset while
+        // the robot is already targeting it are picked up immediately.
+        private enum SetpointDelayType
+        {
+            Instant,
+            CoralSetpoint,
+            ReturningCoral,
+            AlgaeSetpoint,
+            ReturningAlgae,
+            Handoff
+        }
 
         private OffvertureSetpoint _activeSequenceSetpoint;
         private Coroutine _setpointSequenceRoutine;
@@ -85,18 +123,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         private RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
         
-        [Header("Align Offsets")]
-        [SerializeField] private AutoAlignOffverset frontLeft;
-        [SerializeField] private AutoAlignOffverset frontRight;
-        [SerializeField] private AutoAlignOffverset backLeft;
-        [SerializeField] private AutoAlignOffverset backRight;
+        [Header("Align")]
+        [Tooltip("Owns every align offset asset (reef, LowerAlign for L1, and barge algae) and feeds the picked one into ReefscapeAutoAlign every FixedUpdate - see OverAlign.")]
+        [SerializeField] private OverAlign overAlign;
         
         [Header("Roller Stuff")]
         [SerializeField] private GenericRoller intakeRoller;
 
         private bool intaking;
-        
-        private ReefscapeAutoAlign align;
 
         private bool transferOnce = false;
         private bool intk = false;
@@ -104,9 +138,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         private bool coralInPossesion = false;
 
         private bool l1once = false;
-
-        [SerializeField] private float ElevatorLowerHeight;
-        [SerializeField] private float ArmLowerHeight;
 
         private bool placed = false;
         
@@ -132,7 +163,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         {
             base.Start();
             
-            align = gameObject.GetComponent<ReefscapeAutoAlign>();
+            overAlign = gameObject.GetComponent<OverAlign>();
             
             arm.SetPid(armPid);
             intake.SetPid(intakePid);
@@ -176,10 +207,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         private void LateUpdate()
         {
-            // Overture Worlds' climber needs its PID stepped every frame or its motor
-            // never settles - without this it spins forever and ignores new targets,
-            // and the runaway torque is what launches the whole robot.
+            // GenericJoint PID controllers need to be stepped every frame.  The other
+            // Overtures do this for both joints; Offverture previously only updated
+            // the climber, so ES ARM changed _armTargetAngle without driving the arm.
             climber.UpdatePid(climberPid);
+            arm.UpdatePid(armPid);
         }
 
         private bool atSetpoint(OffvertureSetpoint stp)
@@ -202,7 +234,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         
         public bool armAtTargetAngle()
         {
-            return Utils.InRange(arm.GetSingleAxisAngle(JointAxis.X), _armTargetAngle, 2f);
+            return Utils.InAngularRange(arm.GetSingleAxisAngle(JointAxis.X), _armTargetAngle, 2f);
         }
 
 
@@ -330,7 +362,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             {
                 _coralController.SetTargetState(coralStowState);
             }
-            else if (CurrentIntakeMode == ReefscapeIntakeMode.L1 || CurrentSetpoint ==  ReefscapeSetpoints.L1 & !hasCoral)
+            else if (CurrentIntakeMode == ReefscapeIntakeMode.L1 || CurrentSetpoint ==  ReefscapeSetpoints.L1 && !hasCoral)
             {
                 _coralController.SetTargetState(coralIntakeState);
             }
@@ -440,7 +472,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                         if (LastSetpoint == ReefscapeSetpoints.L4 || LastSetpoint == ReefscapeSetpoints.L3 ||
                             LastSetpoint == ReefscapeSetpoints.L2)
                         {
-                            PlaceBranch(GetSetpointByLevel());
+                            PlaceBranch(GetPlaceSetpointByLevel());
                             setEndEffectorRollers(-20);
                         }
                         else
@@ -635,7 +667,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             }
 
             
-            AutoAlignnnn();
             ApplySetpoints();
         }
 
@@ -650,31 +681,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             //_coralController.RequestIntake(armCoralIntake, transferring); //atSetpoint(coralTransferring));
         }
         
-        private void AutoAlignnnn()
-        {
-            if (AutoAlignLeftAction.IsPressed() && !FacingReef && CurrentSetpoint !=  ReefscapeSetpoints.Place)
-            {
-                SetAlignOffsets(frontLeft);
-            }
-            else if (AutoAlignRightAction.IsPressed() && !FacingReef && CurrentSetpoint !=  ReefscapeSetpoints.Place)
-            {
-                SetAlignOffsets(frontRight);
-            }
-            else if (AutoAlignLeftAction.IsPressed() && FacingReef && CurrentSetpoint !=  ReefscapeSetpoints.Place)
-            {
-                SetAlignOffsets(backLeft);
-            }
-            else if (AutoAlignRightAction.IsPressed() && FacingReef && CurrentSetpoint !=  ReefscapeSetpoints.Place)
-            {
-                SetAlignOffsets(backRight);
-            }
-        }
-
-        private void SetAlignOffsets(AutoAlignOffverset alignment)
-        {
-            align.offset = new Vector3(alignment.xOffset, alignment.yOffset, alignment.zOffset);
-            align.rotation = alignment.Rotation;
-        }
 
         private int GetLevelByState()
         {
@@ -705,18 +711,20 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             return 0;
         }
 
-        private OffvertureSetpoint GetSetpointByLevel()
+        // OvertureWorlds-style base+place lookup: base setpoints (l2Front/l3Front/l4Front/etc.) are used
+        // on the way up, and this returns the matching *Place setpoint for the Place case - base then
+        // place, ignoring OvertureWorlds' L4Ready intermediate stage for L4, same as L2/L3. L1 places
+        // through its own existing PlacePiece() flow, so it isn't handled here.
+        private OffvertureSetpoint GetPlaceSetpointByLevel()
         {
             switch (GetLevelByState())
             {
-                case 1:
-                    return l1;
                 case 2:
-                    return !FacingReef ? l2Front : l2Back;
+                    return !FacingReef ? l2FrontPlace : l2BackPlace;
                 case 3:
-                    return !FacingReef ? l3Front : l3Back;
+                    return !FacingReef ? l3FrontPlace : l3BackPlace;
                 case 4:
-                    return !FacingReef ? l4Front : l4Back;
+                    return !FacingReef ? l4FrontPlace : l4BackPlace;
             }
 
             return null;
@@ -756,51 +764,49 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             placeOnce = true;
         }
 
-        private void PlaceBranch(OffvertureSetpoint setpoint)
+        // OvertureWorlds-style placing: instead of computing a lowered arm/elevator offset from
+        // ElevatorLowerHeight/ArmLowerHeight, this now just drives straight to the dedicated *Place
+        // setpoint asset (l2FrontPlace/l2BackPlace/l3FrontPlace/l3BackPlace/l4FrontPlace/l4BackPlace),
+        // same as OvertureWorlds' SetSetpoint(l2Place)/l3Place/l4Place - base setpoint then place
+        // setpoint, no intermediate L4Ready stage. The release-force-by-level tuning is unchanged.
+        // If a *Place asset hasn't been assigned yet in the Inspector, this falls back to releasing at
+        // the current (base branch) position instead of silently doing nothing.
+        //
+        // placeOnce = true is set at the end once the release actually fires (after armAtTargetAngle()
+        // clears), same as PlacePiece() already does - without it the caller's `if (!placeOnce)` guard in
+        // the Place case never latches, so this kept re-running and calling ReleaseGamePieceWithForce every
+        // FixedUpdate for as long as CurrentSetpoint stayed Place, instead of a single release. That's why
+        // L2/L3/L4 placing was broken while L1/algae placing (through PlacePiece, which already set the
+        // flag) worked fine.
+        private void PlaceBranch(OffvertureSetpoint placeSetpoint)
         {
+            if (placeSetpoint != null)
+            {
+                SetSetpoint(placeSetpoint);
+            }
+
+            if (!armAtTargetAngle())
+            {
+                return;
+            }
+
             switch (GetLevelByState())
             {
                 case 4:
-                    //_elevatorTargetHeight = setpoint.elevatorHeight - 2.5f;
-                    //_armTargetAngle = setpoint.armAngle - (FacingReef ? 17 : -17);
-
-                    //if (Utils.InAngularRange(arm.GetSingleAxisAngle(JointAxis.X), _armTargetAngle, 2f))
-                    //{
-                    //    _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0.5f, FacingReef ? 1f: -1f));
-                    //    coralInPossesion = false;
-                    //}
-                    //break;
-                    _elevatorTargetHeight = setpoint.elevatorHeight - (ElevatorLowerHeight * 0.8f);
-                    _armTargetAngle = setpoint.armAngle - (FacingReef ? (1.4f * ArmLowerHeight) : (1.4f * -ArmLowerHeight));
-                    
-                    if (armAtTargetAngle())
-                    {
-                        _coralController.ReleaseGamePieceWithForce(new Vector3(0, .5f, !FacingReef ? 2 : -2));
-                        coralInPossesion = false;
-                    }
+                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, .5f, !FacingReef ? 2 : -2));
+                    coralInPossesion = false;
                     break;
                 case 3:
-                    _elevatorTargetHeight = setpoint.elevatorHeight - ElevatorLowerHeight;
-                    _armTargetAngle = setpoint.armAngle - (FacingReef ? ArmLowerHeight : -ArmLowerHeight);
-                    
-                    if (armAtTargetAngle())
-                    {
-                        _coralController.ReleaseGamePieceWithForce(new Vector3(0, 1, !FacingReef ? 1 : -1));
-                        coralInPossesion = false;
-                    }
+                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, 1, !FacingReef ? 1 : -1));
+                    coralInPossesion = false;
                     break;
-                case 2: 
-                    _elevatorTargetHeight = setpoint.elevatorHeight - ElevatorLowerHeight;
-                    _armTargetAngle = setpoint.armAngle - (FacingReef ? ArmLowerHeight : -ArmLowerHeight);
-                    
-                    if (armAtTargetAngle())
-                    {
-                        _coralController.ReleaseGamePieceWithForce(new Vector3(0, .7f, !FacingReef ? 1 : -1));
-                        coralInPossesion = false;
-                    }
+                case 2:
+                    _coralController.ReleaseGamePieceWithForce(new Vector3(0, .7f, !FacingReef ? 1 : -1));
+                    coralInPossesion = false;
                     break;
             }
-            _intakeTargetAngle = setpoint.intakeAngle;
+
+            placeOnce = true;
         }
 
         private void setIntakeRollers(float speed)
@@ -924,11 +930,71 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             }
         }
 
+        private SetpointDelayType GetDelayType(OffvertureSetpoint setpoint)
+        {
+            if (setpoint == stow || setpoint == intakeOut)
+            {
+                return SetpointDelayType.ReturningCoral;
+            }
+
+            if (setpoint == stowAlgae || setpoint == intakeOutAlgae)
+            {
+                return SetpointDelayType.ReturningAlgae;
+            }
+
+            if (setpoint == coralTransferring)
+            {
+                return SetpointDelayType.Handoff;
+            }
+
+            if (setpoint == l4Front || setpoint == l4Back ||
+                setpoint == l3Front || setpoint == l3Back ||
+                setpoint == l2Front || setpoint == l2Back)
+            {
+                return SetpointDelayType.CoralSetpoint;
+            }
+
+            if (setpoint == lowFront || setpoint == lowBack ||
+                setpoint == highFront || setpoint == highBack ||
+                setpoint == process)
+            {
+                return SetpointDelayType.AlgaeSetpoint;
+            }
+
+            // barge1, barge2, groundAlgae, lolli, climb, climbed, l1: no sequencing delay - l1 is
+            // instant so the setpoint delay never affects it, unlike L2/L3/L4.
+            return SetpointDelayType.Instant;
+        }
+
         private void SetSetpoint(OffvertureSetpoint setpoint)
         {
             // Ya estamos apuntando exactamente a este setpoint - no hay nada que hacer.
             if (isCurrentSetpoint(setpoint))
             {
+                return;
+            }
+
+            // El intake y el climber no forman parte de la secuencia brazo/elevador - se aplican de inmediato.
+            _intakeTargetAngle = setpoint.intakeAngle;
+            _climberTargetAngle = setpoint.climberAngle;
+
+            var delayType = GetDelayType(setpoint);
+
+            // Barge, ground algae, lollipop, y climb/climbed: sin delay. Se aplican
+            // directamente cada FixedUpdate (sin pasar por _activeSequenceSetpoint)
+            // para que cualquier cambio en los valores del setpoint (tuning en vivo)
+            // se refleje de inmediato en vez de quedarse pegado al primer valor leído.
+            if (delayType == SetpointDelayType.Instant)
+            {
+                if (_setpointSequenceRoutine != null)
+                {
+                    StopCoroutine(_setpointSequenceRoutine);
+                    _setpointSequenceRoutine = null;
+                }
+
+                _activeSequenceSetpoint = setpoint;
+                _armTargetAngle = setpoint.armAngle;
+                _elevatorTargetHeight = setpoint.elevatorHeight;
                 return;
             }
 
@@ -946,32 +1012,40 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 StopCoroutine(_setpointSequenceRoutine);
             }
 
-            // El intake y el climber no forman parte de la secuencia brazo/elevador - se aplican de inmediato.
-            _intakeTargetAngle = setpoint.intakeAngle;
-            _climberTargetAngle = setpoint.climberAngle;
-
-            bool isReturningHome = setpoint == stow || setpoint == stowAlgae ||
-                                    setpoint == intakeOut || setpoint == intakeOutAlgae;
-
-            _setpointSequenceRoutine = StartCoroutine(isReturningHome
-                ? ReturnHomeSequence(setpoint)
-                : RaiseToSetpointSequence(setpoint));
+            switch (delayType)
+            {
+                case SetpointDelayType.CoralSetpoint:
+                    _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, coralSetpointDelay));
+                    break;
+                case SetpointDelayType.ReturningCoral:
+                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningCoralDelay));
+                    break;
+                case SetpointDelayType.AlgaeSetpoint:
+                    _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, algaeSetpointDelay));
+                    break;
+                case SetpointDelayType.ReturningAlgae:
+                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay));
+                    break;
+                case SetpointDelayType.Handoff:
+                    _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, handoffDelay));
+                    break;
+            }
         }
 
         // Subiendo a un setpoint: primero gira el brazo, espera, y luego sube el elevador.
-        private IEnumerator RaiseToSetpointSequence(OffvertureSetpoint setpoint)
+        private IEnumerator RaiseToSetpointSequence(OffvertureSetpoint setpoint, float delay)
         {
             _armTargetAngle = setpoint.armAngle;
-            yield return new WaitForSeconds(setpointTransitionDelay);
+            yield return new WaitForSeconds(delay);
             _elevatorTargetHeight = setpoint.elevatorHeight;
             _setpointSequenceRoutine = null;
         }
 
         // Regresando a stow/intake: primero baja el elevador, espera, y luego regresa el brazo.
-        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint)
+        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint, float delay)
         {
             _elevatorTargetHeight = setpoint.elevatorHeight;
-            yield return new WaitForSeconds(setpointTransitionDelay);
+            yield return new WaitForSeconds(delay);
             _armTargetAngle = setpoint.armAngle;
             _setpointSequenceRoutine = null;
         }
@@ -1001,6 +1075,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                  _algaeController.atTarget)
                     ? 180
                     : (!FacingReef ? 150 : 210));
+            // The intake can safely use the shortest angular path.  Forcing noWrap
+            // makes it take the long route from its spawn/coral-intake pose and it
+            // rotates through the chassis.
             intake.SetTargetAngle(_intakeTargetAngle).withAxis(JointAxis.X);
             climber.SetTargetAngle(_climberTargetAngle).withAxis(JointAxis.X).noWrap(180f);
         }

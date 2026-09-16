@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
-  m_Name: OffClimbPrep
+  m_Name: OffL2BPlace
   m_EditorClassIdentifier: 
-  elevatorHeight: 9.9
-  armAngle: 120
-  intakeAngle: 100
-  climberAngle: 0
+  elevatorHeight: 21
+  armAngle: 280
+  intakeAngle: 0
+  climberAngle: 80

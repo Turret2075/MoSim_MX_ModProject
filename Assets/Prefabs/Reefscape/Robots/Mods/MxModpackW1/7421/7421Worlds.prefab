@@ -91283,12 +91283,12 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
     type: 2}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
+  m_audioClip: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
+  m_Resource: {fileID: 8300000, guid: ae1ae9edf291fcf44b1aa0ebe48dd814, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.3129769
+  m_Pitch: 0.80741537
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
