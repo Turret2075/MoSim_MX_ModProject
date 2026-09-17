@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
   m_Name: OffClimbPrep
   m_EditorClassIdentifier: 
-  elevatorHeight: 9.9
-  armAngle: 120
+  elevatorHeight: 10
+  armAngle: 36.1
   intakeAngle: 100
   climberAngle: 0
