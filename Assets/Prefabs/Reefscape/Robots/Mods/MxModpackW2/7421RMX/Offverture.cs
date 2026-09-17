@@ -12,6 +12,7 @@ using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using DriveController = RobotFramework.Controllers.Drivetrain.DriveController;
 
 namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
@@ -92,6 +93,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [Range(0f, 1f)]
         [SerializeField] private float handoffDelay = 0.25f;
 
+        [Header("Climb Sequencing")]
+        [Tooltip("Seconds to wait after commanding the climber and intake before raising the elevator for Climb.")]
+        [SerializeField] private float afterClimberDelay = 0.25f;
+
+        [Tooltip("Seconds to wait after moving the arm before raising the elevator for Climb.")]
+        [FormerlySerializedAs("afterClimbElevDelay")]
+        [SerializeField] private float afterArmDelay = 0.25f;
+
         // Setpoints that should move the arm and elevator together with no
         // sequencing delay at all: barge, ground algae, the lollipop pickup,
         // climb/climbed, and now L1 (L1 is instant so the setpoint delay never
@@ -105,7 +114,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             ReturningCoral,
             AlgaeSetpoint,
             ReturningAlgae,
-            Handoff
+            Handoff,
+            Climb
         }
 
         private OffvertureSetpoint _activeSequenceSetpoint;
@@ -212,6 +222,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             // the climber, so ES ARM changed _armTargetAngle without driving the arm.
             climber.UpdatePid(climberPid);
             arm.UpdatePid(armPid);
+            intake.UpdatePid(intakePid);
         }
 
         private bool atSetpoint(OffvertureSetpoint stp)
@@ -431,7 +442,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     if ((CurrentRobotMode == ReefscapeRobotMode.Coral ||
                         hasAlgae) && !hasCoral)
                     {
-                        SetSetpoint(hasAlgae ? intakeOutAlgae : intakeOut);
+                        // Coral intake must keep the coral intake pose even while an
+                        // algae piece is held.  Selecting intakeOutAlgae here sent
+                        // the floor intake to its 180-degree algae pose.
+                        SetSetpoint(CurrentRobotMode == ReefscapeRobotMode.Coral ? intakeOut : intakeOutAlgae);
                     }
 
                     if (CurrentRobotMode == ReefscapeRobotMode.Algae && !armHasCoral && !hasAlgae)
@@ -947,6 +961,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return SetpointDelayType.Handoff;
             }
 
+            if (setpoint == climb)
+            {
+                return SetpointDelayType.Climb;
+            }
+
             if (setpoint == l4Front || setpoint == l4Back ||
                 setpoint == l3Front || setpoint == l3Back ||
                 setpoint == l2Front || setpoint == l2Back)
@@ -1029,6 +1048,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 case SetpointDelayType.Handoff:
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, handoffDelay));
                     break;
+                case SetpointDelayType.Climb:
+                    _setpointSequenceRoutine = StartCoroutine(ClimbSequence(setpoint));
+                    break;
             }
         }
 
@@ -1047,6 +1069,17 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             _elevatorTargetHeight = setpoint.elevatorHeight;
             yield return new WaitForSeconds(delay);
             _armTargetAngle = setpoint.armAngle;
+            _setpointSequenceRoutine = null;
+        }
+
+        // SetSetpoint applies climber and intake targets before starting this routine.
+        // Climb then moves the arm and finally raises the elevator after the requested delays.
+        private IEnumerator ClimbSequence(OffvertureSetpoint setpoint)
+        {
+            yield return new WaitForSeconds(afterClimberDelay);
+            _armTargetAngle = setpoint.armAngle;
+            yield return new WaitForSeconds(afterArmDelay);
+            _elevatorTargetHeight = setpoint.elevatorHeight;
             _setpointSequenceRoutine = null;
         }
 
