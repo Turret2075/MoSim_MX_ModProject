@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
   m_Name: OffGround
   m_EditorClassIdentifier: 
-  elevatorHeight: 8.26
+  elevatorHeight: 4
   armAngle: 100
   intakeAngle: 100
   climberAngle: 80

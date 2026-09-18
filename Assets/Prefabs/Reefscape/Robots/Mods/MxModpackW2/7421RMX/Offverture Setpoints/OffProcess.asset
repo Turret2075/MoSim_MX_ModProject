@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
   m_Name: OffProcess
   m_EditorClassIdentifier: 
-  elevatorHeight: 13.7
+  elevatorHeight: 6
   armAngle: 90
   intakeAngle: 38.76
   climberAngle: 80

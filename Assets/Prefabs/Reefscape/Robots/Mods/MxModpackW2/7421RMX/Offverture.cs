@@ -1108,10 +1108,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                  _algaeController.atTarget)
                     ? 180
                     : (!FacingReef ? 150 : 210));
-            // The intake can safely use the shortest angular path.  Forcing noWrap
-            // makes it take the long route from its spawn/coral-intake pose and it
-            // rotates through the chassis.
-            intake.SetTargetAngle(_intakeTargetAngle).withAxis(JointAxis.X);
+            intake.SetTargetAngle(_intakeTargetAngle).withAxis(JointAxis.X).noWrap(-90);
             climber.SetTargetAngle(_climberTargetAngle).withAxis(JointAxis.X).noWrap(180f);
         }
         
