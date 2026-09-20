@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
   m_Name: OffL4F
   m_EditorClassIdentifier: 
-  elevatorHeight: 54
+  elevatorHeight: 55
   armAngle: 40
   intakeAngle: 0
-  climberAngle: 80
+  climberAngle: 75
