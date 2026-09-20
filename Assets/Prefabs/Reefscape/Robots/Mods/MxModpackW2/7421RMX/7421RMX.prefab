@@ -33245,7 +33245,7 @@ MonoBehaviour:
     kP: 5
     kI: 0
     kD: 2.75
-    Max: 7
+    Max: 7.25
     Isaturation: 0
   intake: {fileID: 2821291245857539860}
   intakePid:
@@ -33298,6 +33298,12 @@ MonoBehaviour:
   handoffDelay: 0.069
   afterClimberDelay: 0.5
   afterArmDelay: 0.35
+  armAlgaeHoldPid:
+    kP: 4
+    kI: 0
+    kD: 0.05
+    Max: 1.75
+    Isaturation: 0
   coralIntake: {fileID: 2196610679911355966}
   armCoralIntake: {fileID: 3604441716068196460}
   algaeIntake: {fileID: 7382502913990031516}
@@ -36341,7 +36347,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1758623676423558879}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.000000109358524, y: 0.70710677, z: 0.00000005455423, w: -0.7071068}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -0.247, y: 0.149, z: 0.007}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -36354,7 +36360,7 @@ Transform:
   - {fileID: 7742085882696466355}
   - {fileID: 3953665888751707057}
   m_Father: {fileID: 7240960448468027769}
-  m_LocalEulerAnglesHint: {x: -180, y: -90, z: 180}
+  m_LocalEulerAnglesHint: {x: 180, y: 90, z: 180}
 --- !u!54 &5949891702960001497
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -36414,11 +36420,11 @@ ConfigurableJoint:
     spring: 0
     damper: 0
   m_LowAngularXLimit:
-    limit: -87.60986
+    limit: 0
     bounciness: 0
     contactDistance: 0
   m_HighAngularXLimit:
-    limit: 26.267914
+    limit: 0
     bounciness: 0
     contactDistance: 0
   m_AngularYZLimitSpring:
@@ -117361,6 +117367,7 @@ GameObject:
   - component: {fileID: 1612803918958430214}
   - component: {fileID: 9056960974996421332}
   - component: {fileID: 8256243409665968621}
+  - component: {fileID: 2884933256865575428}
   m_Layer: 0
   m_Name: occurrence of 1/2 Churro X 22.135" Long.001
   m_TagString: Untagged
@@ -117435,6 +117442,29 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!136 &2884933256865575428
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5670206339488515991}
+  m_Material: {fileID: 13400000, guid: 20e7d1a69977f2248b454fb4fca44b0a, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.00007332351
+  m_Height: 0.0056222943
+  m_Direction: 1
+  m_Center: {x: -1.0158173e-12, y: -0.0028111453, z: -7.080493e-10}
 --- !u!1 &5670837542078118323
 GameObject:
   m_ObjectHideFlags: 0
@@ -158630,6 +158660,7 @@ GameObject:
   - component: {fileID: 6643865812236370908}
   - component: {fileID: 1567338196155089926}
   - component: {fileID: 4678656210411878588}
+  - component: {fileID: 5252177656348810945}
   m_Layer: 0
   m_Name: occurrence of Dead Axle Tube - 22.135in (REV-21-2510)
   m_TagString: Untagged
@@ -158704,6 +158735,29 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!136 &5252177656348810945
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7905760782469632692}
+  m_Material: {fileID: 13400000, guid: 20e7d1a69977f2248b454fb4fca44b0a, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.000095250034
+  m_Height: 0.0056222943
+  m_Direction: 1
+  m_Center: {x: -8.6385643e-10, y: -0.0028111448, z: 0.0000000014022384}
 --- !u!1 &7908371714696251516
 GameObject:
   m_ObjectHideFlags: 0

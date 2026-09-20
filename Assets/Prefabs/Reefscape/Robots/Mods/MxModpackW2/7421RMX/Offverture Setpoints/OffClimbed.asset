@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: OffClimbed
   m_EditorClassIdentifier: 
   elevatorHeight: 2
-  armAngle: 120
-  intakeAngle: 100
+  armAngle: 36.1
+  intakeAngle: 87.5
   climberAngle: -160

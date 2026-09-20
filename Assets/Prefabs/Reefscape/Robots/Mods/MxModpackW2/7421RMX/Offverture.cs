@@ -94,10 +94,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [SerializeField] private float handoffDelay = 0.25f;
 
         [Header("Climb Sequencing")]
-        [Tooltip("Seconds to wait after commanding the climber and intake before raising the elevator for Climb.")]
+        [Tooltip("Seconds to wait after commanding the intake before moving the arm for Climb. (Field name kept for the Inspector - the climber itself no longer moves at the start of this delay: it now moves last, after the elevator, matching the real robot's intake -> arm -> elevator -> climber order.)")]
         [SerializeField] private float afterClimberDelay = 0.25f;
 
-        [Tooltip("Seconds to wait after moving the arm before raising the elevator for Climb.")]
+        [Tooltip("Seconds to wait after moving the arm before raising the elevator for Climb. The climber then opens immediately after the elevator target is applied.")]
         [FormerlySerializedAs("afterClimbElevDelay")]
         [SerializeField] private float afterArmDelay = 0.25f;
 
@@ -120,6 +120,22 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         private OffvertureSetpoint _activeSequenceSetpoint;
         private Coroutine _setpointSequenceRoutine;
+
+        // Ported from the real robot: L2Command/L3Command/L4Command read AlignManager::getHeading()
+        // once, at the moment the button is pressed (BeforeStarting(RunOnce(alignManager.setHeading))),
+        // and ReefFrontToReefPosition/ReefBackToReefPosition keep that same Front/Back heading when
+        // switching directly between branches (L2<->L3<->L4) without going back through Sustained/Stow.
+        // Previously this sim re-read FacingReef every FixedUpdate while CurrentSetpoint was L2/L3/L4,
+        // so the target branch (Front vs Back) could flip mid-transit if the robot rotated slightly
+        // during approach. _lockedFacingReef captures FacingReef once on entering the reef branch from
+        // outside it (see GetLockedFacingReef()) and is reused for as long as the robot stays on
+        // L2/L3/L4, matching the real robot's behavior.
+        private bool _reefHeadingLocked;
+        private bool _lockedFacingReef;
+
+        [Header("Algae Hold Arm Speed")]
+        [Tooltip("Motion profile used for the arm while it retracts an algae piece from a reef/ground pickup back to stowAlgae - mirrors the real robot's Arm::setArmLowerSpeed(), applied during AlgaeHighReefToAlgaeHold/AlgaeLowReefToAlgaeHold/AlgaeGroundToAlgaeHold so the arm doesn't yank the algae loose on the way in. Should be a slower cruise velocity/acceleration than armPid. Swapped back to armPid the instant the arm reaches its retracted target.")]
+        [SerializeField] private PidConstants armAlgaeHoldPid;
         
         [Header("Intake and Stow States")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -246,6 +262,71 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         public bool armAtTargetAngle()
         {
             return Utils.InAngularRange(arm.GetSingleAxisAngle(JointAxis.X), _armTargetAngle, 2f);
+        }
+
+        // See _reefHeadingLocked/_lockedFacingReef above. Call once per FixedUpdate before the
+        // CurrentSetpoint switch: while CurrentSetpoint isn't a reef branch (L2/L3/L4) this just
+        // tracks the live FacingReef value and keeps the lock cleared, same as the real robot
+        // sitting at SustainedPosition; the instant CurrentSetpoint becomes a reef branch it latches
+        // FacingReef for the rest of the reef visit, same as alignManager.setHeading() being read
+        // once at button-press and carried across CoralHoldToL2Front/ReefFrontToReefPosition/etc.
+        private bool GetLockedFacingReef()
+        {
+            bool inReefBranch = CurrentSetpoint == ReefscapeSetpoints.L2 ||
+                                 CurrentSetpoint == ReefscapeSetpoints.L3 ||
+                                 CurrentSetpoint == ReefscapeSetpoints.L4 ||
+                                 CurrentSetpoint == ReefscapeSetpoints.Place;
+
+            if (!inReefBranch)
+            {
+                _reefHeadingLocked = false;
+                return FacingReef;
+            }
+
+            if (!_reefHeadingLocked)
+            {
+                _lockedFacingReef = FacingReef;
+                _reefHeadingLocked = true;
+            }
+
+            return _lockedFacingReef;
+        }
+
+        // Real robot's AlgaeHighManualCommand/AlgaeLowManualCommand (AlgaeCommands.cpp) only fire from
+        // Positions::SustainedPosition, L1Position, or AlgaeHold - there is no direct command path from
+        // a coral branch (L2/L3/L4/L1/Place) straight to AlgaeHighReef/AlgaeLowReef. This sim used to
+        // let HighAlgae/LowAlgae set the arm/elevator target directly regardless of where the arm was
+        // coming from, so going straight from a coral setpoint (e.g. L4) to an algae pickup took
+        // whatever the noWrap heuristic decided was the "short" way, instead of the full swing back
+        // through neutral that actually happens on the robot (because on the robot you can't get there
+        // without passing back through Sustained first). _algaeRouteDecided/_algaeNeedsStowRoute latch
+        // that decision once on entry (LastSetpoint only reflects the prior setpoint for a single
+        // frame), the same pattern as _reefHeadingLocked above.
+        private bool _algaeRouteDecided;
+        private bool _algaeNeedsStowRoute;
+
+        private bool ShouldRouteAlgaeReefThroughStow()
+        {
+            bool inAlgaeReefSetpoint = CurrentSetpoint == ReefscapeSetpoints.HighAlgae ||
+                                        CurrentSetpoint == ReefscapeSetpoints.LowAlgae;
+
+            if (!inAlgaeReefSetpoint)
+            {
+                _algaeRouteDecided = false;
+                return false;
+            }
+
+            if (!_algaeRouteDecided)
+            {
+                _algaeNeedsStowRoute = LastSetpoint == ReefscapeSetpoints.L2 ||
+                                        LastSetpoint == ReefscapeSetpoints.L3 ||
+                                        LastSetpoint == ReefscapeSetpoints.L4 ||
+                                        LastSetpoint == ReefscapeSetpoints.L1 ||
+                                        LastSetpoint == ReefscapeSetpoints.Place;
+                _algaeRouteDecided = true;
+            }
+
+            return _algaeNeedsStowRoute;
         }
 
 
@@ -417,6 +498,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 endEffectorRollersStop();
             }
             
+            // Latched once per reef visit - see GetLockedFacingReef().
+            bool lockedFacingReef = GetLockedFacingReef();
+
+            // True for as long as we're still swinging back through stow before an algae reef pickup
+            // that was requested directly from a coral branch - see ShouldRouteAlgaeReefThroughStow().
+            bool routeAlgaeThroughStow = ShouldRouteAlgaeReefThroughStow() &&
+                                          !atSetpoint(hasAlgae ? stowAlgae : stow);
+
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
@@ -439,13 +528,36 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     _coralController.RequestIntake(coralIntake, !transferring && atSetpoint(stow));
                     break;
                 case ReefscapeSetpoints.Intake:
+                    // Ported from Lambot/Voltec (both guard every arm assignment during coral intake
+                    // with `hasAlgae ? _armTargetAngle : ...`, i.e. leave the arm exactly where it is
+                    // instead of sending it to a coral-intake angle): going after coral while already
+                    // holding algae only needs the floor intake/elevator to move to intakeOut's
+                    // targets. _armTargetAngle is left untouched - it's already sitting wherever the
+                    // algae-hold sequence parked it (stowAlgae.armAngle), so there's nothing to swing
+                    // down into the held piece. No extra setpoint asset needed for this.
+                    bool goingForCoralWhileHoldingAlgae = CurrentRobotMode == ReefscapeRobotMode.Coral && hasAlgae;
+
                     if ((CurrentRobotMode == ReefscapeRobotMode.Coral ||
                         hasAlgae) && !hasCoral)
                     {
-                        // Coral intake must keep the coral intake pose even while an
-                        // algae piece is held.  Selecting intakeOutAlgae here sent
-                        // the floor intake to its 180-degree algae pose.
-                        SetSetpoint(CurrentRobotMode == ReefscapeRobotMode.Coral ? intakeOut : intakeOutAlgae);
+                        if (goingForCoralWhileHoldingAlgae)
+                        {
+                            if (_setpointSequenceRoutine != null)
+                            {
+                                StopCoroutine(_setpointSequenceRoutine);
+                                _setpointSequenceRoutine = null;
+                            }
+
+                            _elevatorTargetHeight = intakeOut.elevatorHeight;
+                            _intakeTargetAngle = intakeOut.intakeAngle;
+                        }
+                        else
+                        {
+                            // Coral intake must keep the coral intake pose even while an
+                            // algae piece is held.  Selecting intakeOutAlgae here sent
+                            // the floor intake to its 180-degree algae pose.
+                            SetSetpoint(CurrentRobotMode == ReefscapeRobotMode.Coral ? intakeOut : intakeOutAlgae);
+                        }
                     }
 
                     if (CurrentRobotMode == ReefscapeRobotMode.Algae && !armHasCoral && !hasAlgae)
@@ -462,7 +574,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                         intk = true;
                     }
 
-                    if (atSetpoint(intakeOut))
+                    // atSetpoint(intakeOut) still requires the arm to also be at intakeOut.armAngle,
+                    // which never happens while goingForCoralWhileHoldingAlgae (arm stays put) - so
+                    // that path is checked separately here on just the elevator/intake, the two joints
+                    // that are actually being commanded in that case.
+                    bool atIntakeOutFloorOnly =
+                        Utils.InRange(elevator.GetElevatorHeight(), intakeOut.elevatorHeight, 2f) &&
+                        Utils.InAngularRange(intake.GetSingleAxisAngle(JointAxis.X), intakeOut.intakeAngle, 2f);
+
+                    if (atSetpoint(intakeOut) || (goingForCoralWhileHoldingAlgae && atIntakeOutFloorOnly))
                     {
                         setIntakeRollers(50);
                     } 
@@ -486,7 +606,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                         if (LastSetpoint == ReefscapeSetpoints.L4 || LastSetpoint == ReefscapeSetpoints.L3 ||
                             LastSetpoint == ReefscapeSetpoints.L2)
                         {
-                            PlaceBranch(GetPlaceSetpointByLevel());
+                            PlaceBranch(GetPlaceSetpointByLevel(lockedFacingReef));
                             setEndEffectorRollers(-20);
                         }
                         else
@@ -553,7 +673,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 case ReefscapeSetpoints.L2:
                     if (armHasCoral)
                     {
-                        SetSetpoint(!FacingReef ? l2Front : l2Back);
+                        SetSetpoint(!lockedFacingReef ? l2Front : l2Back);
                     }
                     else
                     {
@@ -566,7 +686,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     {
                         SetState(ReefscapeSetpoints.L2);
                     } else {
-                        SetSetpoint(!FacingReef ? lowFront : lowBack);
+                        SetSetpoint(routeAlgaeThroughStow ? (hasAlgae ? stowAlgae : stow) : (!FacingReef ? lowFront : lowBack));
                         _algaeController.RequestIntake(algaeIntake, IntakeAction.IsInProgress() && !hasAlgae && !hasCoral);
                         _coralController.RequestIntake(coralIntake, false);
                         if (IntakeAction.IsPressed())
@@ -582,7 +702,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 case ReefscapeSetpoints.L3:
                     if (armHasCoral)
                     {
-                        SetSetpoint(!FacingReef ? l3Front : l3Back);
+                        SetSetpoint(!lockedFacingReef ? l3Front : l3Back);
                     }
                     else
                     {
@@ -597,7 +717,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     }
                     else
                     {
-                        SetSetpoint(!FacingReef ? highFront : highBack);
+                        SetSetpoint(routeAlgaeThroughStow ? (hasAlgae ? stowAlgae : stow) : (!FacingReef ? highFront : highBack));
                         _algaeController.RequestIntake(algaeIntake,
                             IntakeAction.IsInProgress() && !hasAlgae && !hasCoral);
                         _coralController.RequestIntake(coralIntake, false);
@@ -615,7 +735,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 case ReefscapeSetpoints.L4:
                     if (armHasCoral)
                     {
-                        SetSetpoint(!FacingReef ? l4Front : l4Back);
+                        SetSetpoint(!lockedFacingReef ? l4Front : l4Back);
                     }
                     else if (hasAlgae)
                     {
@@ -729,16 +849,16 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         // on the way up, and this returns the matching *Place setpoint for the Place case - base then
         // place, ignoring OvertureWorlds' L4Ready intermediate stage for L4, same as L2/L3. L1 places
         // through its own existing PlacePiece() flow, so it isn't handled here.
-        private OffvertureSetpoint GetPlaceSetpointByLevel()
+        private OffvertureSetpoint GetPlaceSetpointByLevel(bool facingReef)
         {
             switch (GetLevelByState())
             {
                 case 2:
-                    return !FacingReef ? l2FrontPlace : l2BackPlace;
+                    return !facingReef ? l2FrontPlace : l2BackPlace;
                 case 3:
-                    return !FacingReef ? l3FrontPlace : l3BackPlace;
+                    return !facingReef ? l3FrontPlace : l3BackPlace;
                 case 4:
-                    return !FacingReef ? l4FrontPlace : l4BackPlace;
+                    return !facingReef ? l4FrontPlace : l4BackPlace;
             }
 
             return null;
@@ -980,8 +1100,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return SetpointDelayType.AlgaeSetpoint;
             }
 
-            // barge1, barge2, groundAlgae, lolli, climb, climbed, l1: no sequencing delay - l1 is
-            // instant so the setpoint delay never affects it, unlike L2/L3/L4.
+            // barge1, barge2, groundAlgae, lolli, climbed, l1: no sequencing delay - l1 is instant so
+            // the setpoint delay never affects it, unlike L2/L3/L4. (climb is handled by its own case
+            // above, not here; climbed is just a climber move so Instant is correct for it.)
             return SetpointDelayType.Instant;
         }
 
@@ -993,11 +1114,21 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return;
             }
 
-            // El intake y el climber no forman parte de la secuencia brazo/elevador - se aplican de inmediato.
-            _intakeTargetAngle = setpoint.intakeAngle;
-            _climberTargetAngle = setpoint.climberAngle;
-
             var delayType = GetDelayType(setpoint);
+
+            // El intake no forma parte de la secuencia brazo/elevador - se aplica de inmediato.
+            // El climber igual se aplicaba de inmediato aquí, PERO en el robot real
+            // (StateManager::SustainedToEndPosition) el climber es lo ÚLTIMO en moverse - primero
+            // salen del camino intake, arm y elevator, y solo hasta el final se abre el climber.
+            // Para Climb, entonces, el climber target ya NO se aplica aquí: se aplica al final de
+            // ClimbSequence, después del elevador. Cualquier otro setpoint (incluido Climbed, que en
+            // el robot real es únicamente un movimiento del climber) conserva el comportamiento
+            // anterior de aplicarse de inmediato.
+            _intakeTargetAngle = setpoint.intakeAngle;
+            if (delayType != SetpointDelayType.Climb)
+            {
+                _climberTargetAngle = setpoint.climberAngle;
+            }
 
             // Barge, ground algae, lollipop, y climb/climbed: sin delay. Se aplican
             // directamente cada FixedUpdate (sin pasar por _activeSequenceSetpoint)
@@ -1043,7 +1174,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, algaeSetpointDelay));
                     break;
                 case SetpointDelayType.ReturningAlgae:
-                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay));
+                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay, true));
                     break;
                 case SetpointDelayType.Handoff:
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, handoffDelay));
@@ -1064,22 +1195,58 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         }
 
         // Regresando a stow/intake: primero baja el elevador, espera, y luego regresa el brazo.
-        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint, float delay)
+        //
+        // useAlgaeHoldArmSpeed ports the real robot's Arm::setArmLowerSpeed()/setArmNormalSpeed(),
+        // used by AlgaeHighReefToAlgaeHold/AlgaeLowReefToAlgaeHold/AlgaeGroundToAlgaeHold: while the
+        // arm swings an algae piece in from the reef/ground back to stowAlgae it runs on a slower
+        // motion profile (armAlgaeHoldPid) so it doesn't yank the piece loose, then reverts to the
+        // normal profile (armPid) the moment it reaches the retracted target. Only ReturningAlgae
+        // passes true for this - ReturningCoral (stow/intakeOut) is unaffected, same as the real robot
+        // only slowing the arm down for the algae-hold transitions.
+        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint, float delay, bool useAlgaeHoldArmSpeed = false)
         {
-            _elevatorTargetHeight = setpoint.elevatorHeight;
-            yield return new WaitForSeconds(delay);
-            _armTargetAngle = setpoint.armAngle;
-            _setpointSequenceRoutine = null;
+            if (useAlgaeHoldArmSpeed)
+            {
+                arm.SetPid(armAlgaeHoldPid);
+            }
+
+            try
+            {
+                _elevatorTargetHeight = setpoint.elevatorHeight;
+                yield return new WaitForSeconds(delay);
+                _armTargetAngle = setpoint.armAngle;
+
+                if (useAlgaeHoldArmSpeed)
+                {
+                    while (!armAtTargetAngle())
+                    {
+                        yield return null;
+                    }
+                }
+            }
+            finally
+            {
+                if (useAlgaeHoldArmSpeed)
+                {
+                    arm.SetPid(armPid);
+                }
+
+                _setpointSequenceRoutine = null;
+            }
         }
 
-        // SetSetpoint applies climber and intake targets before starting this routine.
-        // Climb then moves the arm and finally raises the elevator after the requested delays.
+        // SetSetpoint applies the intake target immediately before starting this routine (the climber
+        // target is intentionally withheld - see SetSetpoint). Ported order, matching
+        // StateManager::SustainedToEndPosition on the real robot: intake (already applied) -> arm ->
+        // elevator -> climber. The climber moves last, once the arm and elevator are already out of
+        // the way, instead of opening at the same time as everything else.
         private IEnumerator ClimbSequence(OffvertureSetpoint setpoint)
         {
             yield return new WaitForSeconds(afterClimberDelay);
             _armTargetAngle = setpoint.armAngle;
             yield return new WaitForSeconds(afterArmDelay);
             _elevatorTargetHeight = setpoint.elevatorHeight;
+            _climberTargetAngle = setpoint.climberAngle;
             _setpointSequenceRoutine = null;
         }
 
