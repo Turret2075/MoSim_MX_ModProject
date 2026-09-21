@@ -1,3 +1,4 @@
+
 using System.Collections;
 using Games.Reefscape.Enums;
 using Games.Reefscape.GamePieceSystem;
@@ -77,7 +78,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [SerializeField] private OffvertureSetpoint climbed;
 
         [Header("Arm/Elevator Sequencing")]
-        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to a coral scoring setpoint (L2/L3/L4). L1 and the intake->arm handoff (coralTransferring) each have their own delay below and ignore this one.")]
+        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to a coral scoring setpoint (L2/L3/L4) or the lollipop coral pickup (lollipopCoral) - lollipopCoral now uses the same arm-first-then-elevator sequencing as the reef branches instead of moving instantly. L1 and the intake->arm handoff (coralTransferring) each have their own delay below and ignore this one.")]
         [SerializeField] private float coralSetpointDelay = 0.25f;
 
         [Tooltip("Seconds to wait between moving the elevator and moving the arm when returning from a coral setpoint back to stow/intake.")]
@@ -107,6 +108,17 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         // affects it). These are applied directly every FixedUpdate instead of
         // through a coroutine, so tuning changes made to the setpoint asset while
         // the robot is already targeting it are picked up immediately.
+
+        [Header("Center of Mass")]
+        [SerializeField] private bool addCenterOfMassX;
+        [SerializeField] private bool addCenterOfMassZ;
+        [SerializeField] private float climbedCenterOfMassX;
+        [SerializeField] private float climbedCenterOfMassZ;
+        private Rigidbody _mainRb;
+        private Vector3 _originalCenterOfMass;
+        private bool _isCgShifted;
+
+        
         private enum SetpointDelayType
         {
             Instant,
@@ -133,10 +145,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         private bool _reefHeadingLocked;
         private bool _lockedFacingReef;
 
-        [Header("Algae Hold Arm Speed")]
-        [Tooltip("Motion profile used for the arm while it retracts an algae piece from a reef/ground pickup back to stowAlgae - mirrors the real robot's Arm::setArmLowerSpeed(), applied during AlgaeHighReefToAlgaeHold/AlgaeLowReefToAlgaeHold/AlgaeGroundToAlgaeHold so the arm doesn't yank the algae loose on the way in. Should be a slower cruise velocity/acceleration than armPid. Swapped back to armPid the instant the arm reaches its retracted target.")]
-        [SerializeField] private PidConstants armAlgaeHoldPid;
-        
         [Header("Intake and Stow States")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
         [SerializeField] private ReefscapeGamePieceIntake armCoralIntake;
@@ -185,6 +193,19 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [SerializeField] private AudioSource eeAudio;
         [SerializeField] private AudioClip rollerAudio;
         
+        [Tooltip("Ported from Bulldogs' lollipopCoral: a coral picked directly off a standalone post rather than the floor or a branch, used under the same Stack setpoint the algae lollipop (lolli) already uses, but only while CurrentRobotMode is Coral. HEADS UP: Bulldogs' arm swings +90 degrees to reach its lollipop coral; Offverture's arm has to swing -90 for the same reach because the climber sits in the way of the +90 sweep. Don't copy Bulldogs' armAngle sign onto this asset - it needs the opposite one.")]
+        [SerializeField] private OffvertureSetpoint lollipopCoral;
+
+        [Tooltip("OPTIONAL / no longer used for the pickup - the lollipop coral is now taken with armCoralIntake. Dedicated game-piece intake collider for the lollipop coral pickup (separate from the floor intake and armCoralIntake, same as Bulldogs' lollipopCoralIntake), since the post-mounted piece sits somewhere neither of those already covers.")]
+        [SerializeField] private ReefscapeGamePieceIntake lollipopCoralIntake;
+
+        [Header("Lollipop Coral Vision")]
+        [Tooltip("Box trigger used to spot a lollipop coral and gently steer the robot onto it while IntakeAction is held on Stack in Coral mode - ported from Bulldogs' lollipopIntakeVision/RunIntakeVision().")]
+        [SerializeField] private BoxCollider lollipopIntakeVision;
+        private OverlapBoxBounds _lollipopVisionDetect;
+        private Collider[] _lollipopVisionColliders;
+        private LayerMask _coralVisionMask;
+
         protected override void Start()
         {
             base.Start();
@@ -211,12 +232,20 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             };
             _coralController.intakes.Add(armCoralIntake);
             _coralController.intakes.Add(coralIntake);
+            if (lollipopCoralIntake != null && lollipopCoralIntake != armCoralIntake)
+            {
+                _coralController.intakes.Add(lollipopCoralIntake);
+            }
             
             _algaeController.gamePieceStates = new[]
             {
                 algaeStowState
             };
             _algaeController.intakes.Add(algaeIntake);
+
+            _lollipopVisionDetect = new OverlapBoxBounds(lollipopIntakeVision);
+            _lollipopVisionColliders = new Collider[6];
+            _coralVisionMask = LayerMask.GetMask("Coral");
             
             algaeStallSource.clip = algaeStallAudio;
             algaeStallSource.loop = true;
@@ -229,6 +258,17 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             eeAudio.clip = rollerAudio;
             eeAudio.loop = true;
             eeAudio.Stop();
+
+            _mainRb = gameObject.GetComponent<Rigidbody>();
+            _isCgShifted = false;
+            if (_mainRb != null)
+            {
+                _originalCenterOfMass = _mainRb.centerOfMass;
+            }
+            else
+            {
+                Debug.LogWarning("ts isnt working btw???");
+            }
         }
 
         private void LateUpdate()
@@ -446,7 +486,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 setEndEffectorRollers(-20);
             }
 
-            if (CurrentIntakeMode == ReefscapeIntakeMode.Normal && intk)
+            // Lollipop coral: se queda en el brazo (coralStowState / ArmCoralIntake). Sin esto, un intk
+            // viejo en true (se queda así hasta el siguiente transfer) o el modo L1 mandaban el coral
+            // al intake de piso (coralIntakeState) al recogerlo.
+            if (CurrentSetpoint == ReefscapeSetpoints.Stack && CurrentRobotMode == ReefscapeRobotMode.Coral)
+            {
+                intk = false;
+                _coralController.SetTargetState(coralStowState);
+            }
+            else if (CurrentIntakeMode == ReefscapeIntakeMode.Normal && intk)
             {
                 _coralController.SetTargetState(coralIntakeState);
             }
@@ -528,36 +576,16 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     _coralController.RequestIntake(coralIntake, !transferring && atSetpoint(stow));
                     break;
                 case ReefscapeSetpoints.Intake:
-                    // Ported from Lambot/Voltec (both guard every arm assignment during coral intake
-                    // with `hasAlgae ? _armTargetAngle : ...`, i.e. leave the arm exactly where it is
-                    // instead of sending it to a coral-intake angle): going after coral while already
-                    // holding algae only needs the floor intake/elevator to move to intakeOut's
-                    // targets. _armTargetAngle is left untouched - it's already sitting wherever the
-                    // algae-hold sequence parked it (stowAlgae.armAngle), so there's nothing to swing
-                    // down into the held piece. No extra setpoint asset needed for this.
-                    bool goingForCoralWhileHoldingAlgae = CurrentRobotMode == ReefscapeRobotMode.Coral && hasAlgae;
-
                     if ((CurrentRobotMode == ReefscapeRobotMode.Coral ||
                         hasAlgae) && !hasCoral)
                     {
-                        if (goingForCoralWhileHoldingAlgae)
-                        {
-                            if (_setpointSequenceRoutine != null)
-                            {
-                                StopCoroutine(_setpointSequenceRoutine);
-                                _setpointSequenceRoutine = null;
-                            }
-
-                            _elevatorTargetHeight = intakeOut.elevatorHeight;
-                            _intakeTargetAngle = intakeOut.intakeAngle;
-                        }
-                        else
-                        {
-                            // Coral intake must keep the coral intake pose even while an
-                            // algae piece is held.  Selecting intakeOutAlgae here sent
-                            // the floor intake to its 180-degree algae pose.
-                            SetSetpoint(CurrentRobotMode == ReefscapeRobotMode.Coral ? intakeOut : intakeOutAlgae);
-                        }
+                        // intakeOutAlgae doubles as the "supercycle" floor-intake pose (going for
+                        // coral while already holding algae) - the earlier bug here wasn't the logic,
+                        // it was intakeOutAlgae's own intake angle being set to 180 instead of 100.
+                        // With that fixed, route on hasAlgae instead of CurrentRobotMode so the
+                        // supercycle pose is used any time algae is already held, whether the driver
+                        // is nominally in Coral or Algae mode - not just when in Algae mode.
+                        SetSetpoint(hasAlgae ? intakeOutAlgae : intakeOut);
                     }
 
                     if (CurrentRobotMode == ReefscapeRobotMode.Algae && !armHasCoral && !hasAlgae)
@@ -574,15 +602,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                         intk = true;
                     }
 
-                    // atSetpoint(intakeOut) still requires the arm to also be at intakeOut.armAngle,
-                    // which never happens while goingForCoralWhileHoldingAlgae (arm stays put) - so
-                    // that path is checked separately here on just the elevator/intake, the two joints
-                    // that are actually being commanded in that case.
-                    bool atIntakeOutFloorOnly =
-                        Utils.InRange(elevator.GetElevatorHeight(), intakeOut.elevatorHeight, 2f) &&
-                        Utils.InAngularRange(intake.GetSingleAxisAngle(JointAxis.X), intakeOut.intakeAngle, 2f);
-
-                    if (atSetpoint(intakeOut) || (goingForCoralWhileHoldingAlgae && atIntakeOutFloorOnly))
+                    if (atSetpoint(intakeOut))
                     {
                         setIntakeRollers(50);
                     } 
@@ -658,9 +678,26 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     // _coralController.RequestIntake(coralIntake, true);
                     break;
                 case ReefscapeSetpoints.Stack:
-                    SetSetpoint(lolli);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsInProgress() && !hasAlgae && !hasCoral);
-                    _coralController.RequestIntake(coralIntake, false);
+                    // Stack already covered the algae lollipop (lolli). Ported from Bulldogs: the same
+                    // Stack setpoint also covers a lollipop coral, picked with its own dedicated
+                    // lollipopCoralIntake instead of the floor/arm coral intakes, whenever the driver
+                    // is in Coral mode.
+                    if (CurrentRobotMode == ReefscapeRobotMode.Coral)
+                    {
+                        // Brazo primero, luego elevador (coralSetpointDelay, igual que L2/L3/L4 - ver GetDelayType).
+                        SetSetpoint(lollipopCoral);
+                        // Se recoge con armCoralIntake (como OvertureWorlds), no con un collider dedicado.
+                        _coralController.RequestIntake(armCoralIntake, IntakeAction.IsInProgress() && !hasCoral);
+                        _coralController.RequestIntake(coralIntake, false);
+                        _algaeController.RequestIntake(algaeIntake, false);
+                    }
+                    else
+                    {
+                        SetSetpoint(lolli);
+                        _algaeController.RequestIntake(algaeIntake, IntakeAction.IsInProgress() && !hasAlgae && !hasCoral);
+                        _coralController.RequestIntake(coralIntake, false);
+                    }
+
                     if (IntakeAction.IsPressed())
                     {
                         setEndEffectorRollers(50);
@@ -754,7 +791,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     SetSetpoint(FacingReef ? barge1 : barge2);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
-                    SetState(ReefscapeSetpoints.Stow);
+                    // Igual que Bulldogs: RobotSpecial entra a Stack (lollipop coral en modo Coral,
+                    // lolli en modo Algae). Antes rebotaba a Stow y el setpoint nunca se activaba.
+                    SetState(ReefscapeSetpoints.Stack);
                     break;
                 case ReefscapeSetpoints.Climb:
                     SetSetpoint(climb);
@@ -800,8 +839,86 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 endEffectorRollersStop();
             }
 
+            RunLollipopVision();
             
             ApplySetpoints();
+
+            if (_mainRb != null)
+            {
+                if (CurrentSetpoint == ReefscapeSetpoints.Climbed)
+                {
+                    if (!_isCgShifted)
+                    {
+                        _mainRb.centerOfMass = new Vector3(climbedCenterOfMassX, _originalCenterOfMass.y, climbedCenterOfMassZ);
+                        _isCgShifted = true;
+                    }
+                }
+                else if (_isCgShifted)
+                {
+                    _mainRb.centerOfMass = _originalCenterOfMass;
+                    _isCgShifted = false;
+                }
+            }
+
+        }
+
+        // Ported from Bulldogs' RunIntakeVision(): while sitting on the lollipop pickup (Stack) in
+        // Coral mode with nothing already held and IntakeAction pressed, look for the nearest coral in
+        // the vision box and nudge the drivetrain toward/around it. Self-gated by the early return, so
+        // it's safe to call unconditionally every FixedUpdate.
+        private void RunLollipopVision()
+        {
+            if (CurrentSetpoint != ReefscapeSetpoints.Stack ||
+                CurrentRobotMode == ReefscapeRobotMode.Algae ||
+                _coralController.HasPiece() ||
+                !IsIntaking)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _lollipopVisionColliders.Length; i++)
+            {
+                _lollipopVisionColliders[i] = null;
+            }
+
+            var size = _lollipopVisionDetect.OverlapBoxNonAlloc(ref _lollipopVisionColliders, _coralVisionMask);
+
+            if (_lollipopVisionColliders == null || !_lollipopVisionColliders[0])
+            {
+                return;
+            }
+
+            GameObject closest = _lollipopVisionColliders[0].gameObject;
+            for (int i = 1; i < size; i++)
+            {
+                if (Vector3.Distance(_lollipopVisionColliders[i].transform.position, transform.position) <
+                    Vector3.Distance(closest.transform.position, transform.position))
+                {
+                    closest = _lollipopVisionColliders[i].gameObject;
+                }
+            }
+
+            var angle = Quaternion.LookRotation(lollipopIntakeVision.transform.position - closest.transform.position,
+                lollipopIntakeVision.transform.up).eulerAngles.y - (transform.position.x >= 0 ? 180f : 90f);
+
+            Vector2 translateInput = TranslateAction.ReadValue<Vector2>();
+            float translateAngle = Mathf.Atan2(translateInput.y, translateInput.x) * Mathf.Rad2Deg;
+            float heading = transform.rotation.eulerAngles.y - 90f;
+            float forwardValue = 0.6f * translateInput.magnitude * Mathf.Sin(Mathf.Deg2Rad * (translateAngle + heading));
+            if (GetActiveCamera().transform.eulerAngles.y > 180) forwardValue *= -1;
+
+            DriveController.overideInput(new Vector2(forwardValue, 0f), 0, DriveController.DriveMode.RobotRelative);
+
+            if (transform.position.x >= 0)
+            {
+                DriveController.SoftSteer(Mathf.Clamp((-angle + lollipopIntakeVision.transform.eulerAngles.y) / 100, 0.18f, -0.18f));
+            }
+            else
+            {
+                float turnValue = -angle + lollipopIntakeVision.transform.eulerAngles.y - 270;
+                turnValue = turnValue < -180 ? turnValue + 360 : turnValue;
+                DriveController.SoftSteer(Mathf.Clamp(-turnValue / 100, -0.18f, 0.18f));
+            }
         }
 
         private void transferToArm()
@@ -1071,7 +1188,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return SetpointDelayType.ReturningCoral;
             }
 
-            if (setpoint == stowAlgae || setpoint == intakeOutAlgae)
+            if (setpoint == stowAlgae)
             {
                 return SetpointDelayType.ReturningAlgae;
             }
@@ -1088,7 +1205,8 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
             if (setpoint == l4Front || setpoint == l4Back ||
                 setpoint == l3Front || setpoint == l3Back ||
-                setpoint == l2Front || setpoint == l2Back)
+                setpoint == l2Front || setpoint == l2Back ||
+                setpoint == lollipopCoral)
             {
                 return SetpointDelayType.CoralSetpoint;
             }
@@ -1100,9 +1218,18 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return SetpointDelayType.AlgaeSetpoint;
             }
 
-            // barge1, barge2, groundAlgae, lolli, climbed, l1: no sequencing delay - l1 is instant so
-            // the setpoint delay never affects it, unlike L2/L3/L4. (climb is handled by its own case
-            // above, not here; climbed is just a climber move so Instant is correct for it.)
+            // barge1, barge2, groundAlgae, lolli (the algae lollipop, not lollipopCoral), climbed, l1,
+            // intakeOutAlgae: no sequencing delay. l1 is instant so the setpoint delay never affects it,
+            // unlike L2/L3/L4/lollipopCoral. intakeOutAlgae
+            // (the supercycle floor-intake pose, used while already holding algae) used to share
+            // stowAlgae's ReturningAlgae classification, which staggered the arm behind the floor
+            // intake (elevator first, then arm after a delay, on a slowed-down PID) while the floor
+            // intake itself jumped straight to its target - the mismatch between an immediately-moving
+            // floor intake and a lagging arm caused it to jam. ChillOut has no staggering at all
+            // (its SetSetpoint applies elevator/arm/intake together, every frame, unconditionally), so
+            // intakeOutAlgae is classified Instant here to match that: all three joints move together.
+            // (climb is handled by its own case above, not here; climbed is just a climber move so
+            // Instant is correct for it too.)
             return SetpointDelayType.Instant;
         }
 
@@ -1174,7 +1301,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, algaeSetpointDelay));
                     break;
                 case SetpointDelayType.ReturningAlgae:
-                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay, true));
+                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay));
                     break;
                 case SetpointDelayType.Handoff:
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, handoffDelay));
@@ -1195,44 +1322,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         }
 
         // Regresando a stow/intake: primero baja el elevador, espera, y luego regresa el brazo.
-        //
-        // useAlgaeHoldArmSpeed ports the real robot's Arm::setArmLowerSpeed()/setArmNormalSpeed(),
-        // used by AlgaeHighReefToAlgaeHold/AlgaeLowReefToAlgaeHold/AlgaeGroundToAlgaeHold: while the
-        // arm swings an algae piece in from the reef/ground back to stowAlgae it runs on a slower
-        // motion profile (armAlgaeHoldPid) so it doesn't yank the piece loose, then reverts to the
-        // normal profile (armPid) the moment it reaches the retracted target. Only ReturningAlgae
-        // passes true for this - ReturningCoral (stow/intakeOut) is unaffected, same as the real robot
-        // only slowing the arm down for the algae-hold transitions.
-        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint, float delay, bool useAlgaeHoldArmSpeed = false)
+        // ChillOut style: sin cambio de motion profile - arm.SetPid(armPid) se pone una sola vez en
+        // Start/Awake y nunca se toca de nuevo. El real robot's Arm::setArmLowerSpeed()/setArmNormalSpeed()
+        // (armAlgaeHoldPid) no aporta nada en el sim, así que se quitó junto con el swap de PID.
+        private IEnumerator ReturnHomeSequence(OffvertureSetpoint setpoint, float delay)
         {
-            if (useAlgaeHoldArmSpeed)
-            {
-                arm.SetPid(armAlgaeHoldPid);
-            }
-
-            try
-            {
-                _elevatorTargetHeight = setpoint.elevatorHeight;
-                yield return new WaitForSeconds(delay);
-                _armTargetAngle = setpoint.armAngle;
-
-                if (useAlgaeHoldArmSpeed)
-                {
-                    while (!armAtTargetAngle())
-                    {
-                        yield return null;
-                    }
-                }
-            }
-            finally
-            {
-                if (useAlgaeHoldArmSpeed)
-                {
-                    arm.SetPid(armPid);
-                }
-
-                _setpointSequenceRoutine = null;
-            }
+            _elevatorTargetHeight = setpoint.elevatorHeight;
+            yield return new WaitForSeconds(delay);
+            _armTargetAngle = setpoint.armAngle;
+            _setpointSequenceRoutine = null;
         }
 
         // SetSetpoint applies the intake target immediately before starting this routine (the climber

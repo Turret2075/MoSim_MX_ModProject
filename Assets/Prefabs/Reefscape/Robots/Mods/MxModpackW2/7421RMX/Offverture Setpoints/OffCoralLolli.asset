@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 298d7b8e6ecbfa34f849b6ba35334554, type: 3}
-  m_Name: OffL4FPlace
+  m_Name: OffCoralLolli
   m_EditorClassIdentifier: 
-  elevatorHeight: 55
-  armAngle: 75.5
-  intakeAngle: 0
+  elevatorHeight: 4
+  armAngle: 110
+  intakeAngle: 100
   climberAngle: 75

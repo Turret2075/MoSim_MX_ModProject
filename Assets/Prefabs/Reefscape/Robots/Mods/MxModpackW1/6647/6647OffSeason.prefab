@@ -30467,8 +30467,8 @@ MonoBehaviour:
   armAxis: 0
   wheelAxis: 1
   stowAngle: 90
-  deployAngle: 165
-  retractAngle: 73
+  deployAngle: 175
+  retractAngle: 90
   targetIntakeWheelSpeed: 125
   climbingAngularVelocity: 60
   rollerAudioSource: {fileID: 3425948393615328481}
@@ -74196,12 +74196,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7287171245319067019}
+  - component: {fileID: 7335699603548320947}
   - component: {fileID: 10299102636920901}
   - component: {fileID: 6561462092759723307}
   - component: {fileID: 6639392602573018925}
   - component: {fileID: 526944014387789255}
   - component: {fileID: 2659700913955458523}
-  - component: {fileID: 7335699603548320947}
   - component: {fileID: 3874035076040373014}
   - component: {fileID: 4760352501194085053}
   - component: {fileID: 3397110292519282213}
@@ -74241,6 +74241,33 @@ Transform:
   - {fileID: 4032403558010177773}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &7335699603548320947
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5060534743255372558}
+  serializedVersion: 4
+  m_Mass: 120
+  m_Drag: 3
+  m_AngularDrag: 5
+  m_CenterOfMass: {x: 0, y: -0.017, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 0
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &10299102636920901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74391,11 +74418,11 @@ MonoBehaviour:
   - {fileID: 5373357799604572433}
   - {fileID: 450345653152585716}
   - {fileID: 2293308984092104485}
-  intakeWheelSpeed: 300
+  intakeWheelSpeed: 500
   eEWheels:
   - {fileID: 4401213136973903790}
-  eEWheelSpeed: 300
-  algaeIntakeRollerSpeed: 400
+  eEWheelSpeed: 700
+  algaeIntakeRollerSpeed: 800
   eERollersReverse:
   - {fileID: 6143268166333468213}
   algaeStallSource: {fileID: 8786412676592846585}
@@ -74408,6 +74435,10 @@ MonoBehaviour:
   coralPickupClip: {fileID: 8300000, guid: d6a7f45264963c64a9ea71a9af0e456d, type: 3}
   atSetpointOffset: 6.25
   preAlignOffset: -5.5
+  addCenterOfMassX: 1
+  addCenterOfMassZ: 1
+  climbedCenterOfMassX: 0.15
+  climbedCenterOfMassZ: -0.05
   _coralController:
     pieceName: 
     intakes: []
@@ -74545,33 +74576,6 @@ MonoBehaviour:
   enableForwardAlign: 1
   enableBackwardsAlign: 0
   maxAlignDistanceFeet: 15
---- !u!54 &7335699603548320947
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5060534743255372558}
-  serializedVersion: 4
-  m_Mass: 120
-  m_Drag: 3
-  m_AngularDrag: 5
-  m_CenterOfMass: {x: 0, y: -0.017, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 0
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!114 &3874035076040373014
 MonoBehaviour:
   m_ObjectHideFlags: 0
