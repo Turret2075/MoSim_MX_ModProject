@@ -115,6 +115,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         private float _armTargetAngle;
         private float _intakeTargetAngle;
 
+        [Header("Center of Mass")]
+        [SerializeField] private bool addCenterOfMassX;
+        [SerializeField] private bool addCenterOfMassZ;
+        [SerializeField] private float climbedCenterOfMassX;
+        [SerializeField] private float climbedCenterOfMassZ;
+        private Rigidbody _mainRb;
+        private Vector3 _originalCenterOfMass;
+        private bool _isCgShifted;
+
         private bool _intakeSequenceRunning;
         private bool _disruptable;
         private bool wasCoral;
@@ -125,6 +134,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
         private ReefscapeSetpoints? _bufferedSetpoint;
         private bool bufferAlgeaState;
+
 
         public RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _coralController;
         public RobotGamePieceController<ReefscapeGamePiece, ReefscapeGamePieceData>.GamePieceControllerNode _algaeController;
@@ -178,6 +188,17 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             algaeStallSource.clip = algaeStallAudio;
             algaeStallSource.loop = true;
             algaeStallSource.Stop();
+
+            _mainRb = gameObject.GetComponent<Rigidbody>();
+            _isCgShifted = false;
+            if (_mainRb != null)
+            {
+                _originalCenterOfMass = _mainRb.centerOfMass;
+            }
+            else
+            {
+                Debug.LogWarning("ts isnt working btw???");
+            }
 
             _align = gameObject.GetComponent<ReefscapeAutoAlign>();
         }
@@ -451,6 +472,24 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             {
                 SetState(ReefscapeSetpoints.Climb);
             }
+
+            if (_mainRb != null)
+            {
+                if (CurrentSetpoint == ReefscapeSetpoints.Climbed)
+                {
+                    if (!_isCgShifted)
+                    {
+                        _mainRb.centerOfMass = new Vector3(climbedCenterOfMassX, _originalCenterOfMass.y, climbedCenterOfMassZ);
+                        _isCgShifted = true;
+                    }
+                }
+                else if (_isCgShifted)
+                {
+                    _mainRb.centerOfMass = _originalCenterOfMass;
+                    _isCgShifted = false;
+                }
+            }
+
 
             UpdateAutoAlign();
         }

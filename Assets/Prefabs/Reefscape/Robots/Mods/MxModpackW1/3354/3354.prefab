@@ -85750,6 +85750,10 @@ MonoBehaviour:
     smoothHandoff: 0
     angularSpeed: 0
   algaeEjectForce: 4
+  addCenterOfMassX: 1
+  addCenterOfMassZ: 1
+  climbedCenterOfMassX: -0.15
+  climbedCenterOfMassZ: 0.025
   intakeAudioSource: {fileID: 866128696146921004}
   intakeClip: {fileID: 8300000, guid: 602fb269d44b4964d8d4881108b75f19, type: 3}
   algaeStallSource: {fileID: 8452488767250734298}

@@ -46,6 +46,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [SerializeField] private PidConstants climberBarPid;
         [SerializeField] private PidConstants climberFlapPid;
 
+        [Header("Center of Mass")]
+        [SerializeField] private bool addCenterOfMassX;
+        [SerializeField] private bool addCenterOfMassZ;
+        [SerializeField] private float climbedCenterOfMassX;
+        [SerializeField] private float climbedCenterOfMassZ;
+        private Rigidbody _mainRb;
+        private Vector3 _originalCenterOfMass;
+        private bool _isCgShifted;
+
         [Header("coral Setpoints")]
         [SerializeField] private KeikoSetpoint stow;
         [SerializeField] private KeikoSetpoint coralStow;
@@ -146,6 +155,17 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
 
             coralMask = LayerMask.GetMask("Coral");
             canClack = true;
+
+            _mainRb = gameObject.GetComponent<Rigidbody>();
+            _isCgShifted = false;
+            if (_mainRb != null)
+            {
+                _originalCenterOfMass = _mainRb.centerOfMass;
+            }
+            else
+            {
+                Debug.LogWarning("ts isnt working btw???");
+            }
         }
 
         private void LateUpdate()
@@ -304,15 +324,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                 case ReefscapeSetpoints.RobotSpecial:
                     if (_climbBarTargetAngle == 120)
                     {
-                        _climbBarTargetAngle = 90;
+                        _climbBarTargetAngle = 62;
                     }
-                    else if (_climbBarTargetAngle != 90) SetState(ReefscapeSetpoints.Stow);
+                    else if (_climbBarTargetAngle != 62) SetState(ReefscapeSetpoints.Stow);
                     break;
                 case ReefscapeSetpoints.Climb:
                     _climbLocked = true;
                     SetSetpoint(climb);
                     _climbBarTargetAngle = 120;
-                    _funnelPivotTargetAngle = -75;
+                    _funnelPivotTargetAngle = -70;
                     break;
                 case ReefscapeSetpoints.Climbed:
                     SetSetpoint(climbed);
@@ -320,7 +340,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     break;
             }
             
-            if (ClimbAction.IsPressed() && (LastSetpoint == ReefscapeSetpoints.RobotSpecial || _climbBarTargetAngle == 90))
+            if (ClimbAction.IsPressed() && (LastSetpoint == ReefscapeSetpoints.RobotSpecial || _climbBarTargetAngle == 62))
             {
                 SetState(ReefscapeSetpoints.Climbed);
             }
@@ -339,6 +359,23 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
             UpdateSetpoints();
             UpdateRollers();
             UpdateAudio();
+
+            if (_mainRb != null)
+            {
+                if (CurrentSetpoint == ReefscapeSetpoints.Climbed)
+                {
+                    if (!_isCgShifted)
+                    {
+                        _mainRb.centerOfMass = new Vector3(climbedCenterOfMassX, _originalCenterOfMass.y, climbedCenterOfMassZ);
+                        _isCgShifted = true;
+                    }
+                }
+                else if (_isCgShifted)
+                {
+                    _mainRb.centerOfMass = _originalCenterOfMass;
+                    _isCgShifted = false;
+                }
+            }
 
             _outtakeWasPressed = outtakeHeld;
         }

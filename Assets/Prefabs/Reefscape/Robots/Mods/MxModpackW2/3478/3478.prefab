@@ -34579,20 +34579,24 @@ MonoBehaviour:
     kP: 5
     kI: 0
     kD: 2.75
-    Max: 3.125
+    Max: 2.65
     Isaturation: 0
   climberBarPid:
     kP: 0.5
     kI: 0
     kD: 0.1
-    Max: 1
+    Max: 1.75
     Isaturation: 1
   climberFlapPid:
     kP: 0.5
     kI: 0
     kD: 0.1
-    Max: 1
+    Max: 1.75
     Isaturation: 0
+  addCenterOfMassX: 1
+  addCenterOfMassZ: 1
+  climbedCenterOfMassX: 0.025
+  climbedCenterOfMassZ: 0.175
   stow: {fileID: 11400000, guid: d1b77e6ae3517ff4b92880f03e1e37d5, type: 2}
   coralStow: {fileID: 11400000, guid: 522f9bd49b0d29147b8cefb716403220, type: 2}
   intake: {fileID: 11400000, guid: 39e729e7b376ff5488b9f8f5fe3baa1b, type: 2}

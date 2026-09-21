@@ -92,6 +92,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
         [SerializeField] private GamePieceState coralIntakeState;
         [SerializeField] private GamePieceState coralStowState;
 
+        [Header("Center of Mass")]
+        [SerializeField] private bool addCenterOfMassX;
+        [SerializeField] private bool addCenterOfMassZ;
+        [SerializeField] private float climbedCenterOfMassX;
+        [SerializeField] private float climbedCenterOfMassZ;
+        private Rigidbody _mainRb;
+        private Vector3 _originalCenterOfMass;
+        private bool _isCgShifted;
+
         [Header("Intake Audio")]
         [SerializeField] private AudioSource intakeAudioSource;
         [SerializeField] private AudioClip intakeClip;
@@ -141,6 +150,17 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             _colliders = new Collider[6];
             _visionDetect = new OverlapBoxBounds(intakeVision);
             _mask = LayerMask.GetMask("Coral");
+
+            _mainRb = gameObject.GetComponent<Rigidbody>();
+            _isCgShifted = false;
+            if (_mainRb != null)
+            {
+                _originalCenterOfMass = _mainRb.centerOfMass;
+            }
+            else
+            {
+                Debug.LogWarning("ts isnt working btw???");
+            }
 
             align = gameObject.GetComponent<ReefscapeAutoAlign>();
         }
@@ -303,6 +323,22 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._9995
             var coralRight = Physics.Raycast(rightIntakeSensor.position, rayDirection, distance, coralMask);
             var coralLeft = Physics.Raycast(leftIntakeSensor.position, rayDirection, distance, coralMask);
 
+            if (_mainRb != null)
+            {
+                if (CurrentSetpoint == ReefscapeSetpoints.Climbed)
+                {
+                    if (!_isCgShifted)
+                    {
+                        _mainRb.centerOfMass = new Vector3(climbedCenterOfMassX, _originalCenterOfMass.y, climbedCenterOfMassZ);
+                        _isCgShifted = true;
+                    }
+                }
+                else if (_isCgShifted)
+                {
+                    _mainRb.centerOfMass = _originalCenterOfMass;
+                    _isCgShifted = false;
+                }
+            }
 
             _previousSetpoint = CurrentSetpoint;
 

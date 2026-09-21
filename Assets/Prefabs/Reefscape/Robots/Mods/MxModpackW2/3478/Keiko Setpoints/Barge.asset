@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Barge
   m_EditorClassIdentifier: 
   elevatorHeight: 62
-  endEffectorAngle: 0
+  endEffectorAngle: 8.5
