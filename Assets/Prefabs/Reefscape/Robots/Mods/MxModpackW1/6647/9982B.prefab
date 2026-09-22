@@ -64031,6 +64031,7 @@ MonoBehaviour:
   lowAlgae: {fileID: 11400000, guid: b4b9eb0493c36fa4c8af5bb50e1e225d, type: 2}
   highAlgae: {fileID: 11400000, guid: c43af6668adca4d4ca6ec5c4b09f30eb, type: 2}
   barge: {fileID: 11400000, guid: 703587e9e0eede047aa1d0e1e8762c9d, type: 2}
+  processor: {fileID: 11400000, guid: 72ba8b1f9f58d91498984ea2f8635a9e, type: 2}
   coralIntake: {fileID: 381580279559683178}
   algaeIntake: {fileID: 332220487806124391}
   coralStowState:

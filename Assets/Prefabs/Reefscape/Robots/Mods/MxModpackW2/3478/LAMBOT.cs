@@ -69,6 +69,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
         [SerializeField] private KeikoSetpoint lowAlgae;
         [SerializeField] private KeikoSetpoint highAlgae;
         [SerializeField] private KeikoSetpoint barge;
+        [SerializeField] private KeikoSetpoint notsoprocessed;
         
         [Header("climb Setpoints")]
         [SerializeField] private KeikoSetpoint climb;
@@ -315,7 +316,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     SetSetpoint(l4);
                     break;
                 case ReefscapeSetpoints.Processor:
-                    SetSetpoint(stow);
+                    SetSetpoint(notsoprocessed);
                     break;
                 case ReefscapeSetpoints.Barge:
                     autoAlign.bargeOffset = bargeAutoAlignOffset;
@@ -447,7 +448,17 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
 
         private void PlaceAlgae()
         {
-        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 3f, 0));
+            if (LastSetpoint == ReefscapeSetpoints.Barge){
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 3f, 0));
+            }
+            else if (LastSetpoint == ReefscapeSetpoints.Processor)
+            {
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 2.25f, 0));
+            }
+            else
+            {
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 2.7f, 0));
+            }
         }
 
         private void PlaceCoral()

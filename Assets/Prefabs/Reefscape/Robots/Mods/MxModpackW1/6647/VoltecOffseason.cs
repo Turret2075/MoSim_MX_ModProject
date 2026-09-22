@@ -45,6 +45,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [SerializeField] private VoltecOffseasonSetpoint l4;
         [SerializeField] private VoltecOffseasonSetpoint l4Place;
 
+        [Header("L2 Sequence")]
+        [Tooltip("Segundos entre girar el brazo y bajar el elevador al ir a L2 (solo L2, no L3/L4). " +
+                 "Reemplaza el delay viejo donde el elevador y el brazo se movian juntos despues de esperar.")]
+        [SerializeField] private float l2ArmToElevatorDelay = 0.2f;
 
         [Header("Algae Setpoints")]
         [SerializeField] private VoltecOffseasonSetpoint lowAlgae;
@@ -104,6 +108,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
         [Tooltip("Se reproduce UNA sola vez, justo cuando el elevador/brazo llegan fisicamente a coralPickup y ocurre el handoff.")]
         [SerializeField] private AudioSource coralPickupSource;
         [SerializeField] private AudioClip coralPickupClip;
+        
+        [Header("Colliders")]
+        [SerializeField] private BoxCollider[] algaeDisableColliders;
 
         [Header("Auto Align Offsets")]
         [SerializeField] private float atSetpointOffset;
@@ -126,11 +133,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
         private bool _intakeSequenceRunning;
         private bool _disruptable;
-        private bool wasCoral;
         private bool _isPlacingCoral;
         private bool _handoffSoundPlayed;
         private bool _l2SequenceRunning;
         private bool _l2SequenceComplete;
+        private bool _outtakeWasPressed;
 
         private ReefscapeSetpoints? _bufferedSetpoint;
         private bool bufferAlgeaState;
@@ -165,8 +172,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
             _disruptable = true;
             _intakeSequenceRunning = false;
-            wasCoral = false;
             _isPlacingCoral = false;
+            _outtakeWasPressed = false;
             _bufferedSetpoint = null;
             bufferAlgeaState = false;
 
@@ -211,6 +218,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
         private void FixedUpdate()
         {
+            bool hasAlgae = _algaeController.HasPiece();
+            bool hasCoral = _coralController.HasPiece();
+            bool outtakeHeld = OuttakeAction != null && OuttakeAction.IsPressed();
+            bool outtakeJustPressed = outtakeHeld && !_outtakeWasPressed;
+
             var readState = _coralController.GetCurrentState();
             if (readState != null)
             {
@@ -226,20 +238,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
             }
 
             _algaeController.SetTargetState(algaeStowState);
-
-            if (_algaeController.HasPiece() || CurrentSetpoint == ReefscapeSetpoints.Barge)
-            {
-                if (CurrentRobotMode == ReefscapeRobotMode.Coral)
-                {
-                    wasCoral = true;
-                }
-
-                SetRobotMode(ReefscapeRobotMode.Algae);
-            }
-            else if (_coralController.HasPiece() && CurrentSetpoint == ReefscapeSetpoints.Place)
-            {
-                SetRobotMode(ReefscapeRobotMode.Coral);
-            }
 
             if (_disruptable && bufferAlgeaState)
             {
@@ -284,13 +282,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                 _bufferedSetpoint = null;
             }
 
-            bool coralAtEE = _coralController.currentStateNum == coralArmStowState.stateNum && _coralController.atTarget;
-
-            if (coralAtEE && CurrentRobotMode != ReefscapeRobotMode.Coral)
-            {
-                SetRobotMode(ReefscapeRobotMode.Coral);
-            }
-
             UpdateIntakeAudio();
 
             if (CurrentSetpoint != ReefscapeSetpoints.L2)
@@ -315,10 +306,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     break;
 
                 case ReefscapeSetpoints.Intake:
-                    if (CurrentRobotMode == ReefscapeRobotMode.Algae && !_algaeController.HasPiece())
+                    if (CurrentRobotMode == ReefscapeRobotMode.Algae && !hasAlgae)
                     {
                         SetSetpoint(groundAlgae);
-                        _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
+                        _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed());
                         _algaeController.SetTargetState(algaeStowState);
                         SpinEERollers(algaeIntakeRollerSpeed);
                     }
@@ -326,27 +317,20 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     break;
 
                 case ReefscapeSetpoints.Place:
-                    if (LastSetpoint == ReefscapeSetpoints.Stow && coralAtEE)
+                    if (outtakeJustPressed)
                     {
-                        SetState(ReefscapeSetpoints.Stow);
-                        break;
-                    }
+                        bool hadBoth = hasCoral && hasAlgae;
+                        PlacePiece();
 
-                    if (_algaeController.HasPiece())
-                    {
-                        _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4f, 0));
-                        if (wasCoral)
+                        if (hadBoth)
                         {
-                            SetRobotMode(ReefscapeRobotMode.Coral);
-                            wasCoral = false;
+                            SetRobotMode(CurrentRobotMode == ReefscapeRobotMode.Algae
+                                ? ReefscapeRobotMode.Coral
+                                : ReefscapeRobotMode.Algae);
                         }
                     }
-                    else if (CurrentRobotMode != ReefscapeRobotMode.Algae &&
-                             _coralController.currentStateNum == coralArmStowState.stateNum && !_isPlacingCoral)
-                    {
-                        StartCoroutine(PlaceCoral());
-                    }
-                    else if (_isPlacingCoral)
+
+                    if (_isPlacingCoral)
                     {
                         switch (LastSetpoint)
                         {
@@ -393,7 +377,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                 case ReefscapeSetpoints.LowAlgae:
                     SetSetpoint(FacingReef ? lowAlgae : lowAlgaeBack);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
+                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !hasAlgae);
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
@@ -408,7 +392,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                 case ReefscapeSetpoints.HighAlgae:
                     SetSetpoint(FacingReef ? highAlgae : highAlgaeBack);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
+                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !hasAlgae);
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
@@ -423,7 +407,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                 case ReefscapeSetpoints.Stack:
                     SetSetpoint(stack);
-                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !coralAtEE);
+                    _algaeController.RequestIntake(algaeIntake, IntakeAction.IsPressed() && !hasAlgae);
                     _algaeController.SetTargetState(algaeStowState);
                     if (IntakeAction.IsPressed())
                     {
@@ -463,6 +447,26 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
             SetSetpoints();
 
+            bool isGroundAlgaeIntake = CurrentRobotMode == ReefscapeRobotMode.Algae && CurrentSetpoint == ReefscapeSetpoints.Intake;
+            bool isReefAlgaeIntake = (CurrentSetpoint == ReefscapeSetpoints.LowAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.HighAlgae && IntakeAction.IsPressed()) || (CurrentSetpoint == ReefscapeSetpoints.Stack && IntakeAction.IsPressed());
+
+            if (isGroundAlgaeIntake)
+            {
+                // Ground algae: nunca apagar los colliders, incluso ya con el alga agarrada.
+                // El RequestIntake para este caso ya se maneja arriba en el case Intake.
+                ToggleAlgaeColliders(true);
+            }
+            else if (isReefAlgaeIntake)
+            {
+                ToggleAlgaeColliders(false);
+                _algaeController.RequestIntake(algaeIntake, true);
+            }
+            else
+            {
+                ToggleAlgaeColliders(true);
+                _algaeController.RequestIntake(algaeIntake, false);
+            }
+
             if (scorer.AutoClimbTriggered && CurrentSetpoint == ReefscapeSetpoints.Climb && climber.WingsOpen())
             {
                 climber.PlayClick();
@@ -492,9 +496,45 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
 
             UpdateAutoAlign();
+            _outtakeWasPressed = outtakeHeld;
         }
 
-        private IEnumerator PlaceCoral()
+        private void PlacePiece()
+        {
+            bool hasAlgae = _algaeController.HasPiece();
+            bool hasCoral = _coralController.HasPiece();
+
+            if (hasAlgae && hasCoral)
+            {
+                if (CurrentRobotMode == ReefscapeRobotMode.Algae)
+                    PlaceAlgae();
+                else
+                    PlaceCoral();
+            }
+            else if (hasAlgae)
+            {
+                PlaceAlgae();
+            }
+            else if (hasCoral)
+            {
+                PlaceCoral();
+            }
+        }
+
+        private void PlaceAlgae()
+        {
+            _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 4f, 0));
+        }
+
+        private void PlaceCoral()
+        {
+            if (_coralController.currentStateNum == coralArmStowState.stateNum && !_isPlacingCoral)
+            {
+                StartCoroutine(PlaceCoralSequence());
+            }
+        }
+
+        private IEnumerator PlaceCoralSequence()
         {
             _isPlacingCoral = true;
 
@@ -519,23 +559,24 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     break;
             }
+
+            _isPlacingCoral = false;
         }
 
         private IEnumerator GoToL2Sequence()
         {
             _l2SequenceRunning = true;
 
-            // 1. Primero sube/baja el elevador y acomoda el intake.
-            _elevatorTargetHeight = coralStow.elevatorHeight;
+            // 1. Primero gira todo el brazo a L2 (el elevador se queda donde esta por ahora).
+            _armTargetAngle = l2.armAngle;
             _intakeTargetAngle = l2.intakeAngle;
 
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(l2ArmToElevatorDelay);
 
-            // 2. Ya paso el tiempo: gira el brazo (solo si seguimos en L2, por si el driver cambio de setpoint).
+            // 2. Ya paso el tiempo: baja el elevador (solo si seguimos en L2, por si el driver cambio de setpoint).
             if (CurrentSetpoint == ReefscapeSetpoints.L2)
             {
                 _elevatorTargetHeight = l2.elevatorHeight;
-                _armTargetAngle = l2.armAngle;
             }
 
             _l2SequenceRunning = false;
@@ -582,7 +623,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                     CurrentSetpoint != ReefscapeSetpoints.Barge && CurrentSetpoint != ReefscapeSetpoints.Place)
                 {
                     bool hasAlgae = _algaeController.HasPiece();
-                    _coralController.RequestIntake(coralIntake, IntakeAction.IsPressed());
+                    // Supercycle: la petición de coral no depende de si ya hay algae;
+                    // cada intake se bloquea únicamente por su propia pieza.
+                    _coralController.RequestIntake(coralIntake, IntakeAction.IsPressed() && !_coralController.HasPiece());
 
                     if (IntakeAction.IsPressed() ||
                         (_coralController.HasPiece() && _coralController.currentStateNum != coralArmStowState.stateNum))
@@ -622,7 +665,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         // el estado de la pieza cuando los mecanismos YA estan fisicamente ahi. Nada de
                         // animaciones ni WaitForSeconds - se detecta con la posicion real del elevador
                         // y del brazo en cada FixedUpdate.
-                        if (atChassisStow && !hasAlgae)
+                        if (atChassisStow)
                         {
                             _armTargetAngle = coralPickup.armAngle;
                             _elevatorTargetHeight = coralPickup.elevatorHeight;
@@ -647,11 +690,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                             _disruptable = true;
                         }
-                        else if (atChassisStow && hasAlgae)
-                        {
-                            // Con algae ya en el robot nos quedamos esperando en el chasis, igual que antes.
-                            _disruptable = true;
-                        }
                         else
                         {
                             _handoffSoundPlayed = false;
@@ -673,6 +711,19 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
                         SetState(ReefscapeSetpoints.Stow);
                         _intakeSequenceRunning = false;
                     }
+                }
+            }
+        }
+
+        private void ToggleAlgaeColliders(bool enable)
+        {
+            if (algaeDisableColliders == null) return;
+
+            foreach (var collider in algaeDisableColliders)
+            {
+                if (collider != null)
+                {
+                    collider.enabled = enable;
                 }
             }
         }

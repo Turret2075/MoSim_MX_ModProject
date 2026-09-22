@@ -56,6 +56,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
         [SerializeField] private VoltecBSetpoint lowAlgae;
         [SerializeField] private VoltecBSetpoint highAlgae;
         [SerializeField] private VoltecBSetpoint barge;
+        [SerializeField] private VoltecBSetpoint processor;
 
         [Header("Intake Components")]
         [SerializeField] private ReefscapeGamePieceIntake coralIntake;
@@ -169,9 +170,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     break;
                 case ReefscapeSetpoints.Intake:
                     SetSetpoint(intake);
-                    // Superciclo (igual que TitaniumRams): solo checa que no traigas
-                    // coral ya, no importa si ya traes alga, para poder cargar ambas.
-                    _coralController.RequestIntake(coralIntake, CurrentRobotMode == ReefscapeRobotMode.Coral && !hasCoral);
+                    // Superciclo real (portado de Lambot, case Intake): el intake de
+                    // coral SOLO depende de si ya traes coral, sin importar el
+                    // CurrentRobotMode. Antes se pedia ademas "CurrentRobotMode ==
+                    // Coral", lo cual contradecia el comentario de arriba y era
+                    // justo el bug reportado: si agarrabas alga primero (lo que deja
+                    // el modo en Algae), el coral ya NO entraba en este setpoint
+                    // hasta cambiar el modo a mano. Con el modo fuera del chequeo,
+                    // el orden alga->coral funciona igual que coral->alga.
+                    _coralController.RequestIntake(coralIntake, !hasCoral);
                     break;
                 case ReefscapeSetpoints.Place:
                     if (LastSetpoint == ReefscapeSetpoints.Barge)
@@ -190,31 +197,35 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                         // al otro modo para ir directo a soltar la que quedo pendiente.
                         bool hadBoth = hasCoral && hasAlgae;
 
-                        // hadBoth solo es true en la PRIMERA de las dos anotadas (para la
-                        // segunda ya solo queda una pieza), asi que sin esto el robot se
-                        // quedaba trabado en modo Algae despues de soltar el alga sola en
-                        // el barge. Igual que Lambot (que fuerza Coral en cuanto detecta
-                        // coral a bordo): al terminar de anotar el alga en el barge sin
-                        // traer coral pendiente, regresamos solos a modo Coral.
-                        bool placingAlgaeAlone = !hadBoth && hasAlgae && LastSetpoint == ReefscapeSetpoints.Barge;
+                        // Portado de Robonauts: que pieza se va a soltar de verdad (mismo
+                        // criterio que PlacePiece de aqui abajo - prioridad al modo actual,
+                        // con red de seguridad si el modo actual no trae su pieza pero la
+                        // otra si). ANTES el brinco de modo de abajo se decidia con un
+                        // switch ciego sobre CurrentRobotMode, que asumia que el modo
+                        // siempre coincidia con LastSetpoint; si el driver llegaba a un
+                        // setpoint (p. ej. Barge) sin haber alternado el boton de modo
+                        // todavia, PlacePiece soltaba una pieza pero el flip saltaba segun
+                        // el modo viejo, brincando al lado equivocado (el bug reportado:
+                        // "se cambia solito de modo alga a cora"). Ahora el brinco se basa
+                        // en la pieza que de verdad se solto, no en CurrentRobotMode.
+                        bool willReleaseAlgae = (CurrentRobotMode == ReefscapeRobotMode.Algae && hasAlgae) ||
+                                                 (CurrentRobotMode != ReefscapeRobotMode.Algae && !hasCoral && hasAlgae);
 
                         PlacePiece();
                         StartCoroutine(ScoreCoroutine());
 
                         if (hadBoth)
                         {
-                            switch (CurrentRobotMode)
-                            {
-                                case ReefscapeRobotMode.Algae:
-                                    SetRobotMode(ReefscapeRobotMode.Coral);
-                                    break;
-                                case ReefscapeRobotMode.Coral:
-                                    SetRobotMode(ReefscapeRobotMode.Algae);
-                                    break;
-                            }
+                            // Brinca al modo de la pieza que TODAVIA te queda (la opuesta a
+                            // la que se acaba de soltar), no un flip ciego del modo actual.
+                            SetRobotMode(willReleaseAlgae ? ReefscapeRobotMode.Coral : ReefscapeRobotMode.Algae);
                         }
-                        else if (placingAlgaeAlone)
+                        else if (willReleaseAlgae)
                         {
+                            // Alga sola (sin superciclo, p. ej. Barge o Processor sin traer
+                            // coral): regresa a Coral, el modo por default, para no
+                            // quedarte trabado en Algae (mismo criterio que Robonauts via
+                            // _wasCoral/ClearBuffers).
                             SetRobotMode(ReefscapeRobotMode.Coral);
                         }
                     }
@@ -243,7 +254,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
                     _algaeController.RequestIntake(algaeIntake, intakePressed && !hasAlgae);
                     break;
                 case ReefscapeSetpoints.Processor:
-                    SetSetpoint(stow);
+                    SetSetpoint(processor);
                     break;
                 case ReefscapeSetpoints.Barge:
                     // Un solo setpoint de barge: sube y ahi mismo se hace el outtake con rollers
@@ -263,13 +274,31 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
 
         private void PlacePiece()
         {
-            // Las algas solo se anotan en el Barge (fisicamente no hay processor).
-            // No usamos HasPiece() solo porque tambien liberaria el alga si por error
-            // se presiona outtake en otro setpoint (p. ej. Processor) mientras se trae.
-            if (_algaeController.HasPiece() && LastSetpoint == ReefscapeSetpoints.Barge)
+            // Portado de Robonauts (PlaceGamePiece): la decision de que pieza soltar
+            // se liga al modo actual del robot, no solo a LastSetpoint. Con red de
+            // seguridad (igual que Robonauts) por si el modo actual no trae su pieza
+            // pero la otra si esta a bordo, para no quedarte trabado sin soltar nada.
+            // Es clave que este criterio sea IDENTICO al de willReleaseAlgae de arriba
+            // (en el case Place), o el brinco de modo del superciclo se desincroniza
+            // otra vez de la pieza que en verdad se anota.
+            bool releaseAlgae = (CurrentRobotMode == ReefscapeRobotMode.Algae && _algaeController.HasPiece()) ||
+                                 (CurrentRobotMode != ReefscapeRobotMode.Algae && !_coralController.HasPiece() && _algaeController.HasPiece());
+
+            if (releaseAlgae)
             {
-                // Barge (estilo Robonauts): no se avienta, solo sube y se outtakea con los rollers
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 5.75f, 0));
+                // Las algas solo se anotan en el Barge o el Processor (fisicamente no
+                // hay otro lugar): si por error se presiona outtake en cualquier otro
+                // setpoint mientras se trae alga, aqui no se suelta nada.
+                if (LastSetpoint == ReefscapeSetpoints.Barge)
+                {
+                    // Barge (estilo Robonauts): no se avienta, solo sube y se outtakea con los rollers
+                    _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 5.75f, 0));
+                }
+                else if (LastSetpoint == ReefscapeSetpoints.Processor)
+                {
+                    // Processor (estilo Robonauts): no se avienta, solo sube y se outtakea con los rollers
+                    _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 3.5f, 0));
+                }
             }
             else if (_coralController.HasPiece())
             {
@@ -365,8 +394,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647._9982B
 
             // Superciclo: los rollers de coral giran aunque ya traigas alga cargada,
             // solo se bloquean si ya traes coral (mismo criterio que RequestIntake).
+            // Igual que arriba: sin chequeo de CurrentRobotMode, para que gasten sin
+            // necesidad de cambiar de modo a mano tras agarrar el alga primero.
             bool wantsCoralIntake = CurrentSetpoint == ReefscapeSetpoints.Intake &&
-                                     CurrentRobotMode == ReefscapeRobotMode.Coral &&
                                      intakePressed && !hasCoral;
 
             // End Effector - AnimationJoints (estilo TitaniumRams)

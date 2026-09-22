@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 999179001d3555146aa94ec9069df323, type: 3}
   m_Name: BargeFront
   m_EditorClassIdentifier: 
-  elevatorHeight: 60
+  elevatorHeight: 65
   armAngle: -60
   intakeAngle: -10
