@@ -26,3 +26,7 @@
 [2026-09-20T23:45:39.702Z] SUCCESS  target=win64  groups=MxModpackW1(v4.1.0)  exitCode=0
 [2026-09-20T23:48:41.029Z] SUCCESS  target=osx  groups=MxModpackW1(v4.1.0)  exitCode=0
 [2026-09-20T23:51:31.362Z] SUCCESS  target=linux64  groups=MxModpackW1(v4.1.0)  exitCode=0
+[2026-09-21T20:01:59.659Z] SUCCESS  target=win64  groups=MxModpackW2(v2.0.0alpha)  exitCode=0
+[2026-09-22T01:23:34.921Z] SUCCESS  target=win64  groups=MxModpackW2(V2.0.0)  exitCode=0
+[2026-09-22T01:30:44.457Z] SUCCESS  target=osx  groups=MxModpackW2(V2.0.0)  exitCode=0
+[2026-09-22T01:38:54.669Z] SUCCESS  target=linux64  groups=MxModpackW2(V2.0.0)  exitCode=0

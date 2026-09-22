@@ -18,3 +18,4 @@ MonoBehaviour:
   description: ModPack of even more Mexican FRC teams, mainly from PrepaTec
   robots:
   - {fileID: 11400000, guid: 48cfe75705424ec4bb4a0913974e526e, type: 2}
+  - {fileID: 11400000, guid: 98a61a095cb64004bbff112f956e2155, type: 2}
