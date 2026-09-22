@@ -399,7 +399,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot._3478
                     // Igual que en TitaniumRams: al outtakear giran los dos sets de rollers
                     // (coral y algae) juntos, sin importar cuál de las dos piezas se está
                     // soltando realmente.
-                    coralSpeed = -coralRollerSpeed;
+                    coralSpeed = coralRollerSpeed;
                     algaeSpeed = -algaeRollerSpeed;
                 }
             }

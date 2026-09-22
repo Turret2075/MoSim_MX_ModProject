@@ -1,4 +1,3 @@
-
 using System.Collections;
 using Games.Reefscape.Enums;
 using Games.Reefscape.GamePieceSystem;
@@ -84,7 +83,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [Tooltip("Seconds to wait between moving the elevator and moving the arm when returning from a coral setpoint back to stow/intake.")]
         [SerializeField] private float returningCoralDelay = 0.25f;
 
-        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to an algae scoring setpoint (low/high reef algae, processor). Ground algae, the lollipop pickup, and barge are intentionally instant and ignore this delay.")]
+        [Tooltip("Seconds to wait between moving the arm and moving the elevator when heading to an algae scoring setpoint (low/high reef algae, processor), and also used for ground algae / the algae lollipop pickup (lolli) when coming from stow - see GetDelayType. Barge is intentionally instant and ignores this delay.")]
         [SerializeField] private float algaeSetpointDelay = 0.25f;
 
         [Tooltip("Seconds to wait between moving the elevator and moving the arm when returning from an algae setpoint back to stow/intake.")]
@@ -103,11 +102,13 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         [SerializeField] private float afterArmDelay = 0.25f;
 
         // Setpoints that should move the arm and elevator together with no
-        // sequencing delay at all: barge, ground algae, the lollipop pickup,
-        // climb/climbed, and now L1 (L1 is instant so the setpoint delay never
-        // affects it). These are applied directly every FixedUpdate instead of
-        // through a coroutine, so tuning changes made to the setpoint asset while
-        // the robot is already targeting it are picked up immediately.
+        // sequencing delay at all: barge, climbed, and L1 (L1 is instant so the
+        // setpoint delay never affects it). These are applied directly every FixedUpdate
+        // instead of through a coroutine, so tuning changes made to the setpoint asset while
+        // the robot is already targeting it are picked up immediately. Ground algae, the algae
+        // lollipop (lolli) and the coral lollipop (lollipopCoral) used to be in this instant
+        // group too, but now go through a coroutine with a delay that depends on LastSetpoint -
+        // see GetDelayType.
 
         [Header("Center of Mass")]
         [SerializeField] private bool addCenterOfMassX;
@@ -273,11 +274,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         private void LateUpdate()
         {
-            // GenericJoint PID controllers need to be stepped every frame.  The other
-            // Overtures do this for both joints; Offverture previously only updated
-            // the climber, so ES ARM changed _armTargetAngle without driving the arm.
+            // Climber e intake sí necesitan este refresh cada frame. El brazo NO -
+            // arm.UpdatePid(armPid) aquí era lo que causaba el oscilar al agarrar alga:
+            // reaplicaba/reseteaba el PID del brazo cada frame en vez de dejarlo
+            // correr solo, así que bajo la carga extra del alga nunca terminaba de
+            // asentar. ChillOut nunca llama UpdatePid para el brazo - arm.SetPid(armPid)
+            // se pone una sola vez en Start y no se vuelve a tocar (ver ReturnHomeSequence
+            // más abajo, que ya documentaba esa intención). No se restauró un PID aparte
+            // para sostener alga (AlgaeArmHoldPID) - sigue siendo un solo armPid.
             climber.UpdatePid(climberPid);
-            arm.UpdatePid(armPid);
             intake.UpdatePid(intakePid);
         }
 
@@ -719,7 +724,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     }
                     break;
                 case ReefscapeSetpoints.LowAlgae:
-                    if (transferring || atSetpoint(coralTransferring)) 
+                    // armHasCoral agregado: sin esto, agarrar un coral (armHasCoral queda true
+                    // en Stow, ya terminada la transferencia) y luego cambiar a modo Algae
+                    // disparaba el setpoint de alga con el coral todavía en el brazo, porque
+                    // transferring ya es false y el brazo ya no está en coralTransferring.
+                    if (transferring || atSetpoint(coralTransferring) || armHasCoral) 
                     {
                         SetState(ReefscapeSetpoints.L2);
                     } else {
@@ -748,7 +757,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     }
                     break;
                 case ReefscapeSetpoints.HighAlgae:
-                    if (transferring || atSetpoint(coralTransferring)) 
+                    // Mismo fix que LowAlgae: armHasCoral bloquea el setpoint de alga si ya
+                    // hay un coral asentado en el brazo (antes de scorear).
+                    if (transferring || atSetpoint(coralTransferring) || armHasCoral) 
                     {
                         SetState(ReefscapeSetpoints.L2);
                     }
@@ -1203,10 +1214,32 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return SetpointDelayType.Climb;
             }
 
+            // groundAlgae (Intake, algae mode) y lolli (Stack, algae mode - no confundir con
+            // lollipopCoral, el otro setpoint del Stack): siempre giran brazo (y aplican el
+            // intake de piso) primero y suben el elevador después (RaiseToSetpointSequence);
+            // solo cambia cuánto esperan entre uno y otro. Viniendo de stow usan
+            // algaeSetpointDelay; viniendo de cualquier otro lado usan returningAlgaeDelay (ver
+            // el switch de SetSetpoint).
+            if (setpoint == groundAlgae || setpoint == lolli)
+            {
+                return LastSetpoint == ReefscapeSetpoints.Stow
+                    ? SetpointDelayType.AlgaeSetpoint
+                    : SetpointDelayType.ReturningAlgae;
+            }
+
+            // lollipopCoral (Stack, modo coral): mismo criterio que arriba pero con las variantes
+            // de coral - coralSetpointDelay viniendo de stow, returningCoralDelay viniendo de
+            // cualquier otro lado. Siempre brazo primero, elevador después.
+            if (setpoint == lollipopCoral)
+            {
+                return LastSetpoint == ReefscapeSetpoints.Stow
+                    ? SetpointDelayType.CoralSetpoint
+                    : SetpointDelayType.ReturningCoral;
+            }
+
             if (setpoint == l4Front || setpoint == l4Back ||
                 setpoint == l3Front || setpoint == l3Back ||
-                setpoint == l2Front || setpoint == l2Back ||
-                setpoint == lollipopCoral)
+                setpoint == l2Front || setpoint == l2Back)
             {
                 return SetpointDelayType.CoralSetpoint;
             }
@@ -1218,9 +1251,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 return SetpointDelayType.AlgaeSetpoint;
             }
 
-            // barge1, barge2, groundAlgae, lolli (the algae lollipop, not lollipopCoral), climbed, l1,
-            // intakeOutAlgae: no sequencing delay. l1 is instant so the setpoint delay never affects it,
-            // unlike L2/L3/L4/lollipopCoral. intakeOutAlgae
+            // barge1, barge2, climbed, l1, intakeOutAlgae: no sequencing delay. l1 is instant so the
+            // setpoint delay never affects it, unlike L2/L3/L4. groundAlgae, lolli and lollipopCoral
+            // used to be instant too, but now get a conditional delay based on LastSetpoint - see
+            // above. intakeOutAlgae
             // (the supercycle floor-intake pose, used while already holding algae) used to share
             // stowAlgae's ReturningAlgae classification, which staggered the arm behind the floor
             // intake (elevator first, then arm after a delay, on a slowed-down PID) while the floor
@@ -1295,13 +1329,34 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, coralSetpointDelay));
                     break;
                 case SetpointDelayType.ReturningCoral:
-                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningCoralDelay));
+                    // lollipopCoral siempre gira brazo (y aplica el intake de piso, ya seteado
+                    // arriba) primero y sube el elevador después, igual que CoralSetpoint - la
+                    // única diferencia cuando NO viene de stow es que usa returningCoralDelay en
+                    // vez de coralSetpointDelay como tiempo de espera.
+                    if (setpoint == lollipopCoral)
+                    {
+                        _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, returningCoralDelay));
+                    }
+                    else
+                    {
+                        _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningCoralDelay));
+                    }
                     break;
                 case SetpointDelayType.AlgaeSetpoint:
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, algaeSetpointDelay));
                     break;
                 case SetpointDelayType.ReturningAlgae:
-                    _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay));
+                    // Mismo criterio que ReturningCoral arriba: groundAlgae y lolli siempre giran
+                    // brazo (+ intake de piso) primero, sin importar de dónde vengan - solo cambia
+                    // el tiempo de espera (returningAlgaeDelay en vez de algaeSetpointDelay).
+                    if (setpoint == groundAlgae || setpoint == lolli)
+                    {
+                        _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, returningAlgaeDelay));
+                    }
+                    else
+                    {
+                        _setpointSequenceRoutine = StartCoroutine(ReturnHomeSequence(setpoint, returningAlgaeDelay));
+                    }
                     break;
                 case SetpointDelayType.Handoff:
                     _setpointSequenceRoutine = StartCoroutine(RaiseToSetpointSequence(setpoint, handoffDelay));
