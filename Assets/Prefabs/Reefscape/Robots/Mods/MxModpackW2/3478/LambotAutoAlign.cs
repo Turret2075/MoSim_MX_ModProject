@@ -34,8 +34,15 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
         [SerializeField] private float maxAlignDistanceFeet = 15f;
 
         [Header("Barge Align")]
+        [Tooltip("Fine-tune offset (inches, along reference.right/up/forward) used when approaching the barge front-first.")]
         public Vector3 bargeOffset;
+        [Tooltip("Fine-tune offset (inches, along reference.right/up/forward) used when approaching the barge back-first. Separate from bargeOffset because the robot's geometry differs front vs back.")]
+        public Vector3 bargeBackOffset;
         public float bargeRotation;
+        [Tooltip("Enable approaching the barge front-first")]
+        public bool enableBargeFrontAlign = true;
+        [Tooltip("Enable approaching the barge back-first")]
+        public bool enableBargeBackAlign = true;
         [Tooltip("Standoff distance (inches) from barge center to slide line on the front side (sideA, +right).")]
         [SerializeField] private float bargeFrontStandoffInches = 118f;
         [Tooltip("Standoff distance (inches) from barge center to slide line on the back side (sideB, -right).")]
@@ -75,6 +82,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
         private float _bargeSlide;
         private float _bargeSlideBaseline;
         private bool _bargeEngaged;
+        private bool _bargeApproachBack;
         private bool _bargeRoutingAroundReef;
         private float _bargeRoutingSide;
 
@@ -178,15 +186,26 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
             var faceDirection = useSideA ? -reference.right : reference.right;
             var sideSign = useSideA ? 1f : -1f;
 
-            // Always approach front-first; back-side approach is disabled so the robot only ever
-            // docks to the barge with one consistent side of itself, regardless of current heading.
-            var standoff = bargeFrontStandoffInches * INCHES_TO_METERS;
+            // Lock the front/back approach side the moment barge align engages, and hold it fixed
+            // until the robot disengages. Recomputing this every frame (like the reef forward/backward
+            // toggles do, since those don't feed back into the robot's own heading) made front and back
+            // fight each other: picking "back" turns the robot, which can flip the heading test back to
+            // "front" next frame, which turns it back, etc. Locking it once removes that feedback loop.
+            if (!_bargeEngaged)
+            {
+                var naturalApproachBack = Vector3.Dot(transform.forward, faceDirection) < 0f;
+                _bargeApproachBack = (naturalApproachBack && enableBargeBackAlign) || !enableBargeFrontAlign;
+            }
+            var approachBack = _bargeApproachBack;
+            var approachFront = !approachBack;
+            var standoff = (approachFront ? bargeFrontStandoffInches : bargeBackStandoffInches) * INCHES_TO_METERS;
+            var sideOffset = approachFront ? bargeOffset : bargeBackOffset;
 
             var center = reference.position
                          + reference.right * (sideSign * standoff)
-                         + reference.right * (sideSign * bargeOffset.x * INCHES_TO_METERS)
-                         + Vector3.up * (bargeOffset.y * INCHES_TO_METERS)
-                         + reference.forward * (bargeOffset.z * INCHES_TO_METERS);
+                         + reference.right * (sideSign * sideOffset.x * INCHES_TO_METERS)
+                         + Vector3.up * (sideOffset.y * INCHES_TO_METERS)
+                         + reference.forward * (sideOffset.z * INCHES_TO_METERS);
 
             // Max distance check against the chosen side's center.
             var robotXZ = new Vector2(transform.position.x, transform.position.z);
@@ -218,10 +237,10 @@ namespace Prefabs.Reefscape.Robots.Mods.Lambot
             var finalT = Mathf.Clamp01(_bargeSlideBaseline + _bargeSlide);
             var finalTarget = Vector3.Lerp(leftCorner, rightCorner, finalT);
 
-            // Always face the same fixed side of the robot toward the barge (never the closest-to-current
-            // heading), so align only ever docks the robot one way even though it still works from either
-            // side of the barge.
+            // Face the front or back of the robot toward the barge depending on the approach side chosen
+            // above, instead of always docking with the same fixed side.
             var targetYaw = Quaternion.LookRotation(-faceDirection, Vector3.up).eulerAngles.y;
+            if (approachBack) targetYaw += 180f;
             var targetRotation = Quaternion.Euler(0, targetYaw + bargeRotation, 0);
 
             finalTarget = ApplyReefAvoidance(finalTarget, ref _bargeRoutingAroundReef, ref _bargeRoutingSide, NearestReefPos(transform.position));

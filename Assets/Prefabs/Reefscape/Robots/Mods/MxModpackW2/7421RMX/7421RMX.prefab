@@ -33059,7 +33059,7 @@ Rigidbody:
   m_Mass: 98
   m_Drag: 3
   m_AngularDrag: 5
-  m_CenterOfMass: {x: 0, y: 0.15, z: 0}
+  m_CenterOfMass: {x: 0, y: -0.15, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
@@ -33090,11 +33090,11 @@ MonoBehaviour:
   drivetrainParent: {fileID: 4514255404144199544}
   wheelDiameter: 4
   maxSpeed:
-    _obfuscationKey: 1116798050
-    _encryptedValue: 64027746
+    _obfuscationKey: 1147397557
+    _encryptedValue: 89908661
   accelerationForce:
-    _obfuscationKey: 1678346400
-    _encryptedValue: 621381792
+    _obfuscationKey: 1432992973
+    _encryptedValue: 364548094
   falloffPercent: 0.075
   falloffExponent: 10
   steerMultiplier: 0.8
@@ -33156,13 +33156,13 @@ MonoBehaviour:
     kP: 10
     kI: 0
     kD: 5
-    Max: 9.25
+    Max: 8.2
     Isaturation: 0
   stagesPidConstants:
     kP: 10
     kI: 0
     kD: 5
-    Max: 19.75
+    Max: 18.4
     Isaturation: 0
   elevatorAxis: 1
   flipped: 0
@@ -33172,12 +33172,12 @@ MonoBehaviour:
   carriageHeight: 7
   elevatorSound: {fileID: 8058421565148886480, guid: b8e360dd2f4af104491c5dcd0f22e937,
     type: 3}
-  elevatorClip: {fileID: 8300000, guid: 11e0a2f309b79e94ab832c9cc97f4976, type: 3}
+  elevatorClip: {fileID: 8300000, guid: b45c16bea63f3ee4b97133104a8d9017, type: 3}
   minSpeed: 1
   maxSpeed: 60
   soundPitchRange: {x: 0.8, y: 1.2}
   soundVolumeRange: {x: 0.3, y: 1}
-  stageClickClip: {fileID: 8300000, guid: ef656f2139a211149a76a3e6548337f7, type: 3}
+  stageClickClip: {fileID: 8300000, guid: 2a793e95cb27e3145a890e449b9de836, type: 3}
   clickVolume: 0.1
   clickSoundCooldown: 0.2
   topClickOffset: 0.5
@@ -33247,7 +33247,7 @@ MonoBehaviour:
     kP: 1.5
     kI: 0.001
     kD: 0.15
-    Max: 7.5
+    Max: 6.4
     Isaturation: 0
   intake: {fileID: 2821291245857539860}
   intakePid:
@@ -33293,13 +33293,13 @@ MonoBehaviour:
   barge2: {fileID: 11400000, guid: c3dcf155a958e974190097f4e88c618a, type: 2}
   climb: {fileID: 11400000, guid: ef78feed59d6c154e9232ac6b5289a12, type: 2}
   climbed: {fileID: 11400000, guid: 5727170d27657ca45b593fd6a60a4b21, type: 2}
-  coralSetpointDelay: 0.75
+  coralSetpointDelay: 0.675
   returningCoralDelay: 0.4
-  algaeSetpointDelay: 0.2
-  returningAlgaeDelay: 0.1
+  algaeSetpointDelay: 0.3
+  returningAlgaeDelay: 0.25
   handoffDelay: 0.069
-  afterClimberDelay: 0.5
-  afterArmDelay: 0.35
+  afterClimberDelay: 0.4
+  afterArmDelay: 0.275
   addCenterOfMassX: 1
   addCenterOfMassZ: 1
   climbedCenterOfMassX: -0.15
@@ -33365,7 +33365,7 @@ MonoBehaviour:
   frontRight: {fileID: 11400000, guid: fbf050ab0affa6c4db321e7a6951ec8f, type: 2}
   backLeft: {fileID: 11400000, guid: 78afbfe93c757fb49aca09a35fd66660, type: 2}
   backRight: {fileID: 11400000, guid: d9544193669f92d4993fc65242d26cb4, type: 2}
-  alignPrepZOffset: 8
+  alignPrepZOffset: 10
   lowerFrontLeft: {fileID: 11400000, guid: c696a48e3f4d28942a1935f6893cb1ea, type: 2}
   lowerFrontRight: {fileID: 11400000, guid: deb0cf5f088e21f4eb9d0fc657d66280, type: 2}
   lowerBackLeft: {fileID: 11400000, guid: 5b8cc5e2db61f3946a033ecebaf093a9, type: 2}
@@ -39603,7 +39603,8 @@ AudioSource:
   m_GameObject: {fileID: 1892324723235152732}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -60818,11 +60819,12 @@ AudioSource:
   m_GameObject: {fileID: 2941592661828646405}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.463
+  m_Volume: 0.8
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -85169,7 +85171,8 @@ AudioSource:
   m_GameObject: {fileID: 4020576225435696196}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -188157,7 +188160,8 @@ AudioSource:
   m_GameObject: {fileID: 5177429085714996170}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5573412175412287236, guid: ed4b10d8b69fb1240aaf15a3cba9d0bd,
+    type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

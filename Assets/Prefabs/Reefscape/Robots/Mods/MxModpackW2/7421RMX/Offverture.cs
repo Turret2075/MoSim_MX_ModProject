@@ -799,7 +799,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     SetSetpoint(process);
                     break;
                 case ReefscapeSetpoints.Barge:
-                    SetSetpoint(FacingReef ? barge1 : barge2);
+                    SetSetpoint(FacingBarge() ? barge1 : barge2);
                     break;
                 case ReefscapeSetpoints.RobotSpecial:
                     // Igual que Bulldogs: RobotSpecial entra a Stack (lollipop coral en modo Coral,
@@ -1410,6 +1410,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 _armTargetAngle == setpoint.armAngle &&
                 _intakeTargetAngle == setpoint.intakeAngle &&
                 _climberTargetAngle == setpoint.climberAngle;
+        }
+
+        private bool FacingBarge()
+        {
+        return (transform.position.x > 0 && transform.rotation.eulerAngles.y > 180) || (transform.position.x <= 0 && transform.rotation.eulerAngles.y <= 180);
         }
         
         private void ApplySetpoints() 

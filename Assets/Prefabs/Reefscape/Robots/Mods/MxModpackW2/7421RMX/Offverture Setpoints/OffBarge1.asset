@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: OffBarge1
   m_EditorClassIdentifier: 
   elevatorHeight: 57.75
-  armAngle: 20
+  armAngle: -20
   intakeAngle: 0
   climberAngle: 75

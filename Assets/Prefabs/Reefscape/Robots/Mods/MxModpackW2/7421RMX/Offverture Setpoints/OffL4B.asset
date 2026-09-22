@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: OffL4B
   m_EditorClassIdentifier: 
   elevatorHeight: 55
-  armAngle: -45
+  armAngle: -55
   intakeAngle: 0
   climberAngle: 75
