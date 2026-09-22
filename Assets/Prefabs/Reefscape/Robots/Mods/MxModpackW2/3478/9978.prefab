@@ -11215,9 +11215,12 @@ MonoBehaviour:
   rotation: 0
   enableForwardAlign: 1
   enableBackwardsAlign: 0
-  maxAlignDistanceFeet: 25
+  maxAlignDistanceFeet: 20
   bargeOffset: {x: 0, y: 0, z: 0}
-  bargeRotation: 0
+  bargeBackOffset: {x: 25, y: 0, z: 0}
+  bargeRotation: 180
+  enableBargeFrontAlign: 1
+  enableBargeBackAlign: 1
   bargeFrontStandoffInches: 47.3
   bargeBackStandoffInches: 26
   maxBargeAlignDistanceFeet: 30
