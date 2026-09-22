@@ -34608,6 +34608,7 @@ MonoBehaviour:
   lowAlgae: {fileID: 11400000, guid: a573a16b476557e43a0a8361c4a1cfd3, type: 2}
   highAlgae: {fileID: 11400000, guid: b1f2b1dda2a1f104f9f335923b5e0103, type: 2}
   barge: {fileID: 11400000, guid: 08c7c97cb115c654fb6b20d9eed553a2, type: 2}
+  notsoprocessed: {fileID: 11400000, guid: 1861a952d9a9879499875f479c23ec7e, type: 2}
   climb: {fileID: 11400000, guid: b074bf0ebb1a7d24faccc336b4dbf728, type: 2}
   climbed: {fileID: 11400000, guid: c3076191d559fef4ab31392873f0f1e8, type: 2}
   coralIntake: {fileID: 8171756244228553372}
@@ -34870,6 +34871,7 @@ MonoBehaviour:
   enableBackwardsAlign: 0
   maxAlignDistanceFeet: 20
   bargeOffset: {x: 0, y: 0, z: 0}
+  bargeBackOffset: {x: 0, y: 0, z: 0}
   bargeRotation: 180
   enableBargeFrontAlign: 1
   enableBargeBackAlign: 0
