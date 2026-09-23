@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12faab77f81622458525b0cf8957873, type: 3}
   m_Name: RL
   m_EditorClassIdentifier: 
-  xOffset: 6
+  xOffset: 5.75
   yOffset: 0
   zOffset: 8
   Rotation: 0

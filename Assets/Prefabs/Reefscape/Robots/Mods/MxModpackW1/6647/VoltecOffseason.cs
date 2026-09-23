@@ -546,6 +546,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._6647
 
                     break;
             }
+
+            // Bugfix: antes esto solo se limpiaba dentro de IntakeSequence() cuando soltabas el
+            // boton de intake. Si scoreas y casi al instante ya vas picando el siguiente coral
+            // (sin soltar el boton entre medio), ese reset nunca corria y _isPlacingCoral se
+            // quedaba pegado en true - el siguiente coral llegaba a la garra pero nunca se
+            // volvia a llamar StartCoroutine(PlaceCoral()), asi que se quedaba atorado sin poder
+            // soltarse. Limpiarlo aqui, justo cuando la corrutina termina, lo hace inmediato y
+            // no depende del boton de intake.
+            _isPlacingCoral = false;
         }
 
         private IEnumerator GoToL2Sequence()

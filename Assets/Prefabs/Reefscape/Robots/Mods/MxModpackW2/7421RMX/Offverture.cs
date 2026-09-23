@@ -352,6 +352,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
         private bool _algaeRouteDecided;
         private bool _algaeNeedsStowRoute;
 
+        // Último setpoint "válido" (no alga de reef, no Place) - a donde se regresa si en modo L1 se pide
+        // HighAlgae/LowAlgae. Igual que ChillOut, en modo L1 el brazo NO debe ir a alga de reef; antes el
+        // brazo arrancaba hacia el setpoint, chocaba/quedaba bloqueado a medio camino y se regresaba solo.
+        private ReefscapeSetpoints _lastNonAlgaeSetpoint = ReefscapeSetpoints.Stow;
+
         private bool ShouldRouteAlgaeReefThroughStow()
         {
             bool inAlgaeReefSetpoint = CurrentSetpoint == ReefscapeSetpoints.HighAlgae ||
@@ -560,6 +565,13 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             bool routeAlgaeThroughStow = ShouldRouteAlgaeReefThroughStow() &&
                                           !atSetpoint(hasAlgae ? stowAlgae : stow);
 
+            if (CurrentSetpoint != ReefscapeSetpoints.HighAlgae &&
+                CurrentSetpoint != ReefscapeSetpoints.LowAlgae &&
+                CurrentSetpoint != ReefscapeSetpoints.Place)
+            {
+                _lastNonAlgaeSetpoint = CurrentSetpoint;
+            }
+
             switch (CurrentSetpoint)
             {
                 case ReefscapeSetpoints.Stow:
@@ -737,6 +749,13 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     // en Stow, ya terminada la transferencia) y luego cambiar a modo Algae
                     // disparaba el setpoint de alga con el coral todavía en el brazo, porque
                     // transferring ya es false y el brazo ya no está en coralTransferring.
+                    // Modo L1: no hay alga de reef. Se ignora ANTES de tocar cualquier setpoint para que el
+                    // brazo ni se mueva (ground algae sigue funcionando por el setpoint Intake).
+                    if (CurrentIntakeMode == ReefscapeIntakeMode.L1)
+                    {
+                        SetState(_lastNonAlgaeSetpoint);
+                        break;
+                    }
                     if (transferring || atSetpoint(coralTransferring) || armHasCoral) 
                     {
                         SetState(ReefscapeSetpoints.L2);
@@ -768,6 +787,13 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 case ReefscapeSetpoints.HighAlgae:
                     // Mismo fix que LowAlgae: armHasCoral bloquea el setpoint de alga si ya
                     // hay un coral asentado en el brazo (antes de scorear).
+                    // Modo L1: no hay alga de reef. Se ignora ANTES de tocar cualquier setpoint para que el
+                    // brazo ni se mueva (ground algae sigue funcionando por el setpoint Intake).
+                    if (CurrentIntakeMode == ReefscapeIntakeMode.L1)
+                    {
+                        SetState(_lastNonAlgaeSetpoint);
+                        break;
+                    }
                     if (transferring || atSetpoint(coralTransferring) || armHasCoral) 
                     {
                         SetState(ReefscapeSetpoints.L2);
@@ -823,39 +849,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     break;
             }
 
-            if (CurrentIntakeMode == ReefscapeIntakeMode.L1)
-            {
-                if (L4Action.IsPressed())
-                {
-                    IntakeModeToggleAction.Enable();
-                    IntakeModeToggleAction.Disable();
-                    if (hasAlgae)
-                    {
-                        // Salir de L1 para puntuar el alga en Barge. Sin coral que transferir,
-                        // nextLevel nunca se consume desde Stow y el robot se quedaba ahí.
-                        SetState(ReefscapeSetpoints.Barge);
-                    }
-                    else
-                    {
-                        nextLevel = ReefscapeSetpoints.L4;
-                        SetState(ReefscapeSetpoints.Stow);
-                    }
-                }
-                else if (L3Action.IsPressed())
-                {
-                    nextLevel =  ReefscapeSetpoints.L3;
-                    IntakeModeToggleAction.Enable();
-                    IntakeModeToggleAction.Disable();
-                    SetState(ReefscapeSetpoints.Stow);
-                }
-                else if (L2Action.IsPressed())
-                {
-                    nextLevel =  ReefscapeSetpoints.L2;
-                    IntakeModeToggleAction.Enable();
-                    IntakeModeToggleAction.Disable();
-                    SetState(ReefscapeSetpoints.Stow);
-                }
-            }
+            // El modo L1 ya NO se sale desde aquí: antes L2/L3/L4 en modo L1 hacían
+            // IntakeModeToggleAction.Enable()/Disable(), que dejaba el toggle trabado (ChillOut).
+            // Ahora el modo lo cambia únicamente el toggle del base, igual que Tecdroid. Los cases
+            // L2/L3/L4 ya mandan a Stow + nextLevel (y L4 con alga va a Barge); al volver a modo
+            // Normal, el transfer arranca solo y sigue hacia nextLevel.
 
             if (transferring)
             {

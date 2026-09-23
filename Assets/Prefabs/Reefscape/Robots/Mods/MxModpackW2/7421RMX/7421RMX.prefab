@@ -33156,18 +33156,18 @@ MonoBehaviour:
     kP: 10
     kI: 0
     kD: 5
-    Max: 7.45
+    Max: 2.4
     Isaturation: 0
   stagesPidConstants:
     kP: 10
     kI: 0
     kD: 5
-    Max: 12
+    Max: 2.4
     Isaturation: 0
   elevatorAxis: 1
   flipped: 0
   setStageOverrides: []
-  stageHeight: 33.5
+  stageHeight: 32
   stageOverlap: 8
   carriageHeight: 7
   elevatorSound: {fileID: 8058421565148886480, guid: b8e360dd2f4af104491c5dcd0f22e937,
@@ -146352,6 +146352,7 @@ GameObject:
   - component: {fileID: 4894523872543692039}
   - component: {fileID: 6220208623900326200}
   - component: {fileID: 662995014629585139}
+  - component: {fileID: 9204749791015882195}
   m_Layer: 0
   m_Name: occurrence of 0203 - perfil 13" BELTS
   m_TagString: Untagged
@@ -146426,6 +146427,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &9204749791015882195
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7194996340928414614}
+  m_Material: {fileID: 13400000, guid: 20e7d1a69977f2248b454fb4fca44b0a, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0005080009, y: 0.0031280974, z: 0.00023352828}
+  m_Center: {x: -2.4862654e-10, y: -0.000054380376, z: 0.000010236275}
 --- !u!1 &7195390018605051027
 GameObject:
   m_ObjectHideFlags: 0
