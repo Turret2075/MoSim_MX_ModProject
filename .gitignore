@@ -79,3 +79,5 @@ Assets/Prefabs/Reefscape/Robots/Spectrum.prefab
 StandaloneWindows64/robonautsmod_assets_all_5774bae440d1954dc02e1305d3e24445.bundle
 Mods/Robonauts/Build/robonautsmod_assets_all_5774bae440d1954dc02e1305d3e24445.bundle
 /_BuildIL2cpp
+
+Mods/*.zip
