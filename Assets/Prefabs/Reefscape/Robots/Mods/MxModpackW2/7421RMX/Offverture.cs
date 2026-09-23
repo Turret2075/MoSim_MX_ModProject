@@ -339,7 +339,9 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
 
         // Real robot's AlgaeHighManualCommand/AlgaeLowManualCommand (AlgaeCommands.cpp) only fire from
         // Positions::SustainedPosition, L1Position, or AlgaeHold - there is no direct command path from
-        // a coral branch (L2/L3/L4/L1/Place) straight to AlgaeHighReef/AlgaeLowReef. This sim used to
+        // a coral branch (L2/L3/L4/Place) straight to AlgaeHighReef/AlgaeLowReef. L1Position fires
+        // directly, same as Sustained, so it's intentionally left out of _algaeNeedsStowRoute below.
+        // This sim used to
         // let HighAlgae/LowAlgae set the arm/elevator target directly regardless of where the arm was
         // coming from, so going straight from a coral setpoint (e.g. L4) to an algae pickup took
         // whatever the noWrap heuristic decided was the "short" way, instead of the full swing back
@@ -366,7 +368,6 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                 _algaeNeedsStowRoute = LastSetpoint == ReefscapeSetpoints.L2 ||
                                         LastSetpoint == ReefscapeSetpoints.L3 ||
                                         LastSetpoint == ReefscapeSetpoints.L4 ||
-                                        LastSetpoint == ReefscapeSetpoints.L1 ||
                                         LastSetpoint == ReefscapeSetpoints.Place;
                 _algaeRouteDecided = true;
             }
@@ -494,7 +495,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             // Lollipop coral: se queda en el brazo (coralStowState / ArmCoralIntake). Sin esto, un intk
             // viejo en true (se queda así hasta el siguiente transfer) o el modo L1 mandaban el coral
             // al intake de piso (coralIntakeState) al recogerlo.
-            if (CurrentSetpoint == ReefscapeSetpoints.Stack && CurrentRobotMode == ReefscapeRobotMode.Coral)
+            if (CurrentSetpoint == ReefscapeSetpoints.Stack && CurrentRobotMode == ReefscapeRobotMode.Coral && CurrentIntakeMode != ReefscapeIntakeMode.L1)
             {
                 intk = false;
                 _coralController.SetTargetState(coralStowState);
@@ -696,6 +697,14 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                         _coralController.RequestIntake(coralIntake, false);
                         _algaeController.RequestIntake(algaeIntake, false);
                     }
+
+                    else if (CurrentIntakeMode == ReefscapeIntakeMode.L1 && (!(CurrentRobotMode == ReefscapeRobotMode.Algae) || !hasAlgae))
+                    {
+                        SetSetpoint(stow);
+                        _algaeController.RequestIntake(algaeIntake, false);
+                        _coralController.RequestIntake(coralIntake, false);
+                    }
+
                     else
                     {
                         SetSetpoint(lolli);

@@ -33156,13 +33156,13 @@ MonoBehaviour:
     kP: 10
     kI: 0
     kD: 5
-    Max: 8.2
+    Max: 7.45
     Isaturation: 0
   stagesPidConstants:
     kP: 10
     kI: 0
     kD: 5
-    Max: 18.4
+    Max: 12
     Isaturation: 0
   elevatorAxis: 1
   flipped: 0
