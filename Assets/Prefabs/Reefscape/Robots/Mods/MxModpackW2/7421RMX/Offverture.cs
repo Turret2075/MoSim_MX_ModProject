@@ -687,7 +687,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
                     // Stack setpoint also covers a lollipop coral, picked with its own dedicated
                     // lollipopCoralIntake instead of the floor/arm coral intakes, whenever the driver
                     // is in Coral mode.
-                    if (CurrentRobotMode == ReefscapeRobotMode.Coral)
+                    if (CurrentRobotMode == ReefscapeRobotMode.Coral && !(CurrentIntakeMode == ReefscapeIntakeMode.L1))
                     {
                         // Brazo primero, luego elevador (coralSetpointDelay, igual que L2/L3/L4 - ver GetDelayType).
                         SetSetpoint(lollipopCoral);
@@ -818,10 +818,19 @@ namespace Prefabs.Reefscape.Robots.Mods.Offverture._7421RMX
             {
                 if (L4Action.IsPressed())
                 {
-                    nextLevel =  ReefscapeSetpoints.L4;
                     IntakeModeToggleAction.Enable();
                     IntakeModeToggleAction.Disable();
-                    SetState(ReefscapeSetpoints.Stow);
+                    if (hasAlgae)
+                    {
+                        // Salir de L1 para puntuar el alga en Barge. Sin coral que transferir,
+                        // nextLevel nunca se consume desde Stow y el robot se quedaba ahí.
+                        SetState(ReefscapeSetpoints.Barge);
+                    }
+                    else
+                    {
+                        nextLevel = ReefscapeSetpoints.L4;
+                        SetState(ReefscapeSetpoints.Stow);
+                    }
                 }
                 else if (L3Action.IsPressed())
                 {
