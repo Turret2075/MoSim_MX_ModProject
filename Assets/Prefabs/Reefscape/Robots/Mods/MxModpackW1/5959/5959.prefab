@@ -16072,7 +16072,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 698182096045666164}
-  m_Material: {fileID: 13400000, guid: 91a97ecb2bc4d2f46b9d7b6d3f66552a, type: 2}
+  m_Material: {fileID: 13400000, guid: 20e7d1a69977f2248b454fb4fca44b0a, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -16084,10 +16084,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.0002460108
+  m_Radius: 0.00016811487
   m_Height: 0.006655424
   m_Direction: 2
-  m_Center: {x: 2.927492e-10, y: -0.000000807942, z: 0.000022291248}
+  m_Center: {x: 0.00003679119, y: 0.000040297207, z: 0.000022291228}
 --- !u!1 &699165561359277515
 GameObject:
   m_ObjectHideFlags: 0
@@ -56143,7 +56143,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2445553146499290336}
-  m_Material: {fileID: 13400000, guid: 99a4521ed91e2a74fb49255117e7d7d0, type: 2}
+  m_Material: {fileID: 13400000, guid: 20e7d1a69977f2248b454fb4fca44b0a, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -143876,7 +143876,7 @@ Transform:
   m_GameObject: {fileID: 6308534968983111660}
   serializedVersion: 2
   m_LocalRotation: {x: -0.29666865, y: -0, z: -0, w: 0.95498055}
-  m_LocalPosition: {x: -0.37, y: 0.23, z: -0.201}
+  m_LocalPosition: {x: -0.37, y: 0.205, z: -0.237}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
