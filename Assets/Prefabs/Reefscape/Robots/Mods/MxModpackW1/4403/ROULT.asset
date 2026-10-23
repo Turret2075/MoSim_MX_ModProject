@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aff2b59de2c4a0c96d6b848990b46af, type: 3}
+  m_Name: ROULT
+  m_EditorClassIdentifier: 
+  teamNumber: 4403
+  teamName: ROULT
+  robotPrefab: {fileID: 5698011260551530652, guid: 12739f621b2f3af409e3c4823ded264a,
+    type: 3}
+  robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
+    type: 3}
+  mainMenuPrefab: {fileID: 4108337974173178762, guid: a7fa467da9ec3ed4484d87063cc7d59a,
+    type: 3}
+  hasAlternateRobot: 0
+  alternateRobotPrefab: {fileID: 0}
+  alternateMainMenuPrefab: {fileID: 0}
+  robotImage: {fileID: 21300000, guid: 05a3f560eeccc234b929eb510308b03e, type: 3}
+  tutorialCards:
+  - {fileID: 6829736770845459078, guid: 40f1a8d04c23c9344b61cdfc923afb4e, type: 3}
+  - {fileID: 6829736770845459078, guid: d058a9da063db414ba30fd81519d5eb1, type: 3}
+  - {fileID: 6829736770845459078, guid: b3bb268339073934ea724ffec0d85533, type: 3}
+  alternateTutorialCards: []
+  autoClimbs: 0
+  alternateAutoClimbs: 0

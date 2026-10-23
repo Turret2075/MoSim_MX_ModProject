@@ -11,13 +11,14 @@ using RobotFramework.Enums;
 using RobotFramework.GamePieceSystem;
 using MoSimLib;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /*
 Roult: base de TitaniumRams (5959) + ideas de Tecdroid (CoralL4Stow),
 LAMBOT (pivot en el funnel, climb, center of mass) y los clickers (hook con ligas) de BotbustersGreen.
 
 Cambios principales vs TitaniumRams:
-- DescorerAlt: segundo descorer que siempre va al angulo OPUESTO del Descorer.
+- Descorer en garra: brazo izquierdo y derecho con angulo propio en el setpoint, mismo PID.
 - Setpoint L4 (CoralL4) con CoralL4Stow opcional (checkbox useCoralL4Stow).
 - Sin barge de alga. Coral solo se anota de frente.
 - Climber: funnel pivot + climber pivot (angulos en el RoultSetpoint) + clickers de ratchet.
@@ -31,8 +32,12 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
         [Header("Components")]
         [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint algaeArm;
-        [SerializeField] private GenericJoint algaeDescorerArm;
-        [SerializeField] private GenericJoint algaeDescorerArmAlt; // Se mueve OPUESTO a algaeDescorerArm
+        // Garra del descorer: dos brazos con angulo propio en el setpoint, mismo PID.
+        // FormerlySerializedAs conserva las referencias ya asignadas en el prefab.
+        [FormerlySerializedAs("algaeDescorerArm")]
+        [SerializeField] private GenericJoint algaeDescorerArmLeft;
+        [FormerlySerializedAs("algaeDescorerArmAlt")]
+        [SerializeField] private GenericJoint algaeDescorerArmRight;
 
         [Header("Climber Components")]
         [SerializeField] private GenericJoint funnelPivot;
@@ -41,7 +46,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
         [Header("PID")]
         [SerializeField] private PidConstants algaeArmPid;
         [SerializeField] private PidConstants algaeDescorerArmPid;
-        [SerializeField] private PidConstants algaeDescorerArmAltPid;
         [SerializeField] private PidConstants funnelPivotPid;
         [SerializeField] private PidConstants climberPivotPid;
 
@@ -57,6 +61,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
         [SerializeField] private RoultSetpoint CoralL4;
         [SerializeField] private RoultSetpoint descoreLowAlgae;
         [SerializeField] private RoultSetpoint descoreHighAlgae;
+        [SerializeField] private RoultSetpoint grabLowAlgae;   // igual que LowAlgae pero con la garra cerrada
+        [SerializeField] private RoultSetpoint grabHighAlgae;  // igual que HighAlgae pero con la garra cerrada
         [SerializeField] private RoultSetpoint climb;
         [SerializeField] private RoultSetpoint climbed;
 
@@ -115,7 +121,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
 
         private float _elevatorTargetHeight;
         private float _algaeTargetAngle;
-        private float _algaeDescorerTargetAngle;
+        private float _algaeDescorerLeftTargetAngle;
+        private float _algaeDescorerRightTargetAngle;
         private float _funnelTargetAngle;
         private float _climberPivotTargetAngle;
         private bool _climbLocked;
@@ -129,14 +136,15 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
             base.Start();
 
             if (algaeArm != null) algaeArm.SetPid(algaeArmPid);
-            if (algaeDescorerArm != null) algaeDescorerArm.SetPid(algaeDescorerArmPid);
-            if (algaeDescorerArmAlt != null) algaeDescorerArmAlt.SetPid(algaeDescorerArmAltPid);
+            if (algaeDescorerArmLeft != null) algaeDescorerArmLeft.SetPid(algaeDescorerArmPid);
+            if (algaeDescorerArmRight != null) algaeDescorerArmRight.SetPid(algaeDescorerArmPid);
             if (funnelPivot != null) funnelPivot.SetPid(funnelPivotPid);
             if (climberPivot != null) climberPivot.SetPid(climberPivotPid);
 
             _elevatorTargetHeight = 0f;
             _algaeTargetAngle = 0f;
-            _algaeDescorerTargetAngle = 0f;
+            _algaeDescorerLeftTargetAngle = 0f;
+            _algaeDescorerRightTargetAngle = 0f;
             _funnelTargetAngle = 0f;
             _climberPivotTargetAngle = 0f;
             _climbLocked = false;
@@ -201,8 +209,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
         private void LateUpdate()
         {
             if (algaeArm != null) algaeArm.UpdatePid(algaeArmPid);
-            if (algaeDescorerArm != null) algaeDescorerArm.UpdatePid(algaeDescorerArmPid);
-            if (algaeDescorerArmAlt != null) algaeDescorerArmAlt.UpdatePid(algaeDescorerArmAltPid);
+            if (algaeDescorerArmLeft != null) algaeDescorerArmLeft.UpdatePid(algaeDescorerArmPid);
+            if (algaeDescorerArmRight != null) algaeDescorerArmRight.UpdatePid(algaeDescorerArmPid);
             if (funnelPivot != null) funnelPivot.UpdatePid(funnelPivotPid);
             if (climberPivot != null) climberPivot.UpdatePid(climberPivotPid);
         }
@@ -337,29 +345,22 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
                     break;
 
                 case ReefscapeSetpoints.LowAlgae:
-                    SetSetpoint(descoreLowAlgae);
+                    // Garra abierta a la altura de low algae; con intake presionado cierra la garra (Grab).
+                    // La garra no tiene algaeIntake (como Titanium), solo se mueve su setpoint.
+                    SetSetpoint(intakePressed ? grabLowAlgae : descoreLowAlgae);
                     StopAllIntakes();
                     break;
 
                 case ReefscapeSetpoints.HighAlgae:
-                    SetSetpoint(descoreHighAlgae);
+                    SetSetpoint(intakePressed ? grabHighAlgae : descoreHighAlgae);
                     StopAllIntakes();
                     break;
 
                 case ReefscapeSetpoints.Climb:
-                    // Despliega funnel pivot y climber pivot (angulos en el setpoint "climb").
                     SetSetpoint(climb);
-                    StopAllIntakes();
-
-                    if (climbJustPressed)
-                    {
-                        SetState(ReefscapeSetpoints.Climbed);
-                    }
                     break;
-
                 case ReefscapeSetpoints.Climbed:
                     SetSetpoint(climbed);
-                    StopAllIntakes();
                     break;
 
                 case ReefscapeSetpoints.RobotSpecial:
@@ -493,7 +494,8 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
             if (setpoint == null) return;
             _elevatorTargetHeight = setpoint.elevatorHeight;
             _algaeTargetAngle = setpoint.algaeArmAngle;
-            _algaeDescorerTargetAngle = setpoint.algaeDescorerArmAngle;
+            _algaeDescorerLeftTargetAngle = setpoint.algaeDescorerArmLeftAngle;
+            _algaeDescorerRightTargetAngle = setpoint.algaeDescorerArmRightAngle;
             _funnelTargetAngle = setpoint.funnelAngle;
             _climberPivotTargetAngle = setpoint.climberPivotAngle;
         }
@@ -505,12 +507,11 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
             if (algaeArm != null)
                 algaeArm.SetTargetAngle(_algaeTargetAngle).withAxis(JointAxis.X);
 
-            if (algaeDescorerArm != null)
-                algaeDescorerArm.SetTargetAngle(_algaeDescorerTargetAngle).withAxis(JointAxis.X);
+            if (algaeDescorerArmLeft != null)
+                algaeDescorerArmLeft.SetTargetAngle(_algaeDescorerLeftTargetAngle).withAxis(JointAxis.X);
 
-            // DescorerAlt: siempre la rotacion OPUESTA a Descorer, sin setpoint propio.
-            if (algaeDescorerArmAlt != null)
-                algaeDescorerArmAlt.SetTargetAngle(-_algaeDescorerTargetAngle).withAxis(JointAxis.X);
+            if (algaeDescorerArmRight != null)
+                algaeDescorerArmRight.SetTargetAngle(_algaeDescorerRightTargetAngle).withAxis(JointAxis.X);
 
             if (funnelPivot != null)
                 funnelPivot.SetTargetAngle(_funnelTargetAngle).withAxis(funnelPivotAxis);
