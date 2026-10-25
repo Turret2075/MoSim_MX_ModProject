@@ -18,7 +18,7 @@ Roult: base de TitaniumRams (5959) + ideas de Tecdroid (CoralL4Stow),
 LAMBOT (pivot en el funnel, climb, center of mass) y los clickers (hook con ligas) de BotbustersGreen.
 
 Cambios principales vs TitaniumRams:
-- Descorer en garra: brazo izquierdo y derecho con angulo propio en el setpoint, mismo PID.
+- Descorer en garra: brazo izquierdo y derecho totalmente independientes (joint, PID, eje y angulo propios), cada uno igual que el descorer de 5959.
 - Setpoint L4 (CoralL4) con CoralL4Stow opcional (checkbox useCoralL4Stow).
 - Sin barge de alga. Coral solo se anota de frente.
 - Climber: funnel pivot + climber pivot (angulos en el RoultSetpoint) + clickers de ratchet.
@@ -32,12 +32,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
         [Header("Components")]
         [SerializeField] private GenericElevator elevator;
         [SerializeField] private GenericJoint algaeArm;
-        // Garra del descorer: dos brazos con angulo propio en el setpoint, mismo PID.
+        // Garra del descorer: dos brazos independientes, cada uno con su joint, PID, eje y angulo en el setpoint.
         // FormerlySerializedAs conserva las referencias ya asignadas en el prefab.
         [FormerlySerializedAs("algaeDescorerArm")]
         [SerializeField] private GenericJoint algaeDescorerArmLeft;
         [FormerlySerializedAs("algaeDescorerArmAlt")]
         [SerializeField] private GenericJoint algaeDescorerArmRight;
+        [SerializeField] private JointAxis algaeDescorerArmLeftAxis = JointAxis.X;
+        [SerializeField] private JointAxis algaeDescorerArmRightAxis = JointAxis.X;
 
         [Header("Climber Components")]
         [SerializeField] private GenericJoint funnelPivot;
@@ -45,7 +47,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
 
         [Header("PID")]
         [SerializeField] private PidConstants algaeArmPid;
-        [SerializeField] private PidConstants algaeDescorerArmPid;
+        [FormerlySerializedAs("algaeDescorerArmPid")]
+        [SerializeField] private PidConstants algaeDescorerArmLeftPid;
+        [SerializeField] private PidConstants algaeDescorerArmRightPid;
         [SerializeField] private PidConstants funnelPivotPid;
         [SerializeField] private PidConstants climberPivotPid;
 
@@ -89,6 +93,9 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
 
         [Header("Scoring")]
         [SerializeField] private float coralReleaseForce = 6f;
+        [SerializeField] private float L4coralReleaseForce = 5f;
+        [SerializeField] private float L1coralReleaseForce = 3f;
+        
         [SerializeField] private float algaeReleaseForce = -1.2f;
 
         [Header("Center of Mass")]
@@ -129,15 +136,26 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
         private bool _isScoring;
         private bool _rollersActive;
         private bool _outtakeWasPressed;
+        [Tooltip("Segundos que el robot conserva su pose tras pedir/recibir alga, antes de ir a stow, mientras el controller registra la pieza.")]
+        [SerializeField] private float algaeStowGraceTime = 0.4f;
+        private float _algaeGraceTimer;
+
         private bool _climbWasPressed;
 
         protected override void Start()
         {
             base.Start();
 
+            // Un elemento vacio en estas listas (None en el Inspector) lanzaba una
+            // NullReferenceException en cada FixedUpdate. Se filtran al iniciar.
+            intakeWheels = RemoveNulls(intakeWheels, nameof(intakeWheels));
+            intakeWheelsReverse = RemoveNulls(intakeWheelsReverse, nameof(intakeWheelsReverse));
+            algaeintakeWheels = RemoveNulls(algaeintakeWheels, nameof(algaeintakeWheels));
+            algaeintakeWheelsReverse = RemoveNulls(algaeintakeWheelsReverse, nameof(algaeintakeWheelsReverse));
+
             if (algaeArm != null) algaeArm.SetPid(algaeArmPid);
-            if (algaeDescorerArmLeft != null) algaeDescorerArmLeft.SetPid(algaeDescorerArmPid);
-            if (algaeDescorerArmRight != null) algaeDescorerArmRight.SetPid(algaeDescorerArmPid);
+            if (algaeDescorerArmLeft != null) algaeDescorerArmLeft.SetPid(algaeDescorerArmLeftPid);
+            if (algaeDescorerArmRight != null) algaeDescorerArmRight.SetPid(algaeDescorerArmRightPid);
             if (funnelPivot != null) funnelPivot.SetPid(funnelPivotPid);
             if (climberPivot != null) climberPivot.SetPid(climberPivotPid);
 
@@ -197,6 +215,19 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
             }
         }
 
+        private GenericAnimationJoint[] RemoveNulls(GenericAnimationJoint[] wheels, string listName)
+        {
+            if (wheels == null) return new GenericAnimationJoint[0];
+
+            var clean = System.Array.FindAll(wheels, w => w != null);
+            if (clean.Length != wheels.Length)
+            {
+                Debug.LogWarning($"Roult: '{listName}' tenia {wheels.Length - clean.Length} elemento(s) vacio(s) en el Inspector, se ignoran.");
+            }
+
+            return clean;
+        }
+
         private new void Update()
         {
             base.Update();
@@ -206,11 +237,21 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
             if (clickerR != null) clickerR.SpringLoaded().AllowedDirection(-1).RotationSpeed(clickerSpeed);
         }
 
+        // True si el robot ya trae alga O si el alga ya esta dentro del intake pero el controller
+        // todavia no la registra (currentStateNum sigue en 0 uno o varios ticks). Sin esto, el
+        // case Stow veia "sin alga", mandaba el robot a stow y luego regresaba a AlgaeStow.
+        private bool AlgaeHeldOrEntering()
+        {
+            return _algaeController.HasPiece()
+                   || _algaeController.currentStateNum != 0
+                   || (algaeIntake != null && _algaeController.IntakeHasPieces(algaeIntake));
+        }
+
         private void LateUpdate()
         {
             if (algaeArm != null) algaeArm.UpdatePid(algaeArmPid);
-            if (algaeDescorerArmLeft != null) algaeDescorerArmLeft.UpdatePid(algaeDescorerArmPid);
-            if (algaeDescorerArmRight != null) algaeDescorerArmRight.UpdatePid(algaeDescorerArmPid);
+            if (algaeDescorerArmLeft != null) algaeDescorerArmLeft.UpdatePid(algaeDescorerArmLeftPid);
+            if (algaeDescorerArmRight != null) algaeDescorerArmRight.UpdatePid(algaeDescorerArmRightPid);
             if (funnelPivot != null) funnelPivot.UpdatePid(funnelPivotPid);
             if (climberPivot != null) climberPivot.UpdatePid(climberPivotPid);
         }
@@ -250,8 +291,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
             bool climbHeld = ClimbAction != null && ClimbAction.IsPressed();
             bool climbJustPressed = climbHeld && !_climbWasPressed;
 
-            _algaeController.RequestIntake(algaeIntake,
-                !_climbLocked && CurrentRobotMode == ReefscapeRobotMode.Algae && intakePressed && !hasAlgae);
+            bool wantAlgaeIntakeRequest = !_climbLocked && CurrentRobotMode == ReefscapeRobotMode.Algae && intakePressed && !hasAlgae;
+            _algaeController.RequestIntake(algaeIntake, wantAlgaeIntakeRequest);
+
+            // Mientras se pide el alga (o ya esta entrando al intake) se renueva el margen del Stow.
+            if (wantAlgaeIntakeRequest || (algaeIntake != null && _algaeController.IntakeHasPieces(algaeIntake)))
+                _algaeGraceTimer = algaeStowGraceTime;
+            else
+                _algaeGraceTimer = Mathf.Max(0f, _algaeGraceTimer - Time.fixedDeltaTime);
 
             switch (CurrentSetpoint)
             {
@@ -260,12 +307,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
                     {
                         SetSetpoint(AlgaeStow);
                     }
-                    else
-                    {
+                    else {
                         SetSetpoint(stow);
                     }
                     break;
-
                 case ReefscapeSetpoints.Intake:
                     if (CurrentRobotMode == ReefscapeRobotMode.Coral || hasAlgae)
                     {
@@ -369,10 +414,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
                     break;
             }
 
-            UpdateRollers(hasCoral, hasAlgae, intakePressed);
-
             UpdateSetpoints();
             UpdateCenterOfMass();
+
+            UpdateRollers(hasCoral, hasAlgae, intakePressed);
             UpdateAudio();
 
             _outtakeWasPressed = outtakeHeld;
@@ -484,7 +529,19 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
                 // Coral solo se anota de frente: la fuerza siempre va hacia adelante.
                 if (_coralController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Coral)
                 {
+                    if(LastSetpoint == ReefscapeSetpoints.L4)
+                    {
+                        // Si se esta anotando desde L4, se suelta con fuerza hacia atras para que caiga en la zona de anotacion.
+                        _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, L4coralReleaseForce));
+                    }
+                    else if(LastSetpoint == ReefscapeSetpoints.L1)
+                    {
+                        // Si se esta anotando desde L1, se suelta con fuerza hacia atras para que caiga en la zona de anotacion.
+                        _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, L1coralReleaseForce));
+                    }
+                    else{
                     _coralController.ReleaseGamePieceWithForce(new Vector3(0, 0, coralReleaseForce));
+                    }
                 }
             }
         }
@@ -508,10 +565,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack.RoultRobot
                 algaeArm.SetTargetAngle(_algaeTargetAngle).withAxis(JointAxis.X);
 
             if (algaeDescorerArmLeft != null)
-                algaeDescorerArmLeft.SetTargetAngle(_algaeDescorerLeftTargetAngle).withAxis(JointAxis.X);
+                algaeDescorerArmLeft.SetTargetAngle(_algaeDescorerLeftTargetAngle).withAxis(algaeDescorerArmLeftAxis);
 
             if (algaeDescorerArmRight != null)
-                algaeDescorerArmRight.SetTargetAngle(_algaeDescorerRightTargetAngle).withAxis(JointAxis.X);
+                algaeDescorerArmRight.SetTargetAngle(_algaeDescorerRightTargetAngle).withAxis(algaeDescorerArmRightAxis);
 
             if (funnelPivot != null)
                 funnelPivot.SetTargetAngle(_funnelTargetAngle).withAxis(funnelPivotAxis);

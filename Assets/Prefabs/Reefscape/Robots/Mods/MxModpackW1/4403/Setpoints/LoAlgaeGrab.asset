@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a506adc6de601fc4a89ed2fa36d70570, type: 3}
   m_Name: LoAlgaeGrab
   m_EditorClassIdentifier: 
-  elevatorHeight: 0
-  algaeArmAngle: 0.7
-  algaeDescorerArmAngle: 180
+  elevatorHeight: 30
+  algaeArmAngle: 0
+  algaeDescorerArmLeftAngle: 60
+  algaeDescorerArmRightAngle: -60
   funnelAngle: 120
-  climberPivotAngle: 45
+  climberPivotAngle: 35

@@ -21,24 +21,24 @@ PrefabInstance:
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_text
-      value: Botzilla can score algae in the barge from both sides, just be careful
-        with the flick.
+      value: Roult is able to score coral in all 4 levels of the reef, and algae
+        in the processor! (Also it can supercycle!)
       objectReference: {fileID: 0}
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_fontSize
-      value: 26
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 6000603204863370303, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_fontSizeBase
-      value: 26
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 6718568964111546190, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: ae5626fcf55176e44ad2a29d2f695ed0,
+      objectReference: {fileID: 21300000, guid: d85f162b79f269a42a90cfb515b40e0f,
         type: 3}
     - target: {fileID: 7647712989278884331, guid: 4f6390b7332e92b43aee0cf7f4734f72,
         type: 3}

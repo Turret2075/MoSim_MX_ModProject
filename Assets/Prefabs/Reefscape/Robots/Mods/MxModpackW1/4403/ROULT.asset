@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamNumber: 4403
   teamName: ROULT
-  robotPrefab: {fileID: 5698011260551530652, guid: 12739f621b2f3af409e3c4823ded264a,
+  robotPrefab: {fileID: 6103115828452135521, guid: 4536a9b609d7daf40b5d45f63925e487,
     type: 3}
   robotPreloadGamePiece: {fileID: 2185987706872048638, guid: 970bdf84a203d9a4b8dc602974341a07,
     type: 3}
-  mainMenuPrefab: {fileID: 4108337974173178762, guid: a7fa467da9ec3ed4484d87063cc7d59a,
+  mainMenuPrefab: {fileID: 6103115828452135521, guid: 1e2dcf047410bb949851a0de45a0f3ca,
     type: 3}
   hasAlternateRobot: 0
   alternateRobotPrefab: {fileID: 0}
   alternateMainMenuPrefab: {fileID: 0}
-  robotImage: {fileID: 21300000, guid: 05a3f560eeccc234b929eb510308b03e, type: 3}
+  robotImage: {fileID: 21300000, guid: 1b4431f540efbe340bce412f87fb79be, type: 3}
   tutorialCards:
   - {fileID: 6829736770845459078, guid: 40f1a8d04c23c9344b61cdfc923afb4e, type: 3}
   - {fileID: 6829736770845459078, guid: d058a9da063db414ba30fd81519d5eb1, type: 3}

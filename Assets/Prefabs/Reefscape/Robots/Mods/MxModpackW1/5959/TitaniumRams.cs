@@ -99,6 +99,10 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
         private bool _isScoring;
         private bool _rollersActive;
         private bool _outtakeWasPressed;
+        [Tooltip("Segundos que el robot conserva su pose tras pedir/recibir alga, antes de ir a stow, mientras el controller registra la pieza.")]
+        [SerializeField] private float algaeStowGraceTime = 0.4f;
+        private float _algaeGraceTimer;
+
  
         protected override void Start()
         {
@@ -139,6 +143,16 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
             }
         }
  
+        // True si el robot ya trae alga O si el alga ya esta dentro del intake pero el controller
+        // todavia no la registra (currentStateNum sigue en 0 uno o varios ticks). Sin esto, el
+        // case Stow veia "sin alga", mandaba el robot a stow y luego regresaba a AlgaeStow.
+        private bool AlgaeHeldOrEntering()
+        {
+            return _algaeController.HasPiece()
+                   || _algaeController.currentStateNum != 0
+                   || (algaeIntake != null && _algaeController.IntakeHasPieces(algaeIntake));
+        }
+
         private void LateUpdate()
         {
             algaeArm.UpdatePid(algaeArmPid);
@@ -165,7 +179,14 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
             bool outtakeHeld = OuttakeAction != null && OuttakeAction.IsPressed();
             bool outtakeJustPressed = outtakeHeld && !_outtakeWasPressed;
  
-            _algaeController.RequestIntake(algaeIntake, CurrentRobotMode == ReefscapeRobotMode.Algae && IntakeAction.IsPressed() && !hasAlgae);  
+            bool wantAlgaeIntakeRequest = CurrentRobotMode == ReefscapeRobotMode.Algae && IntakeAction.IsPressed() && !hasAlgae;
+            _algaeController.RequestIntake(algaeIntake, wantAlgaeIntakeRequest);
+
+            // Mientras se pide el alga (o ya esta entrando al intake) se renueva el margen del Stow.
+            if (wantAlgaeIntakeRequest || (algaeIntake != null && _algaeController.IntakeHasPieces(algaeIntake)))
+                _algaeGraceTimer = algaeStowGraceTime;
+            else
+                _algaeGraceTimer = Mathf.Max(0f, _algaeGraceTimer - Time.fixedDeltaTime);
             
  
  
@@ -180,7 +201,6 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
                         SetSetpoint(stow);
                     }
                     break;
- 
                 case ReefscapeSetpoints.Intake:
                 if (CurrentRobotMode == ReefscapeRobotMode.Coral || hasAlgae)
                 {
@@ -370,7 +390,7 @@ namespace Prefabs.Reefscape.Robots.Mods.MexicoModpack._5959
         {
             if (_algaeController.HasPiece() && CurrentRobotMode == ReefscapeRobotMode.Algae)
             {
-                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 0, -2f));
+                _algaeController.ReleaseGamePieceWithForce(new Vector3(0, 0, -2.5f));
             }
             else
             {

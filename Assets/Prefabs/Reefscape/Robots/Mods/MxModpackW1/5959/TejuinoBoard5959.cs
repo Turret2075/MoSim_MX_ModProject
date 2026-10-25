@@ -28,11 +28,11 @@ namespace Prefabs.Reefscape.Robots.Mods.Team5959._5959
     ///     below. The real code's "off" phase isn't fully black (0,5,0) - ported here as dimIntensity instead
     ///     of 0 so the same near-black-but-not-quite behavior carries over.
     ///
-    ///   - Disabled: rainbow. Unlike the runtime-baked solid-color textures used everywhere else in this
-    ///     file, the rainbow strip is a plain SerializeField Texture (assign a rainbow/gradient asset in the
-    ///     inspector) scrolled via _X over time - exactly RoboGymLights' own idiom for its disabled state
-    ///     (`_material.SetFloat("_X", Time.time * 0.08f)`), just with a rainbow texture instead of RoboGym's
-    ///     `disabled` texture.
+    ///   - Disabled: rainbow, using Nomad's approach (CustomLedStripController's Prep Climb rainbow slide):
+    ///     a 256x1 hue-gradient Texture2D generated at runtime in Start() (Color.HSVToRGB across the width,
+    ///     Repeat wrap, Bilinear filter), scrolled by setting _X/_Y to direction * Time.time * speed, with its
+    ///     own dedicated intensity. Nothing to import - speed, direction and intensity are tunable in the
+    ///     inspector.
     ///
     /// Match time comes from BaseTimerManager.Timer (found via ReefscapeTimerManager in the scene), which
     /// turns out to line up with the real code's matchTime almost exactly: ReefscapeTimerManager sets
@@ -57,14 +57,16 @@ namespace Prefabs.Reefscape.Robots.Mods.Team5959._5959
         [SerializeField] private Shader shaderGraphShader;
  
         [Header("Intensity")]
-        [Tooltip("Brightness for a fully \"on\" state (solid green, alliance color, endgame blink-on, rainbow).")]
+        [Tooltip("Brightness for a fully \"on\" state (solid green, alliance color, endgame blink-on). Rainbow has its own rainbowIntensity.")]
         [SerializeField] private float onIntensity = 150f;
         
-        [Header("Rainbow (Disabled)")]
-        [Tooltip("Rainbow/gradient texture to scroll across the strip while Disabled - assign an asset here, same as RoboGymLights' texture fields (red/green/white/disabled). No texture is generated at runtime.")]
-        [SerializeField] private Texture rainbowTexture;
-        [Tooltip("How fast rainbowTexture scrolls across the strip - same _X-over-time idiom as RoboGymLights' disabled scroll (Time.time * 0.08f).")]
-        [SerializeField] private float rainbowScrollSpeed = 0.3f;
+        [Header("Rainbow (Disabled) - Nomad-style runtime rainbow")]
+        [Tooltip("How fast the rainbow texture slides across the LED strip.")]
+        [SerializeField] private float rainbowSpeed = 1.5f;
+        [Tooltip("Direction of the rainbow slide. Use X or Y depending on how the LED UVs are laid out.")]
+        [SerializeField] private Vector2 rainbowDirection = new Vector2(1f, 0f);
+        [Tooltip("Brightness used for the rainbow effect.")]
+        [SerializeField] private float rainbowIntensity = 20f;
 
         [Header("Endgame Blink - fixed Hz per threshold, no interpolation")]
         [Tooltip("Blink rate (Hz) once <= 10 seconds are left.")]
@@ -92,6 +94,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Team5959._5959
 
         private ReefscapeRobotBase _base;
         private Material _material;
+        private Texture2D _rainbowTexture;
 
         private readonly Dictionary<Color, Texture2D> _solidTextures = new();
 
@@ -99,6 +102,7 @@ namespace Prefabs.Reefscape.Robots.Mods.Team5959._5959
         {
             _base = GetComponent<ReefscapeRobotBase>();
             _material = BuildSharedMaterial(leds);
+            _rainbowTexture = CreateRainbowTexture(256);
 
             if (timerManager == null)
             {
@@ -193,14 +197,44 @@ namespace Prefabs.Reefscape.Robots.Mods.Team5959._5959
         {
             return Time.time % (1f / hz) > 1f / (hz * 2f) ? 20f : 0f;
         }
-        // Exactly RoboGymLights' idiom for its disabled state: assign a texture, scroll it via _X over time.
-        // No generation/baking here - rainbowTexture is whatever asset was dragged into the inspector.
+        // Nomad's ApplyPrepClimbRainbow(): assign the generated rainbow texture and slide it by writing
+        // direction * time * speed into _X/_Y.
         private void RunRainbow()
         {
-            _material.SetTexture("_Texture2D", rainbowTexture);
-            _material.SetFloat("_Y", 0f);
-            _material.SetFloat("_X", Time.time * rainbowScrollSpeed);
-            _material.SetFloat("_intensity", onIntensity);
+            if (_rainbowTexture == null) return;
+
+            var timeOffset = Time.time * rainbowSpeed;
+
+            _material.SetTexture("_Texture2D", _rainbowTexture);
+            _material.SetFloat("_X", rainbowDirection.x * timeOffset);
+            _material.SetFloat("_Y", rainbowDirection.y * timeOffset);
+            _material.SetFloat("_intensity", rainbowIntensity);
+        }
+
+        // Nomad's CreateRainbowTexture(): a width x 1 strip with hue sweeping 0..1 across x, Repeat wrap so
+        // the scroll loops seamlessly, Bilinear so the colors blend smoothly.
+        private static Texture2D CreateRainbowTexture(int width)
+        {
+            var texture = new Texture2D(width, 1, TextureFormat.RGBA32, false)
+            {
+                name = "Runtime Rainbow LED",
+                wrapMode = TextureWrapMode.Repeat,
+                filterMode = FilterMode.Bilinear
+            };
+
+            for (var x = 0; x < width; x++)
+            {
+                var hue = (float)x / width;
+                texture.SetPixel(x, 0, Color.HSVToRGB(hue, 1f, 1f));
+            }
+
+            texture.Apply(false, false);
+            return texture;
+        }
+
+        private void OnDestroy()
+        {
+            if (_rainbowTexture != null) Destroy(_rainbowTexture);
         }
 
         // Same idea as GRRLights/StuyPulseLEDController's Set(): _X/_Y stay at 0 for solid colors (no
